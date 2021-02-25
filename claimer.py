@@ -2,6 +2,7 @@ import asyncio
 from pyppeteer import launch, launcher
 import time
 from getpass import getpass
+import schedule
 
 
 class epic_claimer:
@@ -124,12 +125,12 @@ def log(text):
 
 if __name__ == "__main__":
     launcher.DEFAULT_ARGS.remove("--enable-automation")
-    while True:
+
+    def job():
         try:
             claimer = epic_claimer()
             loop = asyncio.get_event_loop()
             loop.run_until_complete(claimer.login())
-            localtime = time.asctime(time.localtime(time.time()))
             log("Claim start.")
             loop.run_until_complete(claimer.claim())
         except Exception as e:
@@ -137,4 +138,10 @@ if __name__ == "__main__":
         finally:
             claimer.close()
             log("Claim end.")
-        time.sleep(85000)
+
+    job()
+
+    schedule.every().day.at("09:00").do(job)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

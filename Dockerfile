@@ -14,7 +14,7 @@ RUN sed -i "s/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g" /etc/apt/source
     libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 \
     libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation \
     libappindicator1 lsb-release xdg-utils wget \
-    && pip3 install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple pyppeteer \
+    && pip3 install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple pyppeteer schedule \
     && pyppeteer-install \
     && apt clean
 
