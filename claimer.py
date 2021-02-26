@@ -79,17 +79,17 @@ class epic_claimer:
             options={"timeout": 120000}
         )
         await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > div:nth-child(2) " \
-            "div[data-component=CardGridDesktopBase"
+            "div[data-component=CardGridDesktopBase]"
         )
         item_list = await self.page.querySelectorAll("div[data-component=CustomDiscoverModules] > " \
-            "div:nth-child(2) div[class*=CardGridDesktopLandscape__cardWrapperDesktop]"
+            "div:nth-child(2) div[data-component=CardGridDesktopBase]"
         )
         for index in range(0, len(item_list)):
             await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > div:nth-child(2) " \
-                "div[data-component=CardGridDesktopBase"
+                "div[data-component=CardGridDesktopBase]"
             )
             item = (await self.page.querySelectorAll("div[data-component=CustomDiscoverModules] > " \
-                "div:nth-child(2) div[class*=CardGridDesktopLandscape__cardWrapperDesktop]")
+                "div:nth-child(2) div[data-component=CardGridDesktopBase]")
             )[index]
             await item.click()
             await self.await_try_click("div[class*=WarningLayout__layout] Button")
