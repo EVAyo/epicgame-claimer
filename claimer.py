@@ -50,17 +50,27 @@ class epic_claimer:
     async def login(self):
         await self.page.goto("https://www.epicgames.com/", options={"timeout": 120000})
         if (await self.await_get_text("#user > ul > li > a", "href")) == "https://www.epicgames.com/login":
-            email = input("Email: ")
-            password = getpass("Password: ")
-            await self.await_click("#user")
-            await self.await_click("#login-with-epic")
-            await self.await_type("#email", email)
-            await self.await_type("#password", password)
-            await self.await_click("#sign-in[tabindex=\"0\"]")
-            if await self.await_detect("#code", 120000):
-                await self.await_type("#code", input("2FA code: "))
-                await self.await_click("#continue[tabindex=\"0\"]")
-            await self.page.waitForSelector("#user")
+            for i in range(0, 5):
+                try:
+                    email = input("Email: ")
+                    password = getpass("Password: ")
+                    await self.await_click("#user")
+                    await self.await_click("#login-with-epic")
+                    await self.await_type("#email", email)
+                    await self.await_type("#password", password)
+                    await self.await_click("#sign-in[tabindex=\"0\"]")
+                    if await self.await_detect("#code", 120000):
+                        await self.await_type("#code", input("2FA code: "))
+                        await self.await_click("#continue[tabindex=\"0\"]")
+                    await self.page.waitForSelector("#user")
+                    break
+                except Exception as e:
+                    log("{}: {}".format(e.__class__.__name__, e))
+                    log("Login failed.")
+                    if i < 4:
+                        log("Retrying...")
+                    else:
+                        exit()
             log("Login successed.")
             log("Now you can leave by pressing Ctrl + P + Q.")
     
@@ -68,51 +78,35 @@ class epic_claimer:
         await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
             options={"timeout": 120000}
         )
-        await self.page.waitForSelector("div[class*=DiscoverPage__storeContent] " \
-            "> div > div:nth-child(2) > div > div > section > div > div"
+        await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > div:nth-child(2) " \
+            "div[data-component=CardGridDesktopBase"
         )
-        item_list = await self.page.querySelectorAll("div[class*=DiscoverPage__storeContent] " \
-            "> div > div:nth-child(2) > div > div > section > div > div"
+        item_list = await self.page.querySelectorAll("div[data-component=CustomDiscoverModules] > " \
+            "div:nth-child(2) div[class*=CardGridDesktopLandscape__cardWrapperDesktop]"
         )
         for index in range(0, len(item_list)):
-            await self.page.waitForSelector("div[class*=DiscoverPage__storeContent] " \
-                "> div > div:nth-child(2) > div > div > section > div > div"
+            await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > div:nth-child(2) " \
+                "div[data-component=CardGridDesktopBase"
             )
-            item = (await self.page.querySelectorAll("div[class*=DiscoverPage__storeContent] " \
-                "> div > div:nth-child(2) > div > div > section > div > div")
+            item = (await self.page.querySelectorAll("div[data-component=CustomDiscoverModules] > " \
+                "div:nth-child(2) div[class*=CardGridDesktopLandscape__cardWrapperDesktop]")
             )[index]
             await item.click()
-            await self.await_try_click("body > div:nth-child(13) > div > div > div " \
-                "> div > div > div > button"
-            )
-            if await self.await_try_click("#dieselReactWrapper > div > " \
-                "div[class*=AppPage__bodyContainer] > main > div > " \
-                "div[class*=Page__content-Page__contentAfterTopNav] > " \
-                "div[class*=PageWrapper__wrapper] > div > " \
-                "div[class=[ProductDetailHeader__wrapper] > " \
-                "div[class*=StorePageContent__styles] > div > div > div(3) > " \
-                "div > div > div > div(3) > div > div > button:not([disabled])"
-            ):
-                await self.await_click("#purchase-app > div > div.order-summary-container " \
+            await self.await_try_click("div[class*=WarningLayout__layout] Button")
+            if await self.await_try_click("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(1)"):
+                if await self.await_try_click("#purchase-app > div > div.order-summary-container " \
                     "> div.order-summary-card > div.order-summary-card-inner " \
-                    "> div.order-summary-content > div > div > button"
-                )
-                await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
-                log("Claim successed.")
-            elif await self.await_try_click("#dieselReactWrapper > div " \
-                "> div[class*=AppPage__bodyContainer] > main > div " \
-                "> div[class*=Page__content-Page__contentAfterTopNav] " \
-                "> div[class*=PageWrapper__wrapper] > div > div:nth-child(4) " \
-                "> div:nth-child(2) > div[class*=TwoColumnGroup__right] > div:nth-child(2) " \
-                "> div:nth-child(2) > div[class*=ProductCardBottomRow-styles__rowChildren] " \
-                "> div > div:nth-child(2) > div > div > button:not([disabled])"
-            ):
-                await self.await_click("#purchase-app > div > div.order-summary-container " \
+                    "> div.order-summary-content > div > div > button:not([disabled])"
+                ):
+                    await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
+                    log("Claim successed.")
+            elif await self.await_try_click("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(2)"):
+                if await self.await_try_click("#purchase-app > div > div.order-summary-container " \
                     "> div.order-summary-card > div.order-summary-card-inner " \
-                    "> div.order-summary-content > div > div > button"
-                )
-                await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
-                log("Claim successed.")
+                    "> div.order-summary-content > div > div > button:not([disabled])"
+                ):
+                    await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
+                    log("Claim successed.")
             await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
                 options={"timeout": 120000}
             )
