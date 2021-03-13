@@ -64,7 +64,7 @@ class epic_claimer:
                     await self.await_type("#email", email)
                     await self.await_type("#password", password)
                     await self.await_click("#sign-in[tabindex=\"0\"]")
-                    if await self.await_detect("#code", 120000):
+                    if await self.await_detect("#code"):
                         await self.await_type("#code", input("2FA code: "))
                         await self.await_click("#continue[tabindex=\"0\"]")
                     await self.page.waitForSelector("#user")
@@ -74,6 +74,7 @@ class epic_claimer:
                     self.log("Login failed.")
                     if i < 4:
                         self.log("Retrying...")
+                        await self.page.reload()
                     else:
                         self.exit()
             self.log("Login successed.")
