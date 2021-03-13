@@ -55,12 +55,12 @@ class epic_claimer:
     async def login(self):
         await self.page.goto("https://www.epicgames.com/", options={"timeout": 120000})
         if (await self.await_get_text("#user > ul > li > a", "href")) == "https://www.epicgames.com/login":
+            await self.await_click("#user")
+            await self.await_click("#login-with-epic")
             for i in range(0, 5):
                 try:
                     email = input("Email: ")
                     password = getpass("Password: ")
-                    await self.await_click("#user")
-                    await self.await_click("#login-with-epic")
                     await self.await_type("#email", email)
                     await self.await_type("#password", password)
                     await self.await_click("#sign-in[tabindex=\"0\"]")
