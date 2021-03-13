@@ -15,6 +15,10 @@ class epic_claimer:
 
     def close(self):
         asyncio.get_event_loop().run_until_complete(self.browser.close())
+    
+    def log(self, text):
+        localtime = time.asctime(time.localtime(time.time()))
+        print("[{}] {}".format(localtime, text))
 
     async def await_type(self, selector, text, sleep_time=0):
         await self.page.waitForSelector(selector)
@@ -65,14 +69,21 @@ class epic_claimer:
                     await self.page.waitForSelector("#user")
                     break
                 except Exception as e:
-                    log("{}: {}".format(e.__class__.__name__, e))
-                    log("Login failed.")
+                    self.log("{}: {}".format(e.__class__.__name__, e))
+                    self.log("Login failed.")
                     if i < 4:
-                        log("Retrying...")
+                        self.log("Retrying...")
                     else:
-                        exit()
-            log("Login successed.")
-            log("Now you can leave by pressing Ctrl + P + Q.")
+                        self.exit()
+            self.log("Login successed.")
+            self.log("Now you can leave by pressing Ctrl + P + Q.")
+    
+    async def order(self, selector):
+        if await self.await_detect("#purchase-app div.navigation-element.complete"):
+            if "0.00" in (await self.await_get_text("#purchase-app div.price-row-container.total")):
+                if await self.await_try_click(selector):
+                    await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
+                    self.log("Claim successed.")
     
     async def claim(self):
         await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
@@ -94,27 +105,16 @@ class epic_claimer:
             await item.click()
             await self.await_try_click("div[class*=WarningLayout__layout] Button")
             if await self.await_try_click("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(1)"):
-                if await self.await_try_click("#purchase-app > div > div.order-summary-container " \
+                await self.order("#purchase-app > div > div.order-summary-container " \
                     "> div.order-summary-card > div.order-summary-card-inner " \
-                    "> div.order-summary-content > div > div > button:not([disabled])"
-                ):
-                    await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
-                    log("Claim successed.")
+                    "> div.order-summary-content > div > div > button:not([disabled])")        
             elif await self.await_try_click("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(2)"):
-                if await self.await_try_click("#purchase-app > div > div.order-summary-container " \
+                await self.order("#purchase-app > div > div.order-summary-container " \
                     "> div.order-summary-card > div.order-summary-card-inner " \
-                    "> div.order-summary-content > div > div > button:not([disabled])"
-                ):
-                    await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
-                    log("Claim successed.")
+                    "> div.order-summary-content > div > div > button:not([disabled])")
             await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
                 options={"timeout": 120000}
             )
-
-
-def log(text):
-    localtime = time.asctime(time.localtime(time.time()))
-    print("[{}] {}".format(localtime, text))
 
 
 if __name__ == "__main__":
@@ -125,13 +125,13 @@ if __name__ == "__main__":
             claimer = epic_claimer()
             loop = asyncio.get_event_loop()
             loop.run_until_complete(claimer.login())
-            log("Claim start.")
+            claimer.log("Claim start.")
             loop.run_until_complete(claimer.claim())
         except Exception as e:
-            log("{}: {}".format( e.__class__.__name__, e))
+            claimer.log("{}: {}".format( e.__class__.__name__, e))
         finally:
             claimer.close()
-            log("Claim end.")
+            claimer.log("Claim end.")
 
     job()
 
