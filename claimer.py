@@ -3,6 +3,8 @@ from pyppeteer import launch, launcher
 import time
 from getpass import getpass
 import schedule
+import json
+import os
 
 
 class epic_claimer:
@@ -13,6 +15,13 @@ class epic_claimer:
                             "headless": False}, userDataDir="userdata")
         )
         self.page = loop.run_until_complete(self.browser.pages())[0]
+        if not os.path.exists("config.json"):
+            with open("config.json", "w") as config_json:
+                self.config = {"email": None, "password": None}
+                config_json.write(json.dumps(self.config, indent=4, separators=(',', ': ')))
+        else:
+            with open("config.json", "r") as config_json:
+                self.config = json.loads(config_json.read())
 
     def close(self):
         asyncio.get_event_loop().run_until_complete(self.browser.close())
@@ -21,21 +30,21 @@ class epic_claimer:
         localtime = time.asctime(time.localtime(time.time()))
         print("[{}] {}".format(localtime, text))
 
-    async def await_type(self, selector, text, sleep_time=0):
+    async def type_async(self, selector, text, sleep_time=0):
         await self.page.waitForSelector(selector)
         time.sleep(sleep_time)
         await self.page.type(selector, text)
 
-    async def await_click(self, selector, sleep_time=2):
+    async def click_async(self, selector, sleep_time=2):
         await self.page.waitForSelector(selector)
         time.sleep(sleep_time)
         await self.page.click(selector)
 
-    async def await_get_text(self, selector, property="textContent"):
+    async def get_text_async(self, selector, property="textContent"):
         await self.page.waitForSelector(selector)
         return await (await (await self.page.querySelector(selector)).getProperty(property)).jsonValue()
 
-    async def await_detect(self, selector, timeout=None):
+    async def detect_async(self, selector, timeout=None):
         try:
             if timeout != None:
                 await self.page.waitForSelector(selector, options={"timeout": timeout})
@@ -45,29 +54,35 @@ class epic_claimer:
         except:
             return False
 
-    async def await_try_click(self, selector, sleep_time=2):
-        if await self.await_detect(selector):
+    async def try_click_async(self, selector, sleep_time=2):
+        if await self.detect_async(selector):
             time.sleep(sleep_time)
-            await self.await_click(selector)
+            await self.click_async(selector)
             return True
         return False
 
     async def login(self):
         await self.page.goto("https://www.epicgames.com/", options={"timeout": 120000})
-        if (await self.await_get_text("#user > ul > li > a", "href")) == "https://www.epicgames.com/login":
-            await self.await_click("#user")
-            await self.await_click("#login-with-epic")
+        if (await self.get_text_async("#user > ul > li > a", "href")) == "https://www.epicgames.com/login":
+            await self.click_async("#user")
+            await self.click_async("#login-with-epic")
             for i in range(0, 5):
                 try:
-                    email = input("Email: ")
-                    password = getpass("Password: ")
-                    await self.await_type("#email", email)
-                    await self.await_type("#password", password)
-                    await self.await_click("#sign-in[tabindex=\"0\"]")
-                    if await self.await_detect("#code"):
-                        await self.await_type("#code", input("2FA code: "))
-                        await self.await_click("#continue[tabindex=\"0\"]")
+                    config_changed = False
+                    if self.config["email"] == None or self.config["password"] == None:
+                        self.config["email"] = input("Email: ")
+                        self.config["password"] = getpass("Password: ")
+                        config_changed = True
+                    await self.type_async("#email", self.config["email"])
+                    await self.type_async("#password", self.config["password"])
+                    await self.click_async("#sign-in[tabindex=\"0\"]")
+                    if await self.detect_async("#code"):
+                        await self.type_async("#code", input("2FA code: "))
+                        await self.click_async("#continue[tabindex=\"0\"]")
                     await self.page.waitForSelector("#user")
+                    if config_changed == True:
+                        with open("config.json", "w") as config_json:
+                            config_json.write(json.dumps(self.config, indent=4, separators=(',', ': ')))
                     break
                 except Exception as e:
                     self.log("{}: {}".format(e.__class__.__name__, e))
@@ -75,17 +90,19 @@ class epic_claimer:
                     if i < 4:
                         self.log("Retrying...")
                         await self.page.reload()
+                        with open("config.json", "r") as config_json:
+                            self.config = json.loads(config_json.read())
                     else:
                         self.exit()
             self.log("Login successed.")
-            self.log("Now you can leave by pressing Ctrl + P + Q.")
+            self.log("Now you can press Ctrl + P + Q to switch to the background.")
 
-    async def order(self, selector):
-        if await self.await_detect("#purchase-app div.navigation-element.complete"):
-            if "0.00" in (await self.await_get_text("#purchase-app div.price-row-container.total")):
-                if await self.await_try_click(selector):
+    async def order(self, selector, title):
+        if await self.detect_async("#purchase-app div.navigation-element.complete"):
+            if "0.00" in (await self.get_text_async("#purchase-app div.price-row-container.total")):
+                if await self.try_click_async(selector):
                     await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
-                    self.log("Claim successed.")
+                    self.log("{} Claim successed.".format(title))
 
     async def claim(self):
         await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
@@ -105,15 +122,16 @@ class epic_claimer:
                                                      "div:nth-child(2) div[data-component=CardGridDesktopBase]")
                     )[index]
             await item.click()
-            await self.await_try_click("div[class*=WarningLayout__layout] Button")
-            if await self.await_try_click("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(1)"):
+            await self.try_click_async("div[class*=WarningLayout__layout] Button")
+            game_title = await self.get_text_async("#storeNavListBox span[data-component=\"Message\"]")
+            if await self.try_click_async("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(1)"):
                 await self.order("#purchase-app > div > div.order-summary-container "
                                  "> div.order-summary-card > div.order-summary-card-inner "
-                                 "> div.order-summary-content > div > div > button:not([disabled])")
-            elif await self.await_try_click("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(2)"):
+                                 "> div.order-summary-content > div > div > button:not([disabled])", game_title)
+            elif await self.try_click_async("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(2)"):
                 await self.order("#purchase-app > div > div.order-summary-container "
                                  "> div.order-summary-card > div.order-summary-card-inner "
-                                 "> div.order-summary-content > div > div > button:not([disabled])")
+                                 "> div.order-summary-content > div > div > button:not([disabled])", game_title)
             await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
                                  options={"timeout": 120000}
                                  )
@@ -127,13 +145,11 @@ if __name__ == "__main__":
             claimer = epic_claimer()
             loop = asyncio.get_event_loop()
             loop.run_until_complete(claimer.login())
-            claimer.log("Claim start.")
             loop.run_until_complete(claimer.claim())
         except Exception as e:
             claimer.log("{}: {}".format(e.__class__.__name__, e))
         finally:
             claimer.close()
-            claimer.log("Claim end.")
 
     job()
 
