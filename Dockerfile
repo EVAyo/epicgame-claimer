@@ -1,6 +1,6 @@
 FROM luminoleon/pyppeteer
 
-LABEL maintainer="Luminoleon <Luminoleon@outlook.com>"
+LABEL maintainer="Luminoleon <luminoleon@outlook.com>"
 
 COPY claimer.py /
 
