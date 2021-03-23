@@ -95,7 +95,7 @@ class epic_claimer:
                     with open("config.json", "r") as config_json:
                         self.config = json.loads(config_json.read())
                 else:
-                    self.exit()
+                    exit()
         self.log("Login successed.")
         self.log("Now you can press Ctrl + P + Q to switch to the background.")
 
