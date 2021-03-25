@@ -96,6 +96,8 @@ class epic_claimer:
                     with open("config.json", "w") as config_json:
                         config_json.write(json.dumps(
                             self.config, indent=4, separators=(',', ': ')))
+                self.log("Login successed.")
+                self.log("Now you can press Ctrl + P + Q to switch to the background.")
                 return True
             except Exception as e:
                 self.log("{}: {}".format(e.__class__.__name__, e))
@@ -106,8 +108,6 @@ class epic_claimer:
                         self.config = json.loads(config_json.read())
                 else:
                     return False
-        self.log("Login successed.")
-        self.log("Now you can press Ctrl + P + Q to switch to the background.")
 
     def login(self):
         return self.loop.run_until_complete(self.login_async())
