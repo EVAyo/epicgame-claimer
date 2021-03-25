@@ -30,6 +30,16 @@ class epic_claimer:
     def log(self, text):
         localtime = time.asctime(time.localtime(time.time()))
         print("[{}] {}".format(localtime, text))
+    
+    def retry(func_try, times, func_except=None, func_finally=None):
+        for i in range(times):
+            try:
+                func_try()
+                break
+            except:
+                func_except()
+            finally:
+                func_finally()
 
     async def type_async(self, selector, text, sleep_time=0):
         await self.page.waitForSelector(selector)
@@ -67,7 +77,7 @@ class epic_claimer:
             try:
                 await self.page.goto("https://www.epicgames.com/", options={"timeout": 120000})
                 if (await self.get_text_async("#user > ul > li > a", "href")) != "https://www.epicgames.com/login":
-                    return
+                    return True
                 await self.click_async("#user")
                 await self.click_async("#login-with-epic")
                 config_changed = False
@@ -86,7 +96,7 @@ class epic_claimer:
                     with open("config.json", "w") as config_json:
                         config_json.write(json.dumps(
                             self.config, indent=4, separators=(',', ': ')))
-                break
+                return True
             except Exception as e:
                 self.log("{}: {}".format(e.__class__.__name__, e))
                 self.log("Login failed.")
@@ -95,49 +105,57 @@ class epic_claimer:
                     with open("config.json", "r") as config_json:
                         self.config = json.loads(config_json.read())
                 else:
-                    exit()
+                    return False
         self.log("Login successed.")
         self.log("Now you can press Ctrl + P + Q to switch to the background.")
 
     def login(self):
-        self.loop.run_until_complete(self.login_async())
+        return self.loop.run_until_complete(self.login_async())
 
     async def order_async(self, title):
         if await self.detect_async("#purchase-app div.navigation-element.complete"):
             if "0.00" in (await self.get_text_async("#purchase-app div.price-row-container.total")):
-                if await self.try_click_async("#purchase-app > div > div.order-summary-container "
+                if await self.click_async("#purchase-app > div > div.order-summary-container "
                                               "> div.order-summary-card > div.order-summary-card-inner "
                                               "> div.order-summary-content > div > div > button:not([disabled])"):
                     await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
                     self.log("{} Claim successed.".format(title))
 
     async def claim_async(self):
-        await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
-                             options={"timeout": 120000}
-                             )
-        await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > div:nth-child(2) "
-                                        "div[data-component=CardGridDesktopBase]"
+        for i in range(0, 5):
+            try:
+                await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
+                                    options={"timeout": 120000}
+                                    )
+                await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > div:nth-child(2) "
+                                                "div[data-component=CardGridDesktopBase]"
+                                                )
+                item_list = await self.page.querySelectorAll("div[data-component=CustomDiscoverModules] > "
+                                                            "div:nth-child(2) div[data-component=CardGridDesktopBase]"
+                                                            )
+                for index in range(0, len(item_list)):
+                    await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > div:nth-child(2) "
+                                                    "div[data-component=CardGridDesktopBase]"
+                                                    )
+                    item = (await self.page.querySelectorAll("div[data-component=CustomDiscoverModules] > "
+                                                            "div:nth-child(2) div[data-component=CardGridDesktopBase]")
+                            )[index]
+                    await item.click()
+                    await self.try_click_async("div[class*=WarningLayout__layout] Button")
+                    game_title = await self.get_text_async("#storeNavListBox span[data-component=\"Message\"]")
+                    if await self.try_click_async("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(1)"):
+                        await self.order_async(game_title)
+                    elif await self.try_click_async("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(2)"):
+                        await self.order_async(game_title)
+                    await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
+                                        options={"timeout": 120000}
                                         )
-        item_list = await self.page.querySelectorAll("div[data-component=CustomDiscoverModules] > "
-                                                     "div:nth-child(2) div[data-component=CardGridDesktopBase]"
-                                                     )
-        for index in range(0, len(item_list)):
-            await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > div:nth-child(2) "
-                                            "div[data-component=CardGridDesktopBase]"
-                                            )
-            item = (await self.page.querySelectorAll("div[data-component=CustomDiscoverModules] > "
-                                                     "div:nth-child(2) div[data-component=CardGridDesktopBase]")
-                    )[index]
-            await item.click()
-            await self.try_click_async("div[class*=WarningLayout__layout] Button")
-            game_title = await self.get_text_async("#storeNavListBox span[data-component=\"Message\"]")
-            if await self.try_click_async("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(1)"):
-                await self.order_async(game_title)
-            elif await self.try_click_async("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(2)"):
-                await self.order_async(game_title)
-            await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
-                                 options={"timeout": 120000}
-                                 )
+                break
+            except Exception as e:
+                self.log("{}: {}".format(e.__class__.__name__, e))
+                self.log("Claim failed.")
+                if i < 4:
+                    self.log("Retrying...")
 
     def claim(self):
         self.loop.run_until_complete(self.claim_async())
@@ -147,14 +165,10 @@ if __name__ == "__main__":
     launcher.DEFAULT_ARGS.remove("--enable-automation")
 
     def claimer_job():
-        try:
-            claimer = epic_claimer()
-            claimer.login()
+        claimer = epic_claimer()
+        if claimer.login():
             claimer.claim()
-        except Exception as e:
-            claimer.log("{}: {}".format(e.__class__.__name__, e))
-        finally:
-            claimer.close()
+        claimer.close()
 
     claimer_job()
 
