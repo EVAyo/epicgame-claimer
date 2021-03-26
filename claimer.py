@@ -120,7 +120,7 @@ class epic_claimer:
                                        "> div.order-summary-card > div.order-summary-card-inner "
                                        "> div.order-summary-content > div > div > button:not([disabled])")
                 await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
-                self.log("{} Claim successed.".format(title))
+                self.log("{} claim successed.".format(title))
 
     async def claim_async(self):
         for i in range(0, 5):
