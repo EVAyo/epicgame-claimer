@@ -96,17 +96,15 @@ class epic_claimer:
                     with open("config.json", "w") as config_json:
                         config_json.write(json.dumps(
                             self.config, indent=4, separators=(',', ': ')))
-                self.log("Login successed.")
-                self.log("Now you can press Ctrl + P + Q to switch to the background.")
+                self.log("Login successed. Now you can press Ctrl + P + Q to switch to the background.")
                 return True
             except Exception as e:
-                self.log("{}: {}".format(e.__class__.__name__, e))
-                self.log("Login failed.")
                 if i < 4:
-                    self.log("Retrying...")
+                    self.log("{}: {} Login failed. Retrting...".format(e.__class__.__name__, e))
                     with open("config.json", "r") as config_json:
                         self.config = json.loads(config_json.read())
                 else:
+                    self.log("{}: {} Login failed.".format(e.__class__.__name__, e))
                     return False
 
     def login(self):
@@ -150,12 +148,12 @@ class epic_claimer:
                     await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
                                         options={"timeout": 120000}
                                         )
-                break
+                return
             except Exception as e:
-                self.log("{}: {}".format(e.__class__.__name__, e))
-                self.log("Claim failed.")
                 if i < 4:
-                    self.log("Retrying...")
+                    self.log("{}: {} Claim failed. Retrying...".format(e.__class__.__name__, e))
+                else:
+                    self.log("{}: {} Claim failed.".format(e.__class__.__name__, e))
 
     def claim(self):
         self.loop.run_until_complete(self.claim_async())
