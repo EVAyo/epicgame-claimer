@@ -143,7 +143,7 @@ class epic_claimer:
                             )[index]
                     await item.click()
                     await self.try_click_async("div[class*=WarningLayout__layout] Button")
-                    game_title = await self.page.title()
+                    game_title = (await self.page.title()).lstrip("《").rstrip("》")
                     if await self.try_click_async("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(1)"):
                         await self.order_async(game_title)
                     elif await self.try_click_async("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(2)"):
