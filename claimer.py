@@ -101,7 +101,7 @@ class epic_claimer:
                 return True
             except Exception as e:
                 if i < 4:
-                    self.log("{}: {} Login failed. Retrting...".format(
+                    self.log("{}: {} Login failed. Retrying...".format(
                         e.__class__.__name__, e))
                     with open("config.json", "r") as config_json:
                         self.config = json.loads(config_json.read())
