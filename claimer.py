@@ -128,25 +128,31 @@ class epic_claimer:
                 await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
                                      options={"timeout": 120000}
                                      )
-                await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > div:nth-child(2) "
+                await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > "
+                                                "div:nth-child(2) "
                                                 "div[data-component=CardGridDesktopBase]"
                                                 )
                 item_list = await self.page.querySelectorAll("div[data-component=CustomDiscoverModules] > "
-                                                             "div:nth-child(2) div[data-component=CardGridDesktopBase]"
+                                                             "div:nth-child(2) "
+                                                             "div[data-component=CardGridDesktopBase]"
                                                              )
                 for index in range(0, len(item_list)):
-                    await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > div:nth-child(2) "
+                    await self.page.waitForSelector("div[data-component=CustomDiscoverModules] > "
+                                                    "div:nth-child(2) "
                                                     "div[data-component=CardGridDesktopBase]"
                                                     )
                     item = (await self.page.querySelectorAll("div[data-component=CustomDiscoverModules] > "
-                                                             "div:nth-child(2) div[data-component=CardGridDesktopBase]")
+                                                             "div:nth-child(2) "
+                                                             "div[data-component=CardGridDesktopBase]")
                             )[index]
                     await item.click()
                     await self.try_click_async("div[class*=WarningLayout__layout] Button")
                     game_title = (await self.page.title()).lstrip("《").rstrip("》")
-                    if await self.try_click_async("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(1)"):
+                    if await self.try_click_async(
+                            "button[data-testid=purchase-cta-button]:not([disabled]):nth-child(1)"):
                         await self.order_async(game_title)
-                    elif await self.try_click_async("button[data-testid=purchase-cta-button]:not([disabled]):nth-child(2)"):
+                    elif await self.try_click_async(
+                            "button[data-testid=purchase-cta-button]:not([disabled]):nth-child(2)"):
                         await self.order_async(game_title)
                     await self.page.goto("https://www.epicgames.com/store/zh-CN/free-games",
                                          options={"timeout": 120000}
