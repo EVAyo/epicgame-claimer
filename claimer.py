@@ -29,11 +29,16 @@ class epic_claimer:
     def close(self):
         self.loop.run_until_complete(self.browser.close())
 
-    def log(self, text):
+    def log(self, text, level="message"):
         localtime = time.asctime(time.localtime(time.time()))
-        print("[{}] {}".format(localtime, text))
+        if level == "message":
+            print("[{}] {}".format(localtime, text))
+        elif level == "warning":
+            print("[{}] \033[33mWarning: {}\033[0m".format(localtime, text))
+        elif level == "error":
+            print("[{}] \033[31mError: {}\033[0m".format(localtime, text))
 
-    def retry(func_try, times, func_except=None, func_finally=None):
+    def retry(self, func_try, times, func_except=None, func_finally=None):
         for i in range(times):
             try:
                 func_try()
@@ -113,13 +118,17 @@ class epic_claimer:
                 return True
             except Exception as e:
                 if i < 4:
-                    self.log("{}: {} Login failed. Retrying...".format(
-                        e.__class__.__name__, e))
+                    self.log(
+                        "Something wrong in login({}: {}). Login failed. Retrying..."
+                        .format(e.__class__.__name__, e),
+                        level="warning")
                     with open("config.json", "r") as config_json:
                         self.config = json.loads(config_json.read())
                 else:
-                    self.log("{}: {} Login failed.".format(
-                        e.__class__.__name__, e))
+                    self.log(
+                        "Something wrong in login({}: {}). Login failed. Will retry next time."
+                        .format(e.__class__.__name__, e),
+                        level="error")
                     return False
 
     def login(self):
@@ -137,7 +146,7 @@ class epic_claimer:
                 )
                 await self.page.waitForSelector(
                     "div[class*=DownloadLogoAndTitle__header]")
-                self.log("{} claim successed.".format(title))
+                self.log("\"{}\" claim successed.".format(title))
 
     async def claim_async(self):
         for i in range(0, 5):
@@ -165,8 +174,7 @@ class epic_claimer:
                     await item.click()
                     await self.try_click_async(
                         "div[class*=WarningLayout__layout] Button")
-                    game_title = (await
-                                  self.page.title()).lstrip("《").rstrip("》")
+                    game_title = (await self.page.title()).strip("《》")
                     if await self.try_click_async(
                             "button[data-testid=purchase-cta-button]:"
                             "not([disabled]):nth-child(1)"):
@@ -181,11 +189,15 @@ class epic_claimer:
                 return
             except Exception as e:
                 if i < 4:
-                    self.log("{}: {} Claim failed. Retrying...".format(
-                        e.__class__.__name__, e))
+                    self.log(
+                        "Something wrong in claim({}: {}). Claim failed. Retrying..."
+                        .format(e.__class__.__name__, e),
+                        level="warning")
                 else:
-                    self.log("{}: {} Claim failed.".format(
-                        e.__class__.__name__, e))
+                    self.log(
+                        "Something wrong in claim({}: {}). Claim failed. Will retry next time."
+                        .format(e.__class__.__name__, e),
+                        level="error")
 
     def claim(self):
         self.loop.run_until_complete(self.claim_async())
