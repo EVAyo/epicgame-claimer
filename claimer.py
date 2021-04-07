@@ -146,7 +146,7 @@ class epic_claimer:
                 )
                 await self.page.waitForSelector(
                     "div[class*=DownloadLogoAndTitle__header]")
-                self.log("\"{}\" claim successed.".format(title))
+                self.log("\"{}\" has been claimed.".format(title))
 
     async def claim_async(self):
         for i in range(0, 5):
