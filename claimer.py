@@ -1,4 +1,5 @@
 import asyncio
+from typing import Union
 from pyppeteer import launch, launcher
 import time
 from getpass import getpass
@@ -8,7 +9,7 @@ import os
 
 
 class epic_claimer:
-    def __init__(self):
+    def __init__(self) -> None:
         self.loop = asyncio.get_event_loop()
         self.browser = self.loop.run_until_complete(
             launch(options={
@@ -26,10 +27,10 @@ class epic_claimer:
             with open("config.json", "r") as config_json:
                 self.config = json.loads(config_json.read())
 
-    def close(self):
+    def close(self) -> None:
         self.loop.run_until_complete(self.browser.close())
 
-    def log(self, text, level="message"):
+    def log(self, text: str, level: str = "message") -> None:
         localtime = time.asctime(time.localtime(time.time()))
         if level == "message":
             print("[{}] {}".format(localtime, text))
@@ -38,7 +39,11 @@ class epic_claimer:
         elif level == "error":
             print("[{}] \033[31mError: {}\033[0m".format(localtime, text))
 
-    def retry(self, func_try, times, func_except=None, func_finally=None):
+    def retry(self,
+              func_try: function,
+              times: int,
+              func_except: Union[function, None] = None,
+              func_finally: Union[function, None] = None) -> None:
         for i in range(times):
             try:
                 func_try()
@@ -48,22 +53,31 @@ class epic_claimer:
             finally:
                 func_finally()
 
-    async def type_async(self, selector, text, sleep_time=0):
+    async def type_async(self,
+                         selector: str,
+                         text: str,
+                         sleep_time: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
         time.sleep(sleep_time)
         await self.page.type(selector, text)
 
-    async def click_async(self, selector, sleep_time=2):
+    async def click_async(self,
+                          selector: str,
+                          sleep_time: Union[int, float] = 2) -> None:
         await self.page.waitForSelector(selector)
         time.sleep(sleep_time)
         await self.page.click(selector)
 
-    async def get_text_async(self, selector, property="textContent"):
+    async def get_text_async(self,
+                             selector: str,
+                             property: str = "textContent") -> str:
         await self.page.waitForSelector(selector)
         return await (await (await self.page.querySelector(selector)
                              ).getProperty(property)).jsonValue()
 
-    async def detect_async(self, selector, timeout=None):
+    async def detect_async(self,
+                           selector: str,
+                           timeout: Union[int, None] = None) -> str:
         try:
             if timeout != None:
                 await self.page.waitForSelector(selector,
@@ -74,14 +88,16 @@ class epic_claimer:
         except:
             return False
 
-    async def try_click_async(self, selector, sleep_time=2):
+    async def try_click_async(self,
+                              selector: str,
+                              sleep_time: Union[int, float] = 2) -> bool:
         if await self.detect_async(selector):
             time.sleep(sleep_time)
             await self.click_async(selector)
             return True
         return False
 
-    async def login_async(self):
+    async def login_async(self) -> bool:
         for i in range(0, 5):
             try:
                 await self.page.goto("https://www.epicgames.com/",
@@ -131,10 +147,10 @@ class epic_claimer:
                         level="error")
                     return False
 
-    def login(self):
+    def login(self) -> bool:
         return self.loop.run_until_complete(self.login_async())
 
-    async def order_async(self, title):
+    async def order_async(self, title: str) -> None:
         if await self.detect_async(
                 "#purchase-app div.navigation-element.complete"):
             if "0.00" in (await self.get_text_async(
@@ -148,7 +164,7 @@ class epic_claimer:
                     "div[class*=DownloadLogoAndTitle__header]")
                 self.log("\"{}\" has been claimed.".format(title))
 
-    async def claim_async(self):
+    async def claim_async(self) -> None:
         for i in range(0, 5):
             try:
                 await self.page.goto(
@@ -199,7 +215,7 @@ class epic_claimer:
                         .format(e.__class__.__name__, e),
                         level="error")
 
-    def claim(self):
+    def claim(self) -> None:
         self.loop.run_until_complete(self.claim_async())
 
 
