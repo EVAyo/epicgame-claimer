@@ -134,17 +134,17 @@ class epic_claimer:
                 return True
             except Exception as e:
                 if i < 4:
-                    self.log(
-                        "Something wrong in login({}: {}). Login failed. Retrying..."
-                        .format(e.__class__.__name__, e),
-                        level="warning")
+                    self.log("Something wrong in login({}: {}). "
+                             "Login failed. Retrying...".format(
+                                 e.__class__.__name__, e),
+                             level="warning")
                     with open("config.json", "r") as config_json:
                         self.config = json.loads(config_json.read())
                 else:
-                    self.log(
-                        "Something wrong in login({}: {}). Login failed. Will retry next time."
-                        .format(e.__class__.__name__, e),
-                        level="error")
+                    self.log("Something wrong in login({}: {}). "
+                             "Login failed. Will retry next time.".format(
+                                 e.__class__.__name__, e),
+                             level="error")
                     return False
 
     def login(self) -> bool:
@@ -205,15 +205,15 @@ class epic_claimer:
                 return
             except Exception as e:
                 if i < 4:
-                    self.log(
-                        "Something wrong in claim({}: {}). Claim failed. Retrying..."
-                        .format(e.__class__.__name__, e),
-                        level="warning")
+                    self.log("Something wrong in claim({}: {}). "
+                             "Claim failed. Retrying...".format(
+                                 e.__class__.__name__, e),
+                             level="warning")
                 else:
-                    self.log(
-                        "Something wrong in claim({}: {}). Claim failed. Will retry next time."
-                        .format(e.__class__.__name__, e),
-                        level="error")
+                    self.log("Something wrong in claim({}: {}). "
+                             "Claim failed. Will retry next time.".format(
+                                 e.__class__.__name__, e),
+                             level="error")
 
     def claim(self) -> None:
         self.loop.run_until_complete(self.claim_async())
