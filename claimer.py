@@ -1,8 +1,9 @@
 import asyncio
-from typing import Union
+from typing import List, Union
 from pyppeteer import launch, launcher
 import time
 from getpass import getpass
+from pyppeteer.element_handle import ElementHandle
 import schedule
 import json
 import os
@@ -40,10 +41,10 @@ class epicgames_claimer:
             print("[{}] \033[31mError: {}\033[0m".format(localtime, text))
 
     def retry(self,
-              func_try: function,
+              func_try: callable,
               times: int,
-              func_except: Union[function, None] = None,
-              func_finally: Union[function, None] = None) -> None:
+              func_except: Union[callable, None] = None,
+              func_finally: Union[callable, None] = None) -> None:
         for i in range(times):
             try:
                 func_try()
@@ -68,12 +69,46 @@ class epicgames_claimer:
         time.sleep(sleep_time)
         await self.page.click(selector)
 
-    async def get_text_async(self,
-                             selector: str,
-                             property: str = "textContent") -> str:
+    async def get_text_async(self, selector: str) -> str:
         await self.page.waitForSelector(selector)
         return await (await (await self.page.querySelector(selector)
-                             ).getProperty(property)).jsonValue()
+                             ).getProperty("textContent")).jsonValue()
+
+    async def get_texts_async(self, selector: str) -> List[str]:
+        texts = []
+        try:
+            await self.page.waitForSelector(selector)
+            for element in await self.page.querySelectorAll(selector):
+                texts.append(await
+                             (await
+                              element.getProperty("textContent")).jsonValue())
+        except:
+            pass
+        return texts
+
+    async def get_element_text_async(self, element: ElementHandle) -> str:
+        return await (await element.getProperty("textContent")).jsonValue()
+
+    async def get_property_async(self, selector: str, property: str) -> str:
+        await self.page.waitForSelector(selector)
+        return await self.page.evaluate(
+            "document.querySelector('{}').getAttribute('{}')".format(
+                selector, property))
+
+    async def get_links_async(self, selector: str, filter_selector: str,
+                              filter_value: str) -> List[str]:
+        links = []
+        try:
+            await self.page.waitForSelector(selector)
+            elements = await self.page.querySelectorAll(selector)
+            judgement_texts = await self.get_texts_async(filter_selector)
+        except:
+            pass
+        for element, judgement_text in zip(elements, judgement_texts):
+            if judgement_text == filter_value:
+                link = await (await element.getProperty("href")).jsonValue()
+                links.append(link)
+        return links
 
     async def detect_async(self,
                            selector: str,
@@ -97,14 +132,34 @@ class epicgames_claimer:
             return True
         return False
 
+    async def get_elements_async(
+            self, selector: str) -> Union[List[ElementHandle], None]:
+        try:
+            await self.page.waitForSelector(selector)
+            return await self.page.querySelectorAll(selector)
+        except:
+            return None
+
+    async def wait_for_element_text_change_async(self,
+                                                 element: ElementHandle,
+                                                 text: str,
+                                                 timeout: int = 30) -> None:
+        if await self.get_element_text_async(element) != text:
+            return
+        for i in range(timeout):
+            time.sleep(1)
+            if await self.get_element_text_async(element) != text:
+                return
+        raise TimeoutError(
+            "Waiting for element \"{}\" text content change failed: timeout {}s exceeds"
+            .format(element, timeout))
+
     async def login_async(self) -> bool:
         for i in range(0, 5):
             try:
-                await self.page.goto("https://www.epicgames.com/",
-                                     options={"timeout": 120000})
-                if (await self.get_text_async(
-                        "#user > ul > li > a",
-                        "href")) != "https://www.epicgames.com/login":
+                await self.page.goto("https://www.epicgames.com/store/en-US/")
+                if (await self.get_property_async(
+                        "#user", "data-component")) == "SignedIn":
                     return True
                 await self.click_async("#user")
                 await self.click_async("#login-with-epic")
@@ -116,10 +171,10 @@ class epicgames_claimer:
                     config_changed = True
                 await self.type_async("#email", self.config["email"])
                 await self.type_async("#password", self.config["password"])
-                await self.click_async("#sign-in[tabindex=\"0\"]")
+                await self.click_async("#sign-in[tabindex='0']")
                 if await self.detect_async("#code"):
                     await self.type_async("#code", input("2FA code: "))
-                    await self.click_async("#continue[tabindex=\"0\"]")
+                    await self.click_async("#continue[tabindex='0']")
                 await self.page.waitForSelector("#user")
                 if config_changed == True:
                     with open("config.json", "w") as config_json:
@@ -146,58 +201,40 @@ class epicgames_claimer:
     def login(self) -> bool:
         return self.loop.run_until_complete(self.login_async())
 
-    async def order_async(self, title: str) -> None:
-        if await self.detect_async(
-                "#purchase-app div.navigation-element.complete"):
-            if "0.00" in (await self.get_text_async(
-                    "#purchase-app div.price-row-container.total")):
-                await self.click_async(
-                    "#purchase-app > div > div.order-summary-container "
-                    "> div.order-summary-card > div.order-summary-card-inner "
-                    "> div.order-summary-content > div > div > button:not([disabled])"
-                )
-                await self.page.waitForSelector(
-                    "div[class*=DownloadLogoAndTitle__header]")
-                self.log("\"{}\" has been claimed.".format(title))
-
     async def claim_async(self) -> None:
         for i in range(0, 5):
             try:
                 await self.page.goto(
-                    "https://www.epicgames.com/store/zh-CN/free-games",
-                    options={"timeout": 120000})
-                await self.page.waitForSelector(
+                    "https://www.epicgames.com/store/en-US/free-games")
+                freegame_links = await self.get_links_async(
                     "div[data-component=CustomDiscoverModules] > "
                     "div:nth-child(2) "
-                    "div[data-component=CardGridDesktopBase]")
-                item_list = await self.page.querySelectorAll(
+                    "div[data-component=CardGridDesktopBase] a",
+                    filter_selector=
                     "div[data-component=CustomDiscoverModules] > "
                     "div:nth-child(2) "
-                    "div[data-component=CardGridDesktopBase]")
-                for index in range(0, len(item_list)):
-                    await self.page.waitForSelector(
-                        "div[data-component=CustomDiscoverModules] > "
-                        "div:nth-child(2) "
-                        "div[data-component=CardGridDesktopBase]")
-                    item = (await self.page.querySelectorAll(
-                        "div[data-component=CustomDiscoverModules] > "
-                        "div:nth-child(2) "
-                        "div[data-component=CardGridDesktopBase]"))[index]
-                    await item.click()
+                    "div[data-component=CardGridDesktopBase] span",
+                    filter_value="Free Now")
+                for link in freegame_links:
+                    await self.page.goto(link)
                     await self.try_click_async(
                         "div[class*=WarningLayout__layout] Button")
-                    game_title = (await self.page.title()).strip("《》")
-                    if await self.try_click_async(
-                            "button[data-testid=purchase-cta-button]:"
-                            "not([disabled]):nth-child(1)"):
-                        await self.order_async(game_title)
-                    elif await self.try_click_async(
-                            "button[data-testid=purchase-cta-button]:"
-                            "not([disabled]):nth-child(2)"):
-                        await self.order_async(game_title)
-                    await self.page.goto(
-                        "https://www.epicgames.com/store/zh-CN/free-games",
-                        options={"timeout": 120000})
+                    game_title = (await self.page.title())
+                    get_buttons = await self.get_elements_async(
+                        "button[data-testid=purchase-cta-button]")
+                    for get_button in get_buttons:
+                        await self.wait_for_element_text_change_async(
+                            get_button, "Loading")
+                        if await self.get_element_text_async(get_button
+                                                             ) == "Get":
+                            await get_button.click()
+                            await self.click_async(
+                                "#purchase-app div.order-summary-content button:not([disabled])"
+                            )
+                            await self.page.waitForSelector(
+                                "div[class*=DownloadLogoAndTitle__header]")
+                            self.log(
+                                "\"{}\" has been claimed.".format(game_title))
                 return
             except Exception as e:
                 if i < 4:
