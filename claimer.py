@@ -8,7 +8,7 @@ import json
 import os
 
 
-class epic_claimer:
+class epicgames_claimer:
     def __init__(self) -> None:
         self.loop = asyncio.get_event_loop()
         self.browser = self.loop.run_until_complete(
@@ -134,17 +134,13 @@ class epic_claimer:
                 return True
             except Exception as e:
                 if i < 4:
-                    self.log("Something wrong in login({}: {}). "
-                             "Login failed. Retrying...".format(
-                                 e.__class__.__name__, e),
-                             level="warning")
+                    self.log("{}.".format(e), level="warning")
                     with open("config.json", "r") as config_json:
                         self.config = json.loads(config_json.read())
                 else:
-                    self.log("Something wrong in login({}: {}). "
-                             "Login failed. Will retry next time.".format(
-                                 e.__class__.__name__, e),
-                             level="error")
+                    self.log(
+                        "{}. Login failed. Will retry next time.".format(e),
+                        level="error")
                     return False
 
     def login(self) -> bool:
@@ -205,15 +201,11 @@ class epic_claimer:
                 return
             except Exception as e:
                 if i < 4:
-                    self.log("Something wrong in claim({}: {}). "
-                             "Claim failed. Retrying...".format(
-                                 e.__class__.__name__, e),
-                             level="warning")
+                    self.log("{}.".format(e), level="warning")
                 else:
-                    self.log("Something wrong in claim({}: {}). "
-                             "Claim failed. Will retry next time.".format(
-                                 e.__class__.__name__, e),
-                             level="error")
+                    self.log(
+                        "{}. Claim failed. Will retry next time.".format(e),
+                        level="error")
 
     def claim(self) -> None:
         self.loop.run_until_complete(self.claim_async())
@@ -223,7 +215,7 @@ if __name__ == "__main__":
     launcher.DEFAULT_ARGS.remove("--enable-automation")
 
     def claimer_job():
-        claimer = epic_claimer()
+        claimer = epicgames_claimer()
         if claimer.login():
             claimer.claim()
         claimer.close()
