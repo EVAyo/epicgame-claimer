@@ -157,7 +157,8 @@ class epicgames_claimer:
     async def login_async(self) -> bool:
         for i in range(0, 5):
             try:
-                await self.page.goto("https://www.epicgames.com/store/en-US/")
+                await self.page.goto("https://www.epicgames.com/store/en-US/",
+                                     options={"timeout": 120000})
                 if (await self.get_property_async(
                         "#user", "data-component")) == "SignedIn":
                     return True
@@ -189,7 +190,7 @@ class epicgames_claimer:
                 return True
             except Exception as e:
                 if i < 4:
-                    self.log("{}.".format(e), level="warning")
+                    self.log("{}.".format(str(e).rstrip(".")), level="warning")
                     with open("config.json", "r") as config_json:
                         self.config = json.loads(config_json.read())
                 else:
@@ -205,7 +206,8 @@ class epicgames_claimer:
         for i in range(0, 5):
             try:
                 await self.page.goto(
-                    "https://www.epicgames.com/store/en-US/free-games")
+                    "https://www.epicgames.com/store/en-US/free-games",
+                    options={"timeout": 120000})
                 freegame_links = await self.get_links_async(
                     "div[data-component=CustomDiscoverModules] > "
                     "div:nth-child(2) "
@@ -216,7 +218,7 @@ class epicgames_claimer:
                     "div[data-component=CardGridDesktopBase] span",
                     filter_value="Free Now")
                 for link in freegame_links:
-                    await self.page.goto(link)
+                    await self.page.goto(link, options={"timeout": 120000})
                     await self.try_click_async(
                         "div[class*=WarningLayout__layout] Button")
                     game_title = (await self.page.title())
@@ -238,7 +240,7 @@ class epicgames_claimer:
                 return
             except Exception as e:
                 if i < 4:
-                    self.log("{}.".format(e), level="warning")
+                    self.log("{}.".format(str(e).rstrip(".")), level="warning")
                 else:
                     self.log(
                         "{}. Claim failed. Will retry next time.".format(e),
