@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.tasks import sleep
 from typing import List, Union
 from pyppeteer import launch, launcher
 import time
@@ -59,14 +60,14 @@ class epicgames_claimer:
                          text: str,
                          sleep_time: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
-        time.sleep(sleep_time)
+        await asyncio.sleep(sleep_time)
         await self.page.type(selector, text)
 
     async def click_async(self,
                           selector: str,
                           sleep_time: Union[int, float] = 2) -> None:
         await self.page.waitForSelector(selector)
-        time.sleep(sleep_time)
+        await asyncio.sleep(sleep_time)
         await self.page.click(selector)
 
     async def get_text_async(self, selector: str) -> str:
@@ -126,11 +127,12 @@ class epicgames_claimer:
     async def try_click_async(self,
                               selector: str,
                               sleep_time: Union[int, float] = 2) -> bool:
-        if await self.detect_async(selector):
-            time.sleep(sleep_time)
-            await self.click_async(selector)
+        try:
+            await asyncio.sleep(sleep_time)
+            await self.page.click(selector)
             return True
-        return False
+        except:
+            return False
 
     async def get_elements_async(
             self, selector: str) -> Union[List[ElementHandle], None]:
@@ -147,7 +149,7 @@ class epicgames_claimer:
         if await self.get_element_text_async(element) != text:
             return
         for i in range(timeout):
-            time.sleep(1)
+            await asyncio.sleep(1)
             if await self.get_element_text_async(element) != text:
                 return
         raise TimeoutError(
