@@ -233,7 +233,7 @@ class epicgames_claimer_multiaccount():
             accounts_num = self.input_int_until_success("Number of accounts: ")
             self.add_accounts(accounts_num)
             self.log(
-                "Hold Esc can add more accounts When the process is idle.")
+                "Hold Esc to add more accounts When the process is idle.")
         self.user_datas = os.listdir("User Data")
 
     def log(self, text: str, level: str = "message") -> None:
