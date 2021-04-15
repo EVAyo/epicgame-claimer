@@ -164,10 +164,7 @@ class epicgames_claimer:
                     await self.type_async("#code", input("2FA code: "))
                     await self.click_async("#continue[tabindex='0']")
                 await self.page.waitForSelector("#user")
-                self.log(
-                    "Login successed. "
-                    "Now you can press Ctrl + P + Q to switch to the background."
-                )
+                self.log("Login successed.")
                 return True
             except Exception as e:
                 if i < 4:
