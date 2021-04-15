@@ -5,6 +5,8 @@ import time
 from getpass import getpass
 from pyppeteer.element_handle import ElementHandle
 import schedule
+import os
+import keyboard
 
 
 class epicgames_claimer:
@@ -227,18 +229,64 @@ class epicgames_claimer:
         self.loop.run_until_complete(self.claim_async())
 
 
-if __name__ == "__main__":
-    launcher.DEFAULT_ARGS.remove("--enable-automation")
+class epicgames_claimer_multiaccount():
+    def __init__(self) -> None:
+        launcher.DEFAULT_ARGS.remove("--enable-automation")
+        if len(os.listdir("User Data")) == 0:
+            accounts_num = self.input_int_until_success("Number of accounts: ")
+            self.add_accounts(accounts_num)
+            self.log(
+                "Hold Esc can add more accounts When the process is idle.")
+        self.user_datas = os.listdir("User Data")
 
-    def claimer_job():
-        claimer = epicgames_claimer()
-        if claimer.login():
+    def log(self, text: str, level: str = "message") -> None:
+        localtime = time.asctime(time.localtime(time.time()))
+        if level == "message":
+            print("[{}] {}".format(localtime, text))
+        elif level == "warning":
+            print("[{}] \033[33mWarning: {}\033[0m".format(localtime, text))
+        elif level == "error":
+            print("[{}] \033[31mError: {}\033[0m".format(localtime, text))
+
+    def input_int_until_success(self, message: str) -> int:
+        while True:
+            try:
+                return int(input(message))
+            except ValueError:
+                pass
+
+    def add_accounts(self, accounts_num: int) -> None:
+        user_index = 1
+        for _ in range(accounts_num):
+            while True:
+                try:
+                    os.mkdir("User Data/{}".format(user_index))
+                    break
+                except FileExistsError:
+                    user_index += 1
+            claimer = epicgames_claimer("User Data/{}".format(user_index))
+            claimer.login()
+            claimer.close()
+        self.user_datas = os.listdir("User Data")
+
+    def claim(self) -> None:
+        for data in self.user_datas:
+            claimer = epicgames_claimer("User Data/" + data)
             claimer.claim()
-        claimer.close()
+            claimer.close()
 
-    claimer_job()
+    def run(self) -> None:
+        schedule.every().day.at("09:00").do(self.claim)
+        while True:
+            schedule.run_pending()
+            if keyboard.is_pressed("esc"):
+                accounts_num = self.input_int_until_success(
+                    "Number of accounts: ")
+                self.add_accounts(accounts_num)
+            time.sleep(1)
 
-    schedule.every().day.at("09:00").do(claimer_job)
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+
+if __name__ == "__main__":
+    claimer = epicgames_claimer_multiaccount()
+    claimer.claim()
+    claimer.run()
