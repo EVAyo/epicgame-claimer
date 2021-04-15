@@ -1,33 +1,22 @@
 import asyncio
-from asyncio.tasks import sleep
 from typing import List, Union
 from pyppeteer import launch, launcher
 import time
 from getpass import getpass
 from pyppeteer.element_handle import ElementHandle
 import schedule
-import json
-import os
 
 
 class epicgames_claimer:
-    def __init__(self) -> None:
+    def __init__(self, data_dir: str = "User Data/Default") -> None:
         self.loop = asyncio.get_event_loop()
         self.browser = self.loop.run_until_complete(
             launch(options={
                 "args": ["--no-sandbox"],
                 "headless": False
             },
-                   userDataDir="userdata"))
+                   userDataDir=data_dir))
         self.page = self.loop.run_until_complete(self.browser.pages())[0]
-        if not os.path.exists("config.json"):
-            with open("config.json", "w") as config_json:
-                self.config = {"email": None, "password": None}
-                config_json.write(
-                    json.dumps(self.config, indent=4, separators=(',', ': ')))
-        else:
-            with open("config.json", "r") as config_json:
-                self.config = json.loads(config_json.read())
 
     def close(self) -> None:
         self.loop.run_until_complete(self.browser.close())
@@ -166,25 +155,13 @@ class epicgames_claimer:
                     return True
                 await self.click_async("#user")
                 await self.click_async("#login-with-epic")
-                config_changed = False
-                if self.config["email"] == None or self.config[
-                        "password"] == None:
-                    self.config["email"] = input("Email: ")
-                    self.config["password"] = getpass("Password: ")
-                    config_changed = True
-                await self.type_async("#email", self.config["email"])
-                await self.type_async("#password", self.config["password"])
+                await self.type_async("#email", input("Email: "))
+                await self.type_async("#password", getpass("Password: "))
                 await self.click_async("#sign-in[tabindex='0']")
                 if await self.detect_async("#code"):
                     await self.type_async("#code", input("2FA code: "))
                     await self.click_async("#continue[tabindex='0']")
                 await self.page.waitForSelector("#user")
-                if config_changed == True:
-                    with open("config.json", "w") as config_json:
-                        config_json.write(
-                            json.dumps(self.config,
-                                       indent=4,
-                                       separators=(',', ': ')))
                 self.log(
                     "Login successed. "
                     "Now you can press Ctrl + P + Q to switch to the background."
@@ -193,8 +170,6 @@ class epicgames_claimer:
             except Exception as e:
                 if i < 4:
                     self.log("{}.".format(str(e).rstrip(".")), level="warning")
-                    with open("config.json", "r") as config_json:
-                        self.config = json.loads(config_json.read())
                 else:
                     self.log(
                         "{}. Login failed. Will retry next time.".format(e),
