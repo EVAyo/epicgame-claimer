@@ -190,8 +190,8 @@ class epicgames_claimer:
                     "div[data-component=CardGridDesktopBase] a",
                     filter_selector=
                     "div[data-component=CustomDiscoverModules] > "
-                    "div:nth-child(2) "
-                    "div[data-component=CardGridDesktopBase] span",
+                    "div:nth-child(2) div[data-component=CardGridDesktopBase] "
+                    "div[data-component=StatusBar] span",
                     filter_value="Free Now")
                 for link in freegame_links:
                     await self.page.goto(link, options={"timeout": 120000})
