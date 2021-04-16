@@ -182,9 +182,9 @@ class epicgames_claimer:
 
     async def login_noretry_async(self, email: str = None) -> bool:
         await self.page.goto("https://www.epicgames.com/store/en-US/",
-                                options={"timeout": 120000})
-        if (await self.get_property_async(
-                "#user", "data-component")) == "SignedIn":
+                             options={"timeout": 120000})
+        if (await self.get_property_async("#user",
+                                          "data-component")) == "SignedIn":
             return
         await self.click_async("#user")
         await self.click_async("#login-with-epic")
@@ -235,8 +235,8 @@ class epicgames_claimer:
                             )
                             await self.page.waitForSelector(
                                 "div[class*=DownloadLogoAndTitle__header]")
-                            self.log(
-                                "\"{}\": \"{}\" has been claimed.".format(email, game_title))
+                            self.log("\"{}\": \"{}\" has been claimed.".format(
+                                email, game_title))
                 return
             except Exception as e:
                 if i < 4:
@@ -263,12 +263,10 @@ class epicgames_claimer_multiaccount():
                 pass
         else:
             while True:
-                print(
-                    "1. Add an account\n"
-                    "2. Remove an account\n"
-                    "3. Run Process"
-                )
-                choice = input ("Your choice: ")
+                print("1. Add an account\n"
+                      "2. Remove an account\n"
+                      "3. Run Process")
+                choice = input("Your choice: ")
                 if choice == "1":
                     self.add_account()
                 elif choice == "2":
@@ -304,7 +302,7 @@ class epicgames_claimer_multiaccount():
                     pass
             self.log("\"{}\" login failed. ({})".format(email, e))
             return False
-    
+
     def remove_account(self) -> bool:
         try:
             print(self.user_datas)
