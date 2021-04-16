@@ -7,7 +7,6 @@ from pyppeteer.element_handle import ElementHandle
 import schedule
 import os
 import shutil
-import keyboard
 
 
 class epicgames_claimer:
@@ -285,13 +284,6 @@ class epicgames_claimer_multiaccount():
             print("[{}] \033[33mWarning: {}\033[0m".format(localtime, text))
         elif level == "error":
             print("[{}] \033[31mError: {}\033[0m".format(localtime, text))
-
-    def input_int_until_success(self, message: str) -> int:
-        while True:
-            try:
-                return int(input(message))
-            except ValueError:
-                pass
 
     def add_account(self) -> bool:
         try:
