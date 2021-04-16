@@ -6,6 +6,7 @@ from getpass import getpass
 from pyppeteer.element_handle import ElementHandle
 import schedule
 import os
+import shutil
 import keyboard
 
 
@@ -147,7 +148,7 @@ class epicgames_claimer:
             "Waiting for element \"{}\" text content change failed: timeout {}s exceeds"
             .format(element, timeout))
 
-    async def login_async(self) -> bool:
+    async def login_async(self, email: str = None) -> bool:
         for i in range(0, 5):
             try:
                 await self.page.goto("https://www.epicgames.com/store/en-US/",
@@ -157,7 +158,9 @@ class epicgames_claimer:
                     return True
                 await self.click_async("#user")
                 await self.click_async("#login-with-epic")
-                await self.type_async("#email", input("Email: "))
+                if email == None:
+                    email = input("Email: ")
+                await self.type_async("#email", email)
                 await self.type_async("#password", getpass("Password: "))
                 await self.click_async("#sign-in[tabindex='0']")
                 if await self.detect_async("#code"):
@@ -175,10 +178,32 @@ class epicgames_claimer:
                         level="error")
                     return False
 
-    def login(self) -> bool:
-        return self.loop.run_until_complete(self.login_async())
+    def login(self, email: str = None) -> bool:
+        return self.loop.run_until_complete(self.login_async(email))
 
-    async def claim_async(self) -> None:
+    async def login_noretry_async(self, email: str = None) -> bool:
+        await self.page.goto("https://www.epicgames.com/store/en-US/",
+                                options={"timeout": 120000})
+        if (await self.get_property_async(
+                "#user", "data-component")) == "SignedIn":
+            return
+        await self.click_async("#user")
+        await self.click_async("#login-with-epic")
+        if email == None:
+            email = input("Email: ")
+        await self.type_async("#email", email)
+        await self.type_async("#password", getpass("Password: "))
+        await self.click_async("#sign-in[tabindex='0']")
+        if await self.detect_async("#code"):
+            await self.type_async("#code", input("2FA code: "))
+            await self.click_async("#continue[tabindex='0']")
+        await self.page.waitForSelector("#user")
+        self.log("Login successed.")
+
+    def login_noretry(self, email: str = None) -> bool:
+        return self.loop.run_until_complete(self.login_noretry_async(email))
+
+    async def claim_async(self, email: str = None) -> None:
         for i in range(0, 5):
             try:
                 await self.page.goto(
@@ -212,7 +237,7 @@ class epicgames_claimer:
                             await self.page.waitForSelector(
                                 "div[class*=DownloadLogoAndTitle__header]")
                             self.log(
-                                "\"{}\" has been claimed.".format(game_title))
+                                "\"{}\": \"{}\" has been claimed.".format(email, game_title))
                 return
             except Exception as e:
                 if i < 4:
@@ -222,23 +247,35 @@ class epicgames_claimer:
                         "{}. Claim failed. Will retry next time.".format(e),
                         level="error")
 
-    def claim(self) -> None:
-        self.loop.run_until_complete(self.claim_async())
+    def claim(self, email: str = None) -> None:
+        self.loop.run_until_complete(self.claim_async(email))
 
 
 class epicgames_claimer_multiaccount():
     def __init__(self) -> None:
         launcher.DEFAULT_ARGS.remove("--enable-automation")
-        if len(os.listdir("User Data")) == 0:
-            accounts_num = self.input_int_until_success("Number of accounts: ")
-            self.add_accounts(accounts_num)
-            self.log(
-                "Hold Esc to add more accounts When the process is idle.")
         try:
             os.mkdir("User Data")
         except:
             pass
         self.user_datas = os.listdir("User Data")
+        if len(self.user_datas) == 0:
+            while not self.add_account():
+                pass
+        else:
+            while True:
+                print(
+                    "1. Add an account\n"
+                    "2. Remove an account\n"
+                    "3. Run Process"
+                )
+                choice = input ("Your choice: ")
+                if choice == "1":
+                    self.add_account()
+                elif choice == "2":
+                    self.remove_account()
+                elif choice == "3":
+                    break
 
     def log(self, text: str, level: str = "message") -> None:
         localtime = time.asctime(time.localtime(time.time()))
@@ -256,34 +293,46 @@ class epicgames_claimer_multiaccount():
             except ValueError:
                 pass
 
-    def add_accounts(self, accounts_num: int) -> None:
-        user_index = 1
-        for _ in range(accounts_num):
+    def add_account(self) -> bool:
+        try:
+            email = input("Email: ")
+            claimer = epicgames_claimer("User Data/{}".format(email))
+            claimer.login_noretry(email)
+            claimer.close()
+            self.user_datas.append(email)
+            return True
+        except Exception as e:
+            claimer.close()
             while True:
                 try:
-                    os.mkdir("User Data/{}".format(user_index))
+                    time.sleep(1)
+                    shutil.rmtree("User Data/{}".format(email))
                     break
-                except FileExistsError:
-                    user_index += 1
-            claimer = epicgames_claimer("User Data/{}".format(user_index))
-            claimer.login()
-            claimer.close()
-        self.user_datas = os.listdir("User Data")
+                except:
+                    pass
+            self.log("\"{}\" login failed. ({})".format(email, e))
+            return False
+    
+    def remove_account(self) -> bool:
+        try:
+            print(self.user_datas)
+            email = input("which account you want to remove: ")
+            shutil.rmtree("User Data/{}".format(email))
+            self.user_datas.remove(email)
+            return True
+        except:
+            return False
 
     def claim(self) -> None:
-        for data in self.user_datas:
-            claimer = epicgames_claimer("User Data/" + data)
-            claimer.claim()
+        for user in self.user_datas:
+            claimer = epicgames_claimer("User Data/" + user)
+            claimer.claim(user)
             claimer.close()
 
     def run(self) -> None:
         schedule.every().day.at("09:00").do(self.claim)
         while True:
             schedule.run_pending()
-            if keyboard.is_pressed("esc"):
-                accounts_num = self.input_int_until_success(
-                    "Number of accounts: ")
-                self.add_accounts(accounts_num)
             time.sleep(1)
 
 
