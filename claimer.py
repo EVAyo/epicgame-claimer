@@ -265,13 +265,16 @@ class epicgames_claimer_multiaccount():
             while True:
                 print("1. Add an account\n"
                       "2. Remove an account\n"
-                      "3. Run Process")
+                      "3. List all accounts\n"
+                      "4. Run the process")
                 choice = input("Your choice: ")
                 if choice == "1":
                     self.add_account()
                 elif choice == "2":
                     self.remove_account()
                 elif choice == "3":
+                    print(self.user_datas)
+                elif choice == "4":
                     break
 
     def log(self, text: str, level: str = "message") -> None:
@@ -309,8 +312,10 @@ class epicgames_claimer_multiaccount():
             email = input("which account you want to remove: ")
             shutil.rmtree("User Data/{}".format(email))
             self.user_datas.remove(email)
+            self.log("\"{}\" remove successed.".format(email))
             return True
-        except:
+        except Exception as e:
+            self.log("\"{}\" remove failed. ({})".format(email, e))
             return False
 
     def claim(self) -> None:
