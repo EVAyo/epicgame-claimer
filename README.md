@@ -40,5 +40,5 @@ python claimer.py
 
 ## Buy me a coffee
 
-* [支付宝](.github/images/1619099359663.jpg)
-* [微信](.github/images/1619109082376.png)
+* [支付宝](Assets/Images/1619099359663.jpg)
+* [微信](Assets/Images/1619109082376.png)
