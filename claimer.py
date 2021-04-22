@@ -178,8 +178,14 @@ class epicgames_claimer_manager():
             pass
         self.user_datas = os.listdir("User Data")
         if len(self.user_datas) == 0:
-            while not self.add_account():
-                pass
+            while True:
+                try:
+                    email = input("Email: ")
+                    self.add_account(email)
+                    log("{} has been added.".format(e))
+                    break
+                except Exception as e:
+                    log("{} add failed. ({})".format(email, e))
         else:
             self.choose_option()
 
@@ -223,16 +229,16 @@ class epicgames_claimer_manager():
                 try:
                     email = input("Email: ")
                     self.add_account(email)
-                    log("\"{}\" has been added.")
+                    log("{} has been added.".format(email))
                 except Exception as e:
-                    log("\"{}\" add failed. ({})".format(email, e))
+                    log("{} add failed. ({})".format(email, e))
             elif choice == "2":
                 try:
                     email = input("which account you want to remove: ")
                     self.remove_account()
-                    log("\"{}\" remove successed.".format(email))
+                    log("{} remove successed.".format(email))
                 except Exception as e:
-                    log("\"{}\" remove failed. ({})".format(email, e))
+                    log("{} remove failed. ({})".format(email, e))
             elif choice == "3":
                 print(self.user_datas)
             elif choice == "4":
