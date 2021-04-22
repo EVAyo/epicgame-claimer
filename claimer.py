@@ -112,18 +112,16 @@ class epicgames_claimer:
     async def login_async(self, email: str) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
-        await self.page.goto("https://www.epicgames.com/store/en-US/", options={"timeout": 120000})
-        if (await self.get_property_async("#user", "data-component")) == "SignedIn":
-            return
-        await self.click_async("#user")
-        await self.click_async("#login-with-epic")
-        await self.type_async("#email", email)
-        await self.type_async("#password", getpass("Password: "))
-        await self.click_async("#sign-in[tabindex='0']")
-        if await self.detect_async("#code"):
-            await self.type_async("#code", input("2FA code: "))
-            await self.click_async("#continue[tabindex='0']")
-        await self.page.waitForSelector("#user")
+        if not self.is_loggedin():
+            await self.click_async("#user")
+            await self.click_async("#login-with-epic")
+            await self.type_async("#email", email)
+            await self.type_async("#password", getpass("Password: "))
+            await self.click_async("#sign-in[tabindex='0']")
+            if await self.detect_async("#code"):
+                await self.type_async("#code", input("2FA code: "))
+                await self.click_async("#continue[tabindex='0']")
+            await self.page.waitForSelector("#user")
 
     def login(self, email: str) -> None:
         return self.loop.run_until_complete(self.login_async(email))
@@ -151,7 +149,7 @@ class epicgames_claimer:
                 for link in freegame_links:
                     await self.page.goto(link, options={"timeout": 120000})
                     await self.try_click_async("div[class*=WarningLayout__layout] Button")
-                    game_title = (await self.page.title())
+                    game_title = await self.page.title()
                     get_buttons = await self.get_elements_async("button[data-testid=purchase-cta-button]")
                     for get_button in get_buttons:
                         await self.wait_for_element_text_change_async(get_button, "Loading")
@@ -190,7 +188,7 @@ class epicgames_claimer_manager():
             self.choose_option()
 
     def add_account(self, email: str) -> None:
-        if email == "":
+        if email == None or email == "":
             raise ValueError("Email cant't be null.")
         claimer = epicgames_claimer("User Data/{}".format(email))
         claimer.login(email)
@@ -198,7 +196,7 @@ class epicgames_claimer_manager():
         self.user_datas.append(email)
 
     def remove_account(self, email: str) -> None:
-        if email == None:
+        if email == None or email == "":
             raise ValueError("Email can't be null.")
         shutil.rmtree("User Data/{}".format(email))
         self.user_datas.remove(email)
