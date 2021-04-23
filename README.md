@@ -1,6 +1,6 @@
 # Epicgames Claimer
 
-自动领取Epic Games上的每周免费游戏。支持多账户。脚本会在每天上午9:00自动检查并领取免费游戏。
+自动领取[Epic Games每周免费游戏](https://www.epicgames.com/store/free-games)。支持多账户。脚本会在每天上午9:00自动检查并领取免费游戏。
 
 ## Getting started
 
