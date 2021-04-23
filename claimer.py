@@ -1,12 +1,15 @@
 import asyncio
-from typing import List, Union
-from pyppeteer import launch, launcher
-import time
-from getpass import getpass
-from pyppeteer.element_handle import ElementHandle
-import schedule
+from copy import Error
 import os
 import shutil
+import time
+from getpass import getpass
+from typing import List, Union
+
+import func_timeout
+import schedule
+from pyppeteer import launch, launcher
+from pyppeteer.element_handle import ElementHandle
 
 
 def log(text: str, level: str = "message") -> None:
@@ -180,12 +183,16 @@ class epicgames_claimer_manager():
                 try:
                     email = input("Email: ")
                     self.add_account(email)
-                    log("{} has been added.".format(e))
+                    log("{} has been added.".format(email))
                     break
                 except Exception as e:
                     log("{} add failed. ({})".format(email, e))
         else:
-            self.choose_option()
+            try:
+                while not self.choose_option():
+                    pass
+            except func_timeout.exceptions.FunctionTimedOut:
+                print()
 
     def add_account(self, email: str) -> None:
         if email == None or email == "":
@@ -216,32 +223,34 @@ class epicgames_claimer_manager():
             else:
                 claimer.close()
 
-    def choose_option(self) -> None:
-        while True:
-            print("1. Add an account\n"
-                  "2. Remove an account\n"
-                  "3. List all accounts\n"
-                  "4. Run the process")
-            choice = input("Your choice: ")
-            if choice == "1":
-                try:
-                    email = input("Email: ")
-                    self.add_account(email)
-                    log("{} has been added.".format(email))
-                except Exception as e:
-                    log("{} add failed. ({})".format(email, e))
-            elif choice == "2":
-                try:
-                    email = input("which account you want to remove: ")
-                    self.remove_account()
-                    log("{} remove successed.".format(email))
-                except Exception as e:
-                    log("{} remove failed. ({})".format(email, e))
-            elif choice == "3":
-                print(self.user_datas)
-            elif choice == "4":
-                break
-            print()
+    @func_timeout.func_set_timeout(600)
+    def choose_option(self) -> bool:
+        print("1. Add an account\n"
+              "2. Remove an account\n"
+              "3. List all accounts\n"
+              "4. Run the process")
+        choice = input("Your choice: ")
+        if choice == "1":
+            try:
+                email = input("Email: ")
+                self.add_account(email)
+                log("{} has been added.".format(email))
+            except Exception as e:
+                log("{} add failed. ({})".format(email, e))
+            return False
+        elif choice == "2":
+            try:
+                email = input("which account you want to remove: ")
+                self.remove_account()
+                log("{} remove successed.".format(email))
+            except Exception as e:
+                log("{} remove failed. ({})".format(email, e))
+            return False
+        elif choice == "3":
+            print(self.user_datas)
+            return False
+        elif choice == "4":
+            return True
 
     def run(self) -> None:
         self.claim()
@@ -253,5 +262,6 @@ class epicgames_claimer_manager():
 
 if __name__ == "__main__":
     claimer = epicgames_claimer_manager()
+    log("Claim has started.")
     claimer.auto_remove_accounts()
     claimer.run()
