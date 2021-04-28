@@ -189,7 +189,7 @@ class epicgames_claimer_manager():
         else:
             try:
                 while not self.choose_option():
-                    pass
+                    print()
             except func_timeout.exceptions.FunctionTimedOut:
                 print()
 
@@ -227,8 +227,8 @@ class epicgames_claimer_manager():
         print("1. Add an account\n"
               "2. Remove an account\n"
               "3. List all accounts\n"
-              "4. Run the process")
-        choice = input("Your choice: ")
+              "4. Run the process\n")
+        choice = input("Your choice(Wait 10 minutes): ")
         if choice == "1":
             try:
                 email = input("Email: ")
