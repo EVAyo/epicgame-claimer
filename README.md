@@ -1,8 +1,8 @@
-# Epicgames Claimer
+# Epic Games Claimer
 
 自动领取[Epic Games每周免费游戏](https://www.epicgames.com/store/free-games)。支持多账户。脚本会在每天上午9:00自动检查并领取免费游戏。
 
-## Getting started
+## 开始
 
 ### Docker
 
@@ -34,7 +34,7 @@ python claimer.py
 
 只需要在第一次运行时，完成添加账户的操作后重新运行容器或脚本即可。重新启动后10分钟内无操作脚本将自动继续运行。
 
-## Buy me a coffee
+## 赞助
 
 * [支付宝](Assets/Images/1619099359663.jpg)
 * [微信](Assets/Images/1619109082376.png)
