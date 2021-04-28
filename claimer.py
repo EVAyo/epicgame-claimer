@@ -1,5 +1,4 @@
 import asyncio
-from copy import Error
 import os
 import shutil
 import time
@@ -106,7 +105,7 @@ class epicgames_claimer:
     async def wait_for_element_text_change_async(self, element: ElementHandle, text: str, timeout: int = 30) -> None:
         if await self.get_element_text_async(element) != text:
             return
-        for i in range(timeout):
+        for _ in range(timeout):
             await asyncio.sleep(1)
             if await self.get_element_text_async(element) != text:
                 return
