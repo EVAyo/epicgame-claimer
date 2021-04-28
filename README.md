@@ -10,9 +10,11 @@
 docker run -it -e TZ=<TimeZone> luminoleon/epicgames-claimer
 ```
 
-将`<TimeZone>`替换成你所在的时区（e.g. Asia/Shanghai）。
+将`<TimeZone>`替换成你所在的时区（Linux时区格式，e.g. Asia/Shanghai）。
 
 按Ctrl + P + Q可切换至后台运行。
+
+如果你不清楚如何设置时区，`docker run -it luminoleon/epicgames-claimer`同样可以正常运行，只是容器内的时间可能不正确。
 
 ### Python
 
