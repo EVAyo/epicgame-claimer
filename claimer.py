@@ -32,15 +32,21 @@ class epicgames_claimer:
         # 等待文件解除占用
         time.sleep(2)
 
-    async def type_async(self, selector: str, text: str, sleep_time: Union[int, float] = 0) -> None:
+    async def type_async(self, selector: str, text: str, sleep: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
-        await asyncio.sleep(sleep_time)
+        await asyncio.sleep(sleep)
         await self.page.type(selector, text)
 
-    async def click_async(self, selector: str, sleep_time: Union[int, float] = 2) -> None:
-        await self.page.waitForSelector(selector)
-        await asyncio.sleep(sleep_time)
-        await self.page.click(selector)
+    async def click_async(self, selector: str, sleep: Union[int, float] = 2, frame_index: int = 0) -> None:
+        if frame_index == 0:
+            await self.page.waitForSelector(selector)
+            await asyncio.sleep(sleep)
+            await self.page.click(selector)
+        else:
+            frame = self.page.frames[frame_index]
+            await frame.waitForSelector(selector)
+            await asyncio.sleep(sleep)
+            await frame.click(selector)
 
     async def get_text_async(self, selector: str) -> str:
         await self.page.waitForSelector(selector)
@@ -87,9 +93,9 @@ class epicgames_claimer:
         except:
             return False
 
-    async def try_click_async(self, selector: str, sleep_time: Union[int, float] = 2) -> bool:
+    async def try_click_async(self, selector: str, sleep: Union[int, float] = 2) -> bool:
         try:
-            await asyncio.sleep(sleep_time)
+            await asyncio.sleep(sleep)
             await self.page.click(selector)
             return True
         except:
@@ -152,13 +158,15 @@ class epicgames_claimer:
                     await self.page.goto(link, options={"timeout": 120000})
                     await self.try_click_async("div[class*=WarningLayout__layout] Button")
                     game_title = await self.page.title()
-                    get_buttons = await self.get_elements_async("button[data-testid=purchase-cta-button]")
-                    for get_button in get_buttons:
-                        await self.wait_for_element_text_change_async(get_button, "Loading")
-                        if await self.get_element_text_async(get_button) == "Get":
-                            await get_button.click()
-                            await self.click_async("#purchase-app div.order-summary-content button:not([disabled])")
+                    purchase_button_num = len(await self.get_elements_async("button[data-testid=purchase-cta-button]"))
+                    for i in range(purchase_button_num):
+                        purchase_button = (await self.get_elements_async("button[data-testid=purchase-cta-button]"))[i]
+                        await self.wait_for_element_text_change_async(purchase_button, "Loading")
+                        if await self.get_element_text_async(purchase_button) == "Get":
+                            await purchase_button.click()
+                            await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
                             await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
+                            await self.page.goBack()
                             log("{}: \"{}\" has been claimed.".format(email, game_title))
                 return
             except Exception as e:
