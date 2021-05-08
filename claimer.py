@@ -16,21 +16,26 @@ def log(text: str, level: str = "message") -> None:
     if level == "message":
         print("[{}] {}".format(localtime, text))
     elif level == "warning":
-        print("[{}] \033[33mWarning: {}\033[0m".format(localtime, text))
+        print("\033[33m[{}] Warning: {}\033[0m".format(localtime, text))
     elif level == "error":
-        print("[{}] \033[31mError: {}\033[0m".format(localtime, text))
+        print("\033[31[{}] mError: {}\033[0m".format(localtime, text))
 
 
 class epicgames_claimer:
     def __init__(self, data_dir: str = "User Data/Default") -> None:
+        launcher.DEFAULT_ARGS.remove("--enable-automation")
+        self.data_dir = data_dir
         self.loop = asyncio.get_event_loop()
-        self.browser = self.loop.run_until_complete(launch(options={"args": ["--no-sandbox"], "headless": False}, userDataDir=data_dir))
-        self.page = self.loop.run_until_complete(self.browser.pages())[0]
+        self.open_browser()
 
-    def close(self) -> None:
+    def close_browser(self) -> None:
         self.loop.run_until_complete(self.browser.close())
         # 等待文件解除占用
         time.sleep(2)
+    
+    def open_browser(self) -> None:
+        self.browser = self.loop.run_until_complete(launch(options={"args": ["--no-sandbox"], "headless": False}, userDataDir=self.data_dir))
+        self.page = self.loop.run_until_complete(self.browser.pages())[0]
 
     async def type_async(self, selector: str, text: str, sleep: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
@@ -43,6 +48,7 @@ class epicgames_claimer:
             await asyncio.sleep(sleep)
             await self.page.click(selector)
         else:
+            await self.page.waitForSelector("iframe:nth-child({})".format(frame_index))
             frame = self.page.frames[frame_index]
             await frame.waitForSelector(selector)
             await asyncio.sleep(sleep)
@@ -117,64 +123,84 @@ class epicgames_claimer:
                 return
         raise TimeoutError("Waiting for element \"{}\" text content change failed: timeout {}s exceeds".format(element, timeout))
 
-    async def login_async(self, email: str) -> None:
+    async def login_async(self, email: str, password: str) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
-        if not self.is_loggedin():
+        if not await self.is_loggedin_async():
             await self.click_async("#user")
             await self.click_async("#login-with-epic")
             await self.type_async("#email", email)
-            await self.type_async("#password", getpass("Password: "))
+            await self.type_async("#password", password)
             await self.click_async("#sign-in[tabindex='0']")
             if await self.detect_async("#code"):
                 await self.type_async("#code", input("2FA code: "))
                 await self.click_async("#continue[tabindex='0']")
             await self.page.waitForSelector("#user")
 
-    def login(self, email: str) -> None:
-        return self.loop.run_until_complete(self.login_async(email))
+    def login(self, email: str, password: str) -> None:
+        return self.loop.run_until_complete(self.login_async(email, password))
+
+    async def is_loggedin_async(self) -> bool:
+        await self.page.goto("https://www.epicgames.com/store/en-US/", options={"timeout": 120000})
+        if (await self.get_property_async("#user", "data-component")) == "SignedIn":
+            return True
+        else:
+            return False
 
     def is_loggedin(self) -> bool:
-        async def is_loggedin_async() -> bool:
-            await self.page.goto("https://www.epicgames.com/store/en-US/", options={"timeout": 120000})
-            if (await self.get_property_async("#user", "data-component")) == "SignedIn":
-                return True
-            else:
-                return False
-        return self.loop.run_until_complete(is_loggedin_async())
+        return self.loop.run_until_complete(self.is_loggedin_async())
 
-    async def claim_async(self, email: str = None) -> None:
-        for i in range(0, 5):
-            try:
-                await self.page.goto("https://www.epicgames.com/store/en-US/free-games", options={"timeout": 120000})
-                freegame_links = await self.get_links_async("div[data-component=CustomDiscoverModules] > "
-                                                            "div:nth-child(2) "
-                                                            "div[data-component=CardGridDesktopBase] a",
-                                                            "div[data-component=CustomDiscoverModules] > "
-                                                            "div:nth-child(2) div[data-component=CardGridDesktopBase] "
-                                                            "div[data-component=StatusBar] span",
-                                                            "Free Now")
-                for link in freegame_links:
-                    await self.page.goto(link, options={"timeout": 120000})
-                    await self.try_click_async("div[class*=WarningLayout__layout] Button")
-                    game_title = await self.page.title()
-                    purchase_button_num = len(await self.get_elements_async("button[data-testid=purchase-cta-button]"))
-                    for i in range(purchase_button_num):
-                        purchase_button = (await self.get_elements_async("button[data-testid=purchase-cta-button]"))[i]
-                        await self.wait_for_element_text_change_async(purchase_button, "Loading")
-                        if await self.get_element_text_async(purchase_button) == "Get":
-                            await purchase_button.click()
-                            await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
-                            await self.page.waitForSelector("div[class*=DownloadLogoAndTitle__header]")
-                            await self.page.goBack()
-                            log("{}: \"{}\" has been claimed.".format(email, game_title))
-                return
-            except Exception as e:
-                    log("{}: {}.".format(email, str(e).rstrip(".")), level="warning")
-        log("Claim failed. Will retry next time.", level="error")
+    async def claim_async(self) -> List[str]:
+        await self.page.goto("https://www.epicgames.com/store/en-US/free-games", options={"timeout": 120000})
+        freegame_links = await self.get_links_async("div[data-component=CustomDiscoverModules] > "
+                                                    "div:nth-child(2) "
+                                                    "div[data-component=CardGridDesktopBase] a",
+                                                    "div[data-component=CustomDiscoverModules] > "
+                                                    "div:nth-child(2) div[data-component=CardGridDesktopBase] "
+                                                    "div[data-component=StatusBar] span",
+                                                    "Free Now")
+        claimed_game_titles = []
+        for link in freegame_links:
+            is_claim_successed = False
+            await self.page.goto(link, options={"timeout": 120000})
+            await self.try_click_async("div[class*=WarningLayout__layout] Button")
+            game_title = (await self.page.title()).split(" | ")[0]
+            purchase_buttons = await self.get_elements_async("button[data-testid=purchase-cta-button]")
+            for purchase_button in purchase_buttons:
+                await self.wait_for_element_text_change_async(purchase_button, "Loading")
+                if await self.get_element_text_async(purchase_button) == "Get":
+                    await purchase_button.click()
+                    await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
+                    await self.click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
+                    is_claim_successed = True
+            if is_claim_successed:
+                claimed_game_titles.append(game_title)
+        return claimed_game_titles
 
-    def claim(self, email: str = None) -> None:
-        self.loop.run_until_complete(self.claim_async(email))
+    def claim(self) -> List[str]:
+        return self.loop.run_until_complete(self.claim_async())
+    
+    def run(self, run_time: str) -> None:
+        def logged_claim() -> None:
+            for i in range(0, 5):
+                try:
+                    claimed_game_titles = self.claim()
+                    if len(claimed_game_titles) != 0:
+                        log("{} has been claimed.".format(claimed_game_titles))
+                    return
+                except Exception as e:
+                    log("{}.".format(str(e).rstrip(".")), level="warning")
+            log("Claim failed. Will retry next time.", level="error")
+        def everyday_job() -> None:
+            self.open_browser()
+            logged_claim()
+            self.close_browser()
+        logged_claim()
+        self.close_browser()
+        schedule.every().day.at(run_time).do(everyday_job)
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
 
 
 class epicgames_claimer_manager():
@@ -206,7 +232,7 @@ class epicgames_claimer_manager():
             raise ValueError("Email cant't be null.")
         claimer = epicgames_claimer("User Data/{}".format(email))
         claimer.login(email)
-        claimer.close()
+        claimer.close_browser()
         self.user_datas.append(email)
 
     def remove_account(self, email: str) -> None:
@@ -219,16 +245,16 @@ class epicgames_claimer_manager():
         for user in self.user_datas:
             claimer = epicgames_claimer("User Data/" + user)
             claimer.claim(user)
-            claimer.close()
+            claimer.close_browser()
 
     def auto_remove_accounts(self) -> None:
         for user in self.user_datas:
             claimer = epicgames_claimer("User Data/" + user)
             if not claimer.is_loggedin():
-                claimer.close()
+                claimer.close_browser()
                 self.remove_account(user)
             else:
-                claimer.close()
+                claimer.close_browser()
 
     @func_timeout.func_set_timeout(600)
     def choose_option(self) -> bool:
@@ -268,7 +294,22 @@ class epicgames_claimer_manager():
 
 
 if __name__ == "__main__":
-    claimer = epicgames_claimer_manager()
+    # claimer = epicgames_claimer_manager()
+    # log("Claim has started.")
+    # claimer.auto_remove_accounts()
+    # claimer.run()
+    claimer = epicgames_claimer()
+    def login() -> None:
+        while True:
+            try:
+                if not claimer.is_loggedin():
+                    email = input("Email: ")
+                    password = getpass("Password: ")
+                    claimer.login(email, password)
+                    log("Login successed.")
+                break
+            except Exception as e:
+                log("Login failed({}).".format(e), "warning")
+    login()
     log("Claim has started.")
-    claimer.auto_remove_accounts()
-    claimer.run()
+    claimer.run("09:00")
