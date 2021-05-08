@@ -1,8 +1,12 @@
 # Epic Games Claimer
 
-自动领取[Epic Games每周免费游戏](https://www.epicgames.com/store/free-games)。支持多账户。脚本会在每天上午9:00自动检查并领取免费游戏。
+自动领取[Epic Games每周免费游戏](https://www.epicgames.com/store/free-games)。脚本会在每天上午9:00自动检查并领取免费游戏。
 
 ## 开始
+
+### Windows
+
+[下载](https://github.com/luminoleon/epicgames-claimer/releases)
 
 ### Docker
 
@@ -19,8 +23,8 @@ docker run -it -e TZ=<TimeZone> luminoleon/epicgames-claimer
 ### Python
 
 ``` bash
-git clone https://github.com/luminoleon/epicgames-claimer.git
 pip install func_timeout schedule pyppeteer
+git clone https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
 python claimer.py
 ```
