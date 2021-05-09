@@ -18,15 +18,39 @@ def log(text: str, level: str = "message") -> None:
     elif level == "warning":
         print("\033[33m[{}] Warning: {}\033[0m".format(localtime, text))
     elif level == "error":
-        print("\033[31[{}] mError: {}\033[0m".format(localtime, text))
+        print("\033[31m[{}] Error: {}\033[0m".format(localtime, text))
 
 
 class epicgames_claimer:
-    def __init__(self, data_dir: str = "User Data/Default") -> None:
+    def __init__(self, data_dir: str = "User Data/Default", headless: bool = False) -> None:
         launcher.DEFAULT_ARGS.remove("--enable-automation")
         self.data_dir = data_dir
+        self.headless = headless
         self.loop = asyncio.get_event_loop()
         self.open_browser()
+
+    # 都这样了还能检测出来，这headless模式看来是开不了了
+    async def headless_stuff_async(self):
+        await self.page.setViewport({"width": 1024, "height": 768})
+        await self.page.evaluateOnNewDocument(
+            "() => {"
+                "Object.defineProperty(navigator, 'userAgent', {get: () => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56',});"
+                "Object.defineProperty(navigator, 'appVersion', {get: () => '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56d',});"
+                "Object.defineProperty(navigator, 'plugins', {get: () => [{'description': 'Portable Document Format', 'filename': 'internal-pdf-viewer', 'length': 1, 'name': 'Chrome PDF Plugin'}]});"
+                "Object.defineProperty(navigator, 'languages', {get: () => ['zh-CN', 'zh', 'en'],});"
+                "const originalQuery = window.navigator.permissions.query;"
+                "window.navigator.permissions.query = (parameters) => (parameters.name === 'notifications' ? Promise.resolve({ state: Notification.permission }) : originalQuery(parameters));"
+                "window.chrome = {};"
+                "window.chrome.app = {'InstallState':'a', 'RunningState':'b', 'getDetails':'c', 'getIsInstalled':'d'};"
+                "window.chrome.csi = function(){};"
+                "window.chrome.loadTimes = function(){};"
+                "window.chrome.runtime = function(){};"
+                "const newProto = navigator.__proto__;"
+                "delete newProto.webdriver;"
+                "navigator.__proto__ = newProto;"
+                "Reflect.defineProperty(navigator.connection,'rtt', {get: () => 150, enumerable:true});"
+            "}"
+        )
 
     def close_browser(self) -> None:
         self.loop.run_until_complete(self.browser.close())
@@ -34,8 +58,10 @@ class epicgames_claimer:
         time.sleep(2)
     
     def open_browser(self) -> None:
-        self.browser = self.loop.run_until_complete(launch(options={"args": ["--no-sandbox"], "headless": False}, userDataDir=self.data_dir))
+        self.browser = self.loop.run_until_complete(launch(options={"args": ["--no-sandbox"], "headless": self.headless}, userDataDir=self.data_dir))
         self.page = self.loop.run_until_complete(self.browser.pages())[0]
+        if self.headless:
+            self.loop.run_until_complete(self.headless_stuff_async())
 
     async def type_async(self, selector: str, text: str, sleep: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
@@ -182,10 +208,10 @@ class epicgames_claimer:
     
     def run(self, run_time: str) -> None:
         def logged_claim() -> None:
-            for i in range(0, 5):
+            for _ in range(0, 5):
                 try:
                     claimed_game_titles = self.claim()
-                    if len(claimed_game_titles) != 0:
+                    if len(claimed_game_titles) > 0:
                         log("{} has been claimed.".format(claimed_game_titles))
                     return
                 except Exception as e:
@@ -298,18 +324,23 @@ if __name__ == "__main__":
     # log("Claim has started.")
     # claimer.auto_remove_accounts()
     # claimer.run()
-    claimer = epicgames_claimer()
-    def login() -> None:
-        while True:
+    claimer = epicgames_claimer(headless=False)
+    def logged_login() -> None:
+        for _ in range(5):
             try:
                 if not claimer.is_loggedin():
                     email = input("Email: ")
                     password = getpass("Password: ")
                     claimer.login(email, password)
                     log("Login successed.")
-                break
+                return
             except Exception as e:
                 log("Login failed({}).".format(e), "warning")
-    login()
+                if claimer.headless:
+                    claimer.loop.run_until_complete(claimer.page.screenshot({"path": "login.png"}))
+        log("Login failed.", "error")
+        time.sleep(8)
+        exit()
+    logged_login()
     log("Claim has started.")
     claimer.run("09:00")
