@@ -58,7 +58,7 @@ class epicgames_claimer:
         time.sleep(2)
     
     def open_browser(self) -> None:
-        self.browser = self.loop.run_until_complete(launch(options={"args": ["--no-sandbox"], "headless": self.headless}, userDataDir=self.data_dir))
+        self.browser = self.loop.run_until_complete(launch(options={"args": ["--no-sandbox", "--disable-infobars", "--blink-settings=imagesEnabled=false"], "headless": self.headless}, userDataDir=self.data_dir))
         self.page = self.loop.run_until_complete(self.browser.pages())[0]
         if self.headless:
             self.loop.run_until_complete(self.headless_stuff_async())
@@ -205,6 +205,22 @@ class epicgames_claimer:
 
     def claim(self) -> List[str]:
         return self.loop.run_until_complete(self.claim_async())
+
+    def logged_login(self) -> bool:
+        for _ in range(5):
+            try:
+                if not self.is_loggedin():
+                    email = input("Email: ")
+                    password = getpass("Password: ")
+                    self.login(email, password)
+                    log("Login successed.")
+                return True
+            except Exception as e:
+                log("Login failed({}).".format(e), "warning")
+                if self.headless:
+                    self.loop.run_until_complete(self.page.screenshot({"path": "login.png"}))
+        log("Login failed.", "error")
+        return False
     
     def run(self, run_time: str) -> None:
         def logged_claim() -> None:
@@ -325,22 +341,9 @@ if __name__ == "__main__":
     # claimer.auto_remove_accounts()
     # claimer.run()
     claimer = epicgames_claimer(headless=False)
-    def logged_login() -> None:
-        for _ in range(5):
-            try:
-                if not claimer.is_loggedin():
-                    email = input("Email: ")
-                    password = getpass("Password: ")
-                    claimer.login(email, password)
-                    log("Login successed.")
-                return
-            except Exception as e:
-                log("Login failed({}).".format(e), "warning")
-                if claimer.headless:
-                    claimer.loop.run_until_complete(claimer.page.screenshot({"path": "login.png"}))
-        log("Login failed.", "error")
+    if claimer.logged_login():
+        log("Claim has started.")
+        claimer.run("09:00")
+    else:
         time.sleep(8)
-        exit()
-    logged_login()
-    log("Claim has started.")
-    claimer.run("09:00")
+        exit(1)
