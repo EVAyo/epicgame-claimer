@@ -1,11 +1,9 @@
 import asyncio
 import os
-import shutil
 import time
 from getpass import getpass
 from typing import List, Union
 
-import func_timeout
 import schedule
 from pyppeteer import launch, launcher
 from pyppeteer.element_handle import ElementHandle
@@ -29,7 +27,7 @@ class epicgames_claimer:
         self.loop = asyncio.get_event_loop()
         self.open_browser()
 
-    # 都这样了还能检测出来，这headless模式看来是开不了了
+    # Useless.
     async def headless_stuff_async(self):
         await self.page.setViewport({"width": 1024, "height": 768})
         await self.page.evaluateOnNewDocument(
@@ -40,15 +38,11 @@ class epicgames_claimer:
                 "Object.defineProperty(navigator, 'languages', {get: () => ['zh-CN', 'zh', 'en'],});"
                 "const originalQuery = window.navigator.permissions.query;"
                 "window.navigator.permissions.query = (parameters) => (parameters.name === 'notifications' ? Promise.resolve({ state: Notification.permission }) : originalQuery(parameters));"
-                "window.chrome = {};"
-                "window.chrome.app = {'InstallState':'a', 'RunningState':'b', 'getDetails':'c', 'getIsInstalled':'d'};"
-                "window.chrome.csi = function(){};"
-                "window.chrome.loadTimes = function(){};"
-                "window.chrome.runtime = function(){};"
-                "const newProto = navigator.__proto__;"
-                "delete newProto.webdriver;"
-                "navigator.__proto__ = newProto;"
+                "window.chrome = {}; window.chrome.app = {'InstallState':'a', 'RunningState':'b', 'getDetails':'c', 'getIsInstalled':'d'}; window.chrome.csi = function(){}; window.chrome.loadTimes = function(){}; window.chrome.runtime = function(){};"
+                "const newProto = navigator.__proto__; delete newProto.webdriver; navigator.__proto__ = newProto;"
                 "Reflect.defineProperty(navigator.connection,'rtt', {get: () => 150, enumerable:true});"
+                "const getParameter = WebGLRenderingContext.getParameter; WebGLRenderingContext.prototype.getParameter = function(parameter) {if (parameter === 37445) {return 'Intel Open Source Technology Center';}; if (parameter === 37446) {return 'Mesa DRI Intel(R) Ivybridge Mobile ';}; return getParameter(parameter);};"
+                "['height', 'width'].forEach(property => {const imageDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, property); Object.defineProperty(HTMLImageElement.prototype, property, {...imageDescriptor, get: function() {if (this.complete && this.naturalHeight == 0) {return 16;}; return imageDescriptor.get.apply(this);},});});"
             "}"
         )
 
@@ -58,7 +52,19 @@ class epicgames_claimer:
         time.sleep(2)
     
     def open_browser(self) -> None:
-        self.browser = self.loop.run_until_complete(launch(options={"args": ["--no-sandbox", "--disable-infobars", "--blink-settings=imagesEnabled=false"], "headless": self.headless}, userDataDir=self.data_dir))
+        chromium_path = ""
+        if os.path.exists("chromium"):
+            chromium_path = "chromium/chrome.exe"
+        else:
+            chromium_path = launcher.executablePath()
+        self.browser = self.loop.run_until_complete(launch(
+            options={
+                "args": ["--no-sandbox", "--disable-infobars", "--blink-settings=imagesEnabled=false"], 
+                "headless": self.headless
+            }, 
+            userDataDir=self.data_dir, 
+            executablePath=chromium_path
+        ))
         self.page = self.loop.run_until_complete(self.browser.pages())[0]
         if self.headless:
             self.loop.run_until_complete(self.headless_stuff_async())
@@ -222,124 +228,31 @@ class epicgames_claimer:
         log("Login failed.", "error")
         return False
     
-    def run(self, run_time: str) -> None:
-        def logged_claim() -> None:
-            for _ in range(0, 5):
-                try:
-                    claimed_game_titles = self.claim()
-                    if len(claimed_game_titles) > 0:
-                        log("{} has been claimed.".format(claimed_game_titles))
-                    return
-                except Exception as e:
-                    log("{}.".format(str(e).rstrip(".")), level="warning")
-            log("Claim failed. Will retry next time.", level="error")
+    def logged_claim(self) -> None:
+        for _ in range(0, 5):
+            try:
+                claimed_game_titles = self.claim()
+                if len(claimed_game_titles) > 0:
+                    log("{} has been claimed.".format(claimed_game_titles))
+                return
+            except Exception as e:
+                log("{}.".format(str(e).rstrip(".")), level="warning")
+        log("Claim failed. Will retry next time.", level="error")
+
+    def run(self, at: str) -> None:
         def everyday_job() -> None:
             self.open_browser()
-            logged_claim()
+            self.logged_claim()
             self.close_browser()
-        logged_claim()
+        self.logged_claim()
         self.close_browser()
-        schedule.every().day.at(run_time).do(everyday_job)
-        while True:
-            schedule.run_pending()
-            time.sleep(1)
-
-
-class epicgames_claimer_manager():
-    def __init__(self) -> None:
-        launcher.DEFAULT_ARGS.remove("--enable-automation")
-        try:
-            os.mkdir("User Data")
-        except:
-            pass
-        self.user_datas = os.listdir("User Data")
-        if len(self.user_datas) == 0:
-            while True:
-                try:
-                    email = input("Email: ")
-                    self.add_account(email)
-                    log("{} has been added.".format(email))
-                    break
-                except Exception as e:
-                    log("{} add failed. ({})".format(email, e))
-        else:
-            try:
-                while not self.choose_option():
-                    print()
-            except func_timeout.exceptions.FunctionTimedOut:
-                print()
-
-    def add_account(self, email: str) -> None:
-        if email == None or email == "":
-            raise ValueError("Email cant't be null.")
-        claimer = epicgames_claimer("User Data/{}".format(email))
-        claimer.login(email)
-        claimer.close_browser()
-        self.user_datas.append(email)
-
-    def remove_account(self, email: str) -> None:
-        if email == None or email == "":
-            raise ValueError("Email can't be null.")
-        shutil.rmtree("User Data/{}".format(email))
-        self.user_datas.remove(email)
-
-    def claim(self) -> None:
-        for user in self.user_datas:
-            claimer = epicgames_claimer("User Data/" + user)
-            claimer.claim(user)
-            claimer.close_browser()
-
-    def auto_remove_accounts(self) -> None:
-        for user in self.user_datas:
-            claimer = epicgames_claimer("User Data/" + user)
-            if not claimer.is_loggedin():
-                claimer.close_browser()
-                self.remove_account(user)
-            else:
-                claimer.close_browser()
-
-    @func_timeout.func_set_timeout(600)
-    def choose_option(self) -> bool:
-        print("1. Add an account\n"
-              "2. Remove an account\n"
-              "3. List all accounts\n"
-              "4. Run the process\n")
-        choice = input("Your choice(Wait 10 minutes): ")
-        if choice == "1":
-            try:
-                email = input("Email: ")
-                self.add_account(email)
-                log("{} has been added.".format(email))
-            except Exception as e:
-                log("{} add failed. ({})".format(email, e))
-            return False
-        elif choice == "2":
-            try:
-                email = input("which account you want to remove: ")
-                self.remove_account()
-                log("{} remove successed.".format(email))
-            except Exception as e:
-                log("{} remove failed. ({})".format(email, e))
-            return False
-        elif choice == "3":
-            print(self.user_datas)
-            return False
-        elif choice == "4":
-            return True
-
-    def run(self) -> None:
-        self.claim()
-        schedule.every().day.at("09:00").do(self.claim)
+        schedule.every().day.at(at).do(everyday_job)
         while True:
             schedule.run_pending()
             time.sleep(1)
 
 
 if __name__ == "__main__":
-    # claimer = epicgames_claimer_manager()
-    # log("Claim has started.")
-    # claimer.auto_remove_accounts()
-    # claimer.run()
     claimer = epicgames_claimer(headless=False)
     if claimer.logged_login():
         log("Claim has started.")

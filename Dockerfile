@@ -2,7 +2,7 @@ FROM luminoleon/pyppeteer
 
 LABEL maintainer="Luminoleon <luminoleon@outlook.com>"
 
-RUN pip3 install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple schedule func_timeout
+RUN pip3 install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple schedule
 
 COPY claimer.py /
 
