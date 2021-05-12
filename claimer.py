@@ -184,7 +184,7 @@ class epicgames_claimer:
         return self.loop.run_until_complete(self.is_loggedin_async())
 
     async def claim_async(self) -> List[str]:
-        await self.page.goto("https://www.epicgames.com/store/en-US/free-games", options={"timeout": 120000})
+        await self.page.goto("https://www.epicgames.com/store/en-US/free-games", options={"timeout": 480000})
         freegame_links = await self.get_links_async("div[data-component=CustomDiscoverModules] > "
                                                     "div:nth-child(2) "
                                                     "div[data-component=CardGridDesktopBase] a",
@@ -195,7 +195,7 @@ class epicgames_claimer:
         claimed_game_titles = []
         for link in freegame_links:
             is_claim_successed = False
-            await self.page.goto(link, options={"timeout": 120000})
+            await self.page.goto(link, options={"timeout": 480000})
             await self.try_click_async("div[class*=WarningLayout__layout] Button")
             game_title = (await self.page.title()).split(" | ")[0]
             purchase_buttons = await self.get_elements_async("button[data-testid=purchase-cta-button]")
