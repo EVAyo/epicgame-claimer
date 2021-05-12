@@ -158,16 +158,17 @@ class epicgames_claimer:
     async def login_async(self, email: str, password: str) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
-        if not await self.is_loggedin_async():
-            await self.click_async("#user")
-            await self.click_async("#login-with-epic")
-            await self.type_async("#email", email)
-            await self.type_async("#password", password)
-            await self.click_async("#sign-in[tabindex='0']")
-            if await self.detect_async("#code"):
-                await self.type_async("#code", input("2FA code: "))
-                await self.click_async("#continue[tabindex='0']")
-            await self.page.waitForSelector("#user")
+        if self.page.url != "https://www.epicgames.com/store/en-US/":
+            self.page.goto("https://www.epicgames.com/store/en-US/")
+        await self.click_async("#user")
+        await self.click_async("#login-with-epic")
+        await self.type_async("#email", email)
+        await self.type_async("#password", password)
+        await self.click_async("#sign-in[tabindex='0']")
+        if await self.detect_async("#code"):
+            await self.type_async("#code", input("2FA code: "))
+            await self.click_async("#continue[tabindex='0']")
+        await self.page.waitForSelector("#user")
 
     def login(self, email: str, password: str) -> None:
         return self.loop.run_until_complete(self.login_async(email, password))
@@ -253,6 +254,7 @@ class epicgames_claimer:
 
 
 if __name__ == "__main__":
+    log("Claimer is starting...")
     claimer = epicgames_claimer(headless=False)
     if claimer.logged_login():
         log("Claim has started.")
