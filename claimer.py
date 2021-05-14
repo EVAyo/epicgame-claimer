@@ -24,7 +24,6 @@ class epicgames_claimer:
         launcher.DEFAULT_ARGS.remove("--enable-automation")
         self.data_dir = data_dir
         self.headless = headless
-        self.loop = asyncio.get_event_loop()
         self.open_browser()
 
     # Useless.
@@ -48,10 +47,12 @@ class epicgames_claimer:
 
     def close_browser(self) -> None:
         self.loop.run_until_complete(self.browser.close())
+        self.loop.close()
         # 等待文件解除占用
         time.sleep(2)
     
     def open_browser(self) -> None:
+        self.loop = asyncio.get_event_loop()
         chromium_path = ""
         if os.path.exists("chromium"):
             chromium_path = "chromium/chrome.exe"
@@ -66,6 +67,7 @@ class epicgames_claimer:
             executablePath=chromium_path
         ))
         self.page = self.loop.run_until_complete(self.browser.pages())[0]
+        self.loop.run_until_complete(self.page.setViewport({"width": 1000, "height": 600}))
         if self.headless:
             self.loop.run_until_complete(self.headless_stuff_async())
 
