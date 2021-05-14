@@ -76,13 +76,13 @@ class epicgames_claimer:
         await asyncio.sleep(sleep)
         await self.page.type(selector, text)
 
-    async def click_async(self, selector: str, sleep: Union[int, float] = 2, frame_index: int = 0) -> None:
+    async def click_async(self, selector: str, sleep: Union[int, float] = 2, timeout: int = 30000, frame_index: int = 0) -> None:
         if frame_index == 0:
-            await self.page.waitForSelector(selector)
+            await self.page.waitForSelector(selector, options={"timeout": timeout})
             await asyncio.sleep(sleep)
             await self.page.click(selector)
         else:
-            await self.page.waitForSelector("iframe:nth-child({})".format(frame_index))
+            await self.page.waitForSelector("iframe:nth-child({})".format(frame_index), options={"timeout": timeout})
             frame = self.page.frames[frame_index]
             await frame.waitForSelector(selector)
             await asyncio.sleep(sleep)
@@ -162,15 +162,15 @@ class epicgames_claimer:
             raise ValueError("Email can't be null.")
         if self.page.url != "https://www.epicgames.com/store/en-US/":
             self.page.goto("https://www.epicgames.com/store/en-US/")
-        await self.click_async("#user")
-        await self.click_async("#login-with-epic")
+        await self.click_async("#user", timeout=120000)
+        await self.click_async("#login-with-epic", timeout=120000)
         await self.type_async("#email", email)
         await self.type_async("#password", password)
-        await self.click_async("#sign-in[tabindex='0']")
-        if await self.detect_async("#code"):
+        await self.click_async("#sign-in[tabindex='0']", timeout=120000)
+        if await self.detect_async("#code", timeout=120000):
             await self.type_async("#code", input("2FA code: "))
-            await self.click_async("#continue[tabindex='0']")
-        await self.page.waitForSelector("#user")
+            await self.click_async("#continue[tabindex='0']", timeout=120000)
+        await self.page.waitForSelector("#user", timeout=120000)
 
     def login(self, email: str, password: str) -> None:
         return self.loop.run_until_complete(self.login_async(email, password))
