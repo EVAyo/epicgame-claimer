@@ -204,7 +204,7 @@ class epicgames_claimer:
             for purchase_button in purchase_buttons:
                 await self.wait_for_element_text_change_async(purchase_button, "Loading")
                 if await self.get_element_text_async(purchase_button) == "Get":
-                    await purchase_button.click()
+                    await purchase_button.click(options={"delay": 1000})
                     await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
                     await self.click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
                     is_claim_successed = True
