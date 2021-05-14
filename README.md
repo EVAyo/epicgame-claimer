@@ -31,6 +31,12 @@ python claimer.py
 
 在Linux系统中需要安装Chromium依赖和桌面环境。
 
+## FAQ
+
+### 如何登录我的Epic账号?
+
+在脚本启动后，如果没有cookies则需要输入邮箱、密码以及两步验证代码完成登录。之后启动脚本无须再次登录。
+
 ## 赞助
 
 * [支付宝](Assets/Images/1619099359663.jpg)
