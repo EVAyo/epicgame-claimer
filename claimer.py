@@ -159,7 +159,7 @@ class epicgames_claimer:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
         if self.page.url != "https://www.epicgames.com/store/en-US/":
-            self.page.goto("https://www.epicgames.com/store/en-US/")
+            await self.page.goto("https://www.epicgames.com/store/en-US/")
         await self.click_async("#user", timeout=120000)
         await self.click_async("#login-with-epic", timeout=120000)
         await self.type_async("#email", email)
@@ -202,8 +202,8 @@ class epicgames_claimer:
             for purchase_button in purchase_buttons:
                 await self.wait_for_element_text_change_async(purchase_button, "Loading")
                 if await self.get_element_text_async(purchase_button) == "Get":
-                    await asyncio.sleep(16)  # 修复Get按钮有时不会被点击的问题
                     await purchase_button.click()
+                    await self.try_click_async("div[data-component=platformUnsupportedWarning] > Button")
                     await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
                     await self.click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
                     is_claim_successed = True
