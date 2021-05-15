@@ -24,11 +24,11 @@ class epicgames_claimer:
         launcher.DEFAULT_ARGS.remove("--enable-automation")
         self.data_dir = data_dir
         self.headless = headless
+        self.loop = asyncio.get_event_loop()
         self.open_browser()
 
     # Useless.
     async def headless_stuff_async(self):
-        await self.page.setViewport({"width": 1024, "height": 768})
         await self.page.evaluateOnNewDocument(
             "() => {"
                 "Object.defineProperty(navigator, 'userAgent', {get: () => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56',});"
@@ -47,12 +47,10 @@ class epicgames_claimer:
 
     def close_browser(self) -> None:
         self.loop.run_until_complete(self.browser.close())
-        self.loop.close()
         # 等待文件解除占用
         time.sleep(2)
     
     def open_browser(self) -> None:
-        self.loop = asyncio.get_event_loop()
         chromium_path = ""
         if os.path.exists("chromium"):
             chromium_path = "chromium/chrome.exe"
@@ -204,7 +202,8 @@ class epicgames_claimer:
             for purchase_button in purchase_buttons:
                 await self.wait_for_element_text_change_async(purchase_button, "Loading")
                 if await self.get_element_text_async(purchase_button) == "Get":
-                    await purchase_button.click(options={"delay": 1000})
+                    await asyncio.sleep(16)  # 修复Get按钮有时不会被点击的问题
+                    await purchase_button.click()
                     await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
                     await self.click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
                     is_claim_successed = True
