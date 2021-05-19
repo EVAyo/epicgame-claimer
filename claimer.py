@@ -235,7 +235,7 @@ class epicgames_claimer:
             try:
                 claimed_game_titles = self.claim()
                 if len(claimed_game_titles) > 0:
-                    log("{} has been claimed.".format(claimed_game_titles))
+                    log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'")))
                 return
             except Exception as e:
                 log("{}.".format(str(e).rstrip(".")), level="warning")
