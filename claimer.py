@@ -20,7 +20,7 @@ def log(text: str, level: str = "message") -> None:
 
 
 class epicgames_claimer:
-    def __init__(self, data_dir: str = "User Data/Default", headless: bool = False) -> None:
+    def __init__(self, data_dir: str = "User_Data/Default", headless: bool = False) -> None:
         launcher.DEFAULT_ARGS.remove("--enable-automation")
         self.data_dir = data_dir
         self.headless = headless
@@ -114,7 +114,7 @@ class epicgames_claimer:
             elements = await self.page.querySelectorAll(selector)
             judgement_texts = await self.get_texts_async(filter_selector)
         except:
-            pass
+            return []
         for element, judgement_text in zip(elements, judgement_texts):
             if judgement_text == filter_value:
                 link = await (await element.getProperty("href")).jsonValue()
@@ -182,16 +182,20 @@ class epicgames_claimer:
 
     def is_loggedin(self) -> bool:
         return self.loop.run_until_complete(self.is_loggedin_async())
-
+    
+    async def get_freegame_links_async(self) -> List[str]:
+        await self.page.waitForSelector("div[data-component=OfferCard]")
+        freegame_links = []
+        freegame_links_len = len(await self.page.querySelectorAll("div[data-component=OfferCard]"))
+        for freegame_index in range(freegame_links_len):
+            freegame_link = await self.page.evaluate("document.querySelectorAll('div[data-component=OfferCard]')[{}].parentElement.href".format(freegame_index))
+            if freegame_link != "https://www.epicgames.com/store/en-US/free-games":
+                freegame_links.append(freegame_link)
+        return freegame_links
+        
     async def claim_async(self) -> List[str]:
         await self.page.goto("https://www.epicgames.com/store/en-US/free-games", options={"timeout": 480000})
-        freegame_links = await self.get_links_async("div[data-component=CustomDiscoverModules] > "
-                                                    "div:nth-child(2) "
-                                                    "div[data-component=CardGridDesktopBase] a",
-                                                    "div[data-component=CustomDiscoverModules] > "
-                                                    "div:nth-child(2) div[data-component=CardGridDesktopBase] "
-                                                    "div[data-component=StatusBar] span",
-                                                    "Free Now")
+        freegame_links = await self.get_freegame_links_async()
         claimed_game_titles = []
         for link in freegame_links:
             is_claim_successed = False
@@ -205,7 +209,7 @@ class epicgames_claimer:
                     await purchase_button.click()
                     await self.try_click_async("div[data-component=platformUnsupportedWarning] > Button")
                     await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
-                    await self.click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
+                    await self.try_click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
                     is_claim_successed = True
             if is_claim_successed:
                 claimed_game_titles.append(game_title)
@@ -235,7 +239,7 @@ class epicgames_claimer:
             try:
                 claimed_game_titles = self.claim()
                 if len(claimed_game_titles) > 0:
-                    log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'")))
+                    log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
                 return
             except Exception as e:
                 log("{}.".format(str(e).rstrip(".")), level="warning")
