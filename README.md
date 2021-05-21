@@ -36,3 +36,7 @@ python claimer.py
 ### 如何登录我的Epic账号?
 
 在脚本启动后，如果没有cookies则需要输入邮箱、密码以及两步验证代码完成登录。之后启动脚本无须再次登录。
+
+### 在使用Docker的情况下如何保存登录信息至主机
+
+可以添加参数`-v ~/epicgames-claimer/User_Data:/User_Data`，`~/epicgames-claimer/User_Data`可以替换成其他目录。
