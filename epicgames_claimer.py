@@ -4,7 +4,6 @@ import time
 from getpass import getpass
 from typing import List, Union
 
-import schedule
 from pyppeteer import launch, launcher
 from pyppeteer.element_handle import ElementHandle
 
@@ -249,6 +248,7 @@ class epicgames_claimer:
         log("Claim failed. Will retry next time.", level="error")
 
     def run(self, at: str) -> None:
+        import schedule
         def everyday_job() -> None:
             self.open_browser()
             self.logged_claim()
