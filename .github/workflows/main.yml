@@ -7,6 +7,9 @@ jobs:
   claim-free-games:
     runs-on: ubuntu-latest
     steps:
+    - name: Keep env in sudo
+      run: |
+        sed -i "s/Defaults env_reset/Defaults !env_reset/g" /etc/sudoers
     - name: Install Ubuntu packages
       run: |
         sudo apt update
@@ -14,10 +17,10 @@ jobs:
     - name: Install Python modules
       run: |
         sudo pip3 install pyppeteer
-        pyppeteer-install
+        sudo pyppeteer-install
     - name: Start Xvfb
       run: |
-        Xvfb :0 -ac &
+        sudo Xvfb :0 -ac &
         export DISPLAY=:0
     - name: Checkout
       uses: actions/checkout@v2
