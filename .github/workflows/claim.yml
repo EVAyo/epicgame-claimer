@@ -1,0 +1,11 @@
+name: Claim
+
+on:
+  push
+  
+jobs:
+  setup-environment:
+    runs-on: ubuntu-latest
+    steps:
+      run:
+        echo test
