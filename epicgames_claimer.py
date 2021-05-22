@@ -19,11 +19,10 @@ def log(text: str, level: str = "message") -> None:
 
 
 class epicgames_claimer:
-    def __init__(self, data_dir: str = "User_Data/Default", headless: bool = False, sandbox: bool = False) -> None:
+    def __init__(self, data_dir: str = "User_Data/Default", headless: bool = False) -> None:
         launcher.DEFAULT_ARGS.remove("--enable-automation")
         self.data_dir = data_dir
         self.headless = headless
-        self.sandbox = sandbox
         self.loop = asyncio.get_event_loop()
         self.open_browser()
 
@@ -56,24 +55,14 @@ class epicgames_claimer:
             chromium_path = "chromium/chrome.exe"
         else:
             chromium_path = launcher.executablePath()
-        if self.sandbox:
-            self.browser = self.loop.run_until_complete(launch(
-                options={
-                    "args": ["--disable-infobars", "--blink-settings=imagesEnabled=false"], 
-                    "headless": self.headless
-                }, 
-                userDataDir=self.data_dir, 
-                executablePath=chromium_path
-            ))
-        else:
-            self.browser = self.loop.run_until_complete(launch(
-                options={
-                    "args": ["--no-sandbox", "--disable-infobars", "--blink-settings=imagesEnabled=false"], 
-                    "headless": self.headless
-                }, 
-                userDataDir=self.data_dir, 
-                executablePath=chromium_path
-            ))
+        self.browser = self.loop.run_until_complete(launch(
+            options={
+                "args": ["--no-sandbox", "--disable-infobars", "--blink-settings=imagesEnabled=false"], 
+                "headless": self.headless
+            }, 
+            userDataDir=self.data_dir, 
+            executablePath=chromium_path
+        ))
         self.page = self.loop.run_until_complete(self.browser.pages())[0]
         self.loop.run_until_complete(self.page.setViewport({"width": 1000, "height": 600}))
         if self.headless:
