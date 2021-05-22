@@ -155,7 +155,7 @@ class epicgames_claimer:
                 return
         raise TimeoutError("Waiting for element \"{}\" text content change failed: timeout {}s exceeds".format(element, timeout))
 
-    async def login_async(self, email: str, password: str) -> None:
+    async def login_async(self, email: str, password: str, two_fa_enabled: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
         if self.page.url != "https://www.epicgames.com/store/en-US/":
@@ -165,13 +165,14 @@ class epicgames_claimer:
         await self.type_async("#email", email)
         await self.type_async("#password", password)
         await self.click_async("#sign-in[tabindex='0']", timeout=120000)
-        if await self.detect_async("#code", timeout=120000):
-            await self.type_async("#code", input("2FA code: "))
-            await self.click_async("#continue[tabindex='0']", timeout=120000)
+        if two_fa_enabled:
+            if await self.detect_async("#code", timeout=120000):
+                await self.type_async("#code", input("2FA code: "))
+                await self.click_async("#continue[tabindex='0']", timeout=120000)
         await self.page.waitForSelector("#user", timeout=120000)
 
-    def login(self, email: str, password: str) -> None:
-        return self.loop.run_until_complete(self.login_async(email, password))
+    def login(self, email: str, password: str, two_fa_enabled: bool = True) -> None:
+        return self.loop.run_until_complete(self.login_async(email, password, two_fa_enabled))
 
     async def is_loggedin_async(self) -> bool:
         await self.page.goto("https://www.epicgames.com/store/en-US/", options={"timeout": 120000})
@@ -184,6 +185,8 @@ class epicgames_claimer:
         return self.loop.run_until_complete(self.is_loggedin_async())
     
     async def get_freegame_links_async(self) -> List[str]:
+        if self.page.url != "https://www.epicgames.com/store/en-US/free-games":
+            await self.page.goto("https://www.epicgames.com/store/en-US/free-games")
         await self.page.waitForSelector("div[data-component=OfferCard]")
         freegame_links = []
         freegame_links_len = len(await self.page.querySelectorAll("div[data-component=OfferCard]"))
