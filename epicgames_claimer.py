@@ -165,7 +165,7 @@ class epicgames_claimer:
                 return
         raise TimeoutError("Waiting for element \"{}\" text content change failed: timeout {}s exceeds".format(element, timeout))
 
-    async def login_async(self, email: str, password: str, two_fa_enabled: bool = True) -> None:
+    async def login_async(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
         if self.page.url != "https://www.epicgames.com/store/en-US/":
@@ -174,6 +174,8 @@ class epicgames_claimer:
         await self.click_async("#login-with-epic", timeout=120000)
         await self.type_async("#email", email)
         await self.type_async("#password", password)
+        if not remember_me:
+            await self.click_async("#rememberMe")
         await self.click_async("#sign-in[tabindex='0']", timeout=120000)
         if two_fa_enabled:
             if await self.detect_async("#code", timeout=120000):

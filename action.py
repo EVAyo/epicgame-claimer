@@ -12,7 +12,7 @@ if __name__ == "__main__":
     def login():
         for _ in range(3):
             try:
-                claimer.login(EMAIL, PASSWORD, two_fa_enabled=False)
+                claimer.login(EMAIL, PASSWORD, two_fa_enabled=False, remember_me=False)
                 epicgames_claimer.log("Login successed.")
                 return
             except Exception as e:
