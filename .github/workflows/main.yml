@@ -9,7 +9,7 @@ jobs:
     steps:
     - name: Keep env in sudo
       run: |
-        sed -i "s/Defaults env_reset/Defaults !env_reset/g" /etc/sudoers
+        sudo sed -i "s/Defaults env_reset/Defaults !env_reset/g" /etc/sudoers
     - name: Install Ubuntu packages
       run: |
         sudo apt update
