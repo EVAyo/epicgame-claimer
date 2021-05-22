@@ -183,8 +183,8 @@ class epicgames_claimer:
                 await self.click_async("#continue[tabindex='0']", timeout=120000)
         await self.page.waitForSelector("#user", timeout=120000)
 
-    def login(self, email: str, password: str, two_fa_enabled: bool = True) -> None:
-        return self.loop.run_until_complete(self.login_async(email, password, two_fa_enabled))
+    def login(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
+        return self.loop.run_until_complete(self.login_async(email, password, two_fa_enabled, remember_me))
 
     async def is_loggedin_async(self) -> bool:
         await self.page.goto("https://www.epicgames.com/store/en-US/", options={"timeout": 120000})
