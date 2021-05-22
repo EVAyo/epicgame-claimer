@@ -27,7 +27,7 @@ docker run -it -e TZ=<TimeZone> -v <Path>:/User_Data luminoleon/epicgames-claime
 ### Python
 
 ``` bash
-pip install func_timeout schedule pyppeteer
+pip install schedule pyppeteer
 git clone https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
 python epicgames_claimer.py
