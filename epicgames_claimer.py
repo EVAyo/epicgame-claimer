@@ -217,8 +217,9 @@ class epicgames_claimer:
             await self.page.goto(link, options={"timeout": 480000})
             await self.try_click_async("div[class*=WarningLayout__layout] Button")
             game_title = (await self.page.title()).split(" | ")[0]
-            purchase_buttons = await self.get_elements_async("button[data-testid=purchase-cta-button]")
-            for purchase_button in purchase_buttons:
+            purchase_buttons_len = len(await self.get_elements_async("button[data-testid=purchase-cta-button]"))
+            for purchase_button_index in range(purchase_buttons_len):
+                purchase_button = (await self.get_elements_async("button[data-testid=purchase-cta-button]"))[purchase_button_index]
                 await self.wait_for_element_text_change_async(purchase_button, "Loading")
                 if await self.get_element_text_async(purchase_button) == "Get":
                     await purchase_button.click()
@@ -226,7 +227,8 @@ class epicgames_claimer:
                     await self.try_click_async("div[class*=accept] Button")
                     await self.try_click_async("div[data-component=platformUnsupportedWarning] > Button")
                     await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
-                    await self.click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
+                    await self.try_click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
+                    await self.page.goto(link)
                     is_claim_successed = True
             if is_claim_successed:
                 claimed_game_titles.append(game_title)
