@@ -26,7 +26,7 @@ docker run -it -e TZ=<TimeZone> -v <Path>:/User_Data luminoleon/epicgames-claime
 pip install func_timeout schedule pyppeteer
 git clone https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
-python claimer.py
+python epicgames_claimer.py
 ```
 
 在Linux系统中需要安装Chromium依赖和桌面环境。
