@@ -9,6 +9,7 @@ jobs:
     steps:
     - name: Keep env in sudo
       run: |
+        sudo su
         sudo sed -i "s/env_reset/!env_reset/g" /etc/sudoers
     - name: Install Ubuntu packages
       run: |
@@ -31,5 +32,4 @@ jobs:
         PASSWORD: ${{ secrets.PASSWORD }}
       run: |
         sudo env
-        sudo su
         sudo python3 action.py
