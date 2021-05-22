@@ -6,9 +6,10 @@
 
 ### Github Actions
 
-1. Fork本项目；
-2. 在自己Fork项目的页面中，添加两条Secrets：EMAIL（你的Epic账号邮箱）、PASSWORD（你的Epic账号密码）；
-3. 启用Actions并且手动触发一次。
+1. [关闭Epic账号的双重验证](https://www.epicgames.com/account/password)；
+2. Fork本项目；
+3. 在自己Fork项目的页面中，添加两条Secrets：EMAIL（你的Epic账号邮箱）、PASSWORD（你的Epic账号密码）；
+4. 启用Actions并且手动触发一次。
 
 ### Windows
 
