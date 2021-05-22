@@ -7,5 +7,5 @@ jobs:
   setup-environment:
     runs-on: ubuntu-latest
     steps:
-      run:
+      run: |
         echo test
