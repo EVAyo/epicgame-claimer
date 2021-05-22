@@ -18,7 +18,7 @@ jobs:
     - name: Start Xvfb
       run: |
         sudo Xvfb :0 -ac &
-        sudo export DISPLAY=:0
+        export DISPLAY=:0
     - name: Checkout
       uses: actions/checkout@v2
     - name: Claim free games
