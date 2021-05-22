@@ -222,6 +222,8 @@ class epicgames_claimer:
                 await self.wait_for_element_text_change_async(purchase_button, "Loading")
                 if await self.get_element_text_async(purchase_button) == "Get":
                     await purchase_button.click()
+                    await self.try_click_async("#agree")
+                    await self.try_click_async("div[class*=accept] Button")
                     await self.try_click_async("div[data-component=platformUnsupportedWarning] > Button")
                     await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
                     await self.click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
