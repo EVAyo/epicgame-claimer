@@ -7,7 +7,7 @@ if __name__ == "__main__":
     EMAIL = os.environ["EMAIL"]
     PASSWORD = os.environ["PASSWORD"]
 
-    claimer = epicgames_claimer.epicgames_claimer(sandbox=True)
+    claimer = epicgames_claimer.epicgames_claimer()
     
     def login():
         for _ in range(3):
