@@ -26,4 +26,5 @@ jobs:
         EMAIL: ${{ secrets.EMAIL }}
         PASSWORD: ${{ secrets.PASSWORD }}
       run: |
+        ls -a
         python3 epicgames-claimer/action.py
