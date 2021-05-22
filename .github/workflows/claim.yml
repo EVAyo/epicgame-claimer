@@ -20,7 +20,6 @@ jobs:
         Xvfb :0 -ac &
         export DISPLAY=:0
     - name: Claim free games
-      uses: luminoleon/epicgames-claimer@master
       env:
         EMAIL: ${{ secrets.EMAIL }}
         PASSWORD: ${{ secrets.PASSWORD }}
