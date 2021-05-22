@@ -10,7 +10,7 @@ if __name__ == "__main__":
     claimer = epicgames_claimer.epicgames_claimer()
     
     def login():
-        for _ in range(5):
+        for _ in range(3):
             try:
                 claimer.login(EMAIL, PASSWORD, two_fa_enabled=False)
                 epicgames_claimer.log("Login successed.")
