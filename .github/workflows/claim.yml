@@ -7,11 +7,7 @@ jobs:
   setup-environment:
     runs-on: ubuntu-latest
     steps:
-    - name: Set up pyppeteer environment
+    - name: Install Ubuntu packages
       run: |
-        sudo apt update \
-        && sudo apt install -y python3 python3-pip libnss3 xvfb gconf-service libasound2 \
-        && pip3 install pyppeteer schedule \
-        && pyppeteer-install \
-        && Xvfb :0 -ac & \
-        && export DISPLAY=:0
+        sudo apt update && sudo apt install -y python3 python3-pip libnss3 xvfb gconf-service libasound2 \
+
