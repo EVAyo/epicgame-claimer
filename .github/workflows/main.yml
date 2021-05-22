@@ -30,4 +30,6 @@ jobs:
         EMAIL: ${{ secrets.EMAIL }}
         PASSWORD: ${{ secrets.PASSWORD }}
       run: |
+        sudo env
+        sudo su
         sudo python3 action.py
