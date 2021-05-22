@@ -15,4 +15,4 @@ jobs:
         pip3 install pyppeteer schedule && pyppeteer-install
     - name: Start Xvfb
       run: |
-        Xvfb :0 -ac & && export DISPLAY=:0
+        export DISPLAY=:0 && Xvfb :0 -ac &
