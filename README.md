@@ -11,14 +11,14 @@
 ### Docker
 
 ``` bash
-docker run -it -e TZ=<TimeZone> luminoleon/epicgames-claimer
+docker run -it -e TZ=<TimeZone> -v <Path>:/User_Data luminoleon/epicgames-claimer
 ```
 
-将`<TimeZone>`替换成你所在的时区（Linux时区格式，e.g. Asia/Shanghai）。
+将`<TimeZone>`替换成你所在的时区（Linux时区格式，e.g. Asia/Shanghai），`<Path>`替换成用来保存登录信息的路径。
 
 按Ctrl + P + Q可切换至后台运行。
 
-如果你不清楚如何设置时区，`docker run -it luminoleon/epicgames-claimer`同样可以正常运行，只是容器内的时间可能不正确。
+`-v`和`-e`参数是非必需的。如果遇到问题，`docker run -it luminoleon/epicgames-claimer`也可以正常运行。
 
 ### Python
 
@@ -33,10 +33,6 @@ python claimer.py
 
 ## FAQ
 
-### 如何登录我的Epic账号?
+### 如何登录我的Epic账号
 
-在脚本启动后，如果没有cookies则需要输入邮箱、密码以及两步验证代码完成登录。之后启动脚本无须再次登录。
-
-### 在使用Docker的情况下如何保存登录信息至主机
-
-可以添加参数`-v ~/epicgames-claimer/User_Data:/User_Data`，`~/epicgames-claimer/User_Data`可以替换成其他目录。
+在脚本启动后，如果没有已保存的登录信息则需要输入邮箱、密码以及两步验证代码完成登录。之后启动脚本无须再次登录。
