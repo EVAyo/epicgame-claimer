@@ -18,7 +18,7 @@
 docker run -it -e TZ=<TimeZone> -v <Path>:/User_Data luminoleon/epicgames-claimer
 ```
 
-将`<TimeZone>`替换成你所在的时区（Linux时区格式，e.g. Asia/Shanghai），`<Path>`替换成用来保存登录信息的路径。
+将`<TimeZone>`替换成你所在的时区（Linux时区格式，e.g. Asia/Shanghai），`<Path>`替换成用来保存登录信息的路径（e.g. ~/epicgames-claimer/User_Data）。
 
 按Ctrl + P + Q可切换至后台运行。
 
