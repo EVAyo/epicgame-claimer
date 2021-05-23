@@ -27,10 +27,10 @@ docker run -it -e TZ=<TimeZone> -v <Path>:/User_Data luminoleon/epicgames-claime
 ### Python
 
 ``` bash
-pip install schedule pyppeteer
+pip3 install schedule pyppeteer
 git clone https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
-python epicgames_claimer.py
+python3 epicgames_claimer.py
 ```
 
 在Linux系统中需要安装Chromium依赖和桌面环境。
