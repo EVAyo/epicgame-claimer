@@ -80,10 +80,7 @@ class epicgames_claimer:
             await self.headless_stealth_async()
     
     def open_browser(self) -> None:
-        try:
-            return self.loop.run_until_complete(self.open_browser_async())
-        except KeyboardInterrupt:
-            exit()
+        return self.loop.run_until_complete(self.open_browser_async())
 
     async def type_async(self, selector: str, text: str, sleep: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
