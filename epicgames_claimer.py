@@ -49,37 +49,41 @@ class epicgames_claimer:
 
     def close_browser(self) -> None:
         self.loop.run_until_complete(self.browser.close())
-        # 等待文件解除占用
-        time.sleep(2)
     
-    def open_browser(self) -> None:
+    async def open_browser_async(self) -> None:
         chromium_path = ""
         if os.path.exists("chromium"):
             chromium_path = "chromium/chrome.exe"
         else:
             chromium_path = launcher.executablePath()
         if self.sandbox:
-            self.browser = self.loop.run_until_complete(launch(
+            self.browser = await launch(
                 options={
                     "args": ["--disable-infobars", "--blink-settings=imagesEnabled=false"], 
                     "headless": self.headless
                 }, 
                 userDataDir=self.data_dir, 
                 executablePath=chromium_path
-            ))
+            )
         else:
-            self.browser = self.loop.run_until_complete(launch(
+            self.browser = await launch(
                 options={
                     "args": ["--no-sandbox", "--disable-infobars", "--blink-settings=imagesEnabled=false"], 
                     "headless": self.headless
                 }, 
                 userDataDir=self.data_dir, 
                 executablePath=chromium_path
-            ))
-        self.page = self.loop.run_until_complete(self.browser.pages())[0]
-        self.loop.run_until_complete(self.page.setViewport({"width": 1000, "height": 600}))
+            )
+        self.page = (await self.browser.pages())[0]
+        await self.page.setViewport({"width": 1000, "height": 600})
         if self.headless:
-            self.loop.run_until_complete(self.headless_stealth_async())
+            await self.headless_stealth_async()
+    
+    def open_browser(self) -> None:
+        try:
+            return self.loop.run_until_complete(self.open_browser_async())
+        except KeyboardInterrupt:
+            exit()
 
     async def type_async(self, selector: str, text: str, sleep: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
@@ -266,6 +270,7 @@ class epicgames_claimer:
 
     def run(self, at: str) -> None:
         import schedule
+        import signal
         def everyday_job() -> None:
             self.open_browser()
             self.logged_claim()
@@ -273,6 +278,14 @@ class epicgames_claimer:
         self.logged_claim()
         self.close_browser()
         schedule.every().day.at(at).do(everyday_job)
+        def quit(signum, frame) -> None:
+            try:
+                self.close_browser()
+            except:
+                pass
+            exit(1)
+        signal.signal(signal.SIGINT, quit)
+        signal.signal(signal.SIGTERM, quit)
         while True:
             schedule.run_pending()
             time.sleep(1)
