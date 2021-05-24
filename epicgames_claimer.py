@@ -27,12 +27,10 @@ class epicgames_claimer:
         self.loop = asyncio.get_event_loop()
         self.open_browser()
 
-    # Useless.
-    async def headless_stuff_async(self):
+    async def headless_stealth_async(self):
         await self.page.evaluateOnNewDocument(
             "() => {"
-                "Object.defineProperty(navigator, 'userAgent', {get: () => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56',});"
-                "Object.defineProperty(navigator, 'appVersion', {get: () => '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56d',});"
+                "Object.defineProperty(navigator, 'appVersion', {get: () => '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3542.0 Safari/537.36',});"
                 "Object.defineProperty(navigator, 'plugins', {get: () => [{'description': 'Portable Document Format', 'filename': 'internal-pdf-viewer', 'length': 1, 'name': 'Chrome PDF Plugin'}]});"
                 "Object.defineProperty(navigator, 'languages', {get: () => ['zh-CN', 'zh', 'en'],});"
                 "const originalQuery = window.navigator.permissions.query;"
@@ -44,6 +42,10 @@ class epicgames_claimer:
                 "['height', 'width'].forEach(property => {const imageDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, property); Object.defineProperty(HTMLImageElement.prototype, property, {...imageDescriptor, get: function() {if (this.complete && this.naturalHeight == 0) {return 16;}; return imageDescriptor.get.apply(this);},});});"
             "}"
         )
+        await self.page.evaluateOnNewDocument("window.navigator.chrome = {runtime: {}, loadTimes: function() {}, csi: function() {}, app: {}};")
+        await self.page.evaluateOnNewDocument("window.navigator.language = {runtime: {}, loadTimes: function() {}, csi: function() {}, app: {}};")
+        await self.page.setExtraHTTPHeaders({"Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8"})
+        await self.page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3542.0 Safari/537.36")
 
     def close_browser(self) -> None:
         self.loop.run_until_complete(self.browser.close())
@@ -77,7 +79,7 @@ class epicgames_claimer:
         self.page = self.loop.run_until_complete(self.browser.pages())[0]
         self.loop.run_until_complete(self.page.setViewport({"width": 1000, "height": 600}))
         if self.headless:
-            self.loop.run_until_complete(self.headless_stuff_async())
+            self.loop.run_until_complete(self.headless_stealth_async())
 
     async def type_async(self, selector: str, text: str, sleep: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
@@ -178,10 +180,10 @@ class epicgames_claimer:
             await self.click_async("#rememberMe")
         await self.click_async("#sign-in[tabindex='0']", timeout=120000)
         if two_fa_enabled:
-            if await self.detect_async("#code", timeout=120000):
+            if await self.detect_async("#code", timeout=15000):
                 await self.type_async("#code", input("2FA code: "))
                 await self.click_async("#continue[tabindex='0']", timeout=120000)
-        await self.page.waitForSelector("#user", timeout=120000)
+        await self.page.waitForSelector("#user", timeout=30000)
 
     def login(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         return self.loop.run_until_complete(self.login_async(email, password, two_fa_enabled, remember_me))
@@ -248,8 +250,6 @@ class epicgames_claimer:
                 return True
             except Exception as e:
                 log("Login failed({}).".format(e), "warning")
-                if self.headless:
-                    self.loop.run_until_complete(self.page.screenshot({"path": "login.png"}))
         log("Login failed.", "error")
         return False
     
@@ -280,7 +280,7 @@ class epicgames_claimer:
 
 if __name__ == "__main__":
     log("Claimer is starting...")
-    claimer = epicgames_claimer(headless=False)
+    claimer = epicgames_claimer(headless=True)
     if claimer.logged_login():
         log("Claim has started.")
         claimer.run("09:00")
