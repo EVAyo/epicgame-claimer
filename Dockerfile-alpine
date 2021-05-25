@@ -1,0 +1,11 @@
+FROM python:alpine
+
+LABEL maintainer="Luminoleon <luminoleon@outlook.com>"
+
+RUN apk update \
+    && apk add --no-cache chromium \
+    && pip3 install --no-cache-dir pyppeteer schedule
+
+COPY epicgames_claimer.py /
+
+CMD [ "python3", "/epicgames_claimer.py", "--chromium-path", "/usr/bin/chromium-browser" ]
