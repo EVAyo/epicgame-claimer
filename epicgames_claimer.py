@@ -303,7 +303,7 @@ def get_args() -> argparse.Namespace:
 if __name__ == "__main__":
     args = get_args()
     log("Claimer is starting...")
-    claimer = epicgames_claimer(headless=False, chromium_path=args.chromium_path)
+    claimer = epicgames_claimer(headless=True, chromium_path=args.chromium_path)
     if claimer.logged_login():
         log("Claim has started.")
         claimer.run("09:00")
