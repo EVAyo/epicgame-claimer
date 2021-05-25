@@ -1,4 +1,4 @@
-import os
+import getpass
 
 import epicgames_claimer
 
@@ -13,16 +13,17 @@ def log(text: str, level: str = "message") -> None:
 
 
 if __name__ == "__main__":
-    EMAIL = os.environ["EMAIL"]
-    PASSWORD = os.environ["PASSWORD"]
 
-    claimer = epicgames_claimer.epicgames_claimer(sandbox=True)
+    claimer = epicgames_claimer.epicgames_claimer(headless=True)
     
     def login():
         for _ in range(3):
             try:
-                claimer.login(EMAIL, PASSWORD, two_fa_enabled=False, remember_me=False)
-                log("Login successed.")
+                if not claimer.is_loggedin():
+                    EMAIL = input("Email: ")
+                    PASSWORD = getpass("Password: ")
+                    claimer.login(EMAIL, PASSWORD)
+                    log("Login successed.")
                 return
             except Exception as e:
                 log("Login failed({}).".format(e), "warning")
