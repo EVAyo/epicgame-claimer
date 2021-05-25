@@ -36,7 +36,7 @@ if __name__ == "__main__":
                 if len(claimed_game_titles) > 0:
                     log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
                 else:
-                    log("There is no game need to be claimed.")
+                    log("There is no game to be claimed.")
                 return
             except Exception as e:
                 log("{}.".format(str(e).rstrip(".")), level="warning")
