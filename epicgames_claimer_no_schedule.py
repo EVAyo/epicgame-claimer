@@ -13,7 +13,6 @@ def log(text: str, level: str = "message") -> None:
 
 
 if __name__ == "__main__":
-
     claimer = epicgames_claimer.epicgames_claimer(headless=True)
     
     def login():
