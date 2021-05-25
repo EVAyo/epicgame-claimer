@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import os
 import time
@@ -19,11 +20,12 @@ def log(text: str, level: str = "message") -> None:
 
 
 class epicgames_claimer:
-    def __init__(self, data_dir: str = "User_Data/Default", headless: bool = False, sandbox: bool = False) -> None:
+    def __init__(self, data_dir: str = "User_Data/Default", headless: bool = False, sandbox: bool = False, chromium_path: Union[str, None] = None) -> None:
         launcher.DEFAULT_ARGS.remove("--enable-automation")
         self.data_dir = data_dir
         self.headless = headless
         self.sandbox = sandbox
+        self.chromium_path = chromium_path
         self.loop = asyncio.get_event_loop()
         self.open_browser()
 
@@ -51,11 +53,11 @@ class epicgames_claimer:
         self.loop.run_until_complete(self.browser.close())
     
     async def open_browser_async(self) -> None:
-        chromium_path = ""
-        if os.path.exists("chromium"):
-            chromium_path = "chromium/chrome.exe"
-        else:
-            chromium_path = launcher.executablePath()
+        if self.chromium_path == None:
+            if os.path.exists("chromium"):
+                self.chromium_path = "chromium/chrome.exe"
+            else:
+                self.chromium_path = launcher.executablePath()
         if self.sandbox:
             self.browser = await launch(
                 options={
@@ -63,7 +65,7 @@ class epicgames_claimer:
                     "headless": self.headless
                 }, 
                 userDataDir=self.data_dir, 
-                executablePath=chromium_path
+                executablePath=self.chromium_path
             )
         else:
             self.browser = await launch(
@@ -72,7 +74,7 @@ class epicgames_claimer:
                     "headless": self.headless
                 }, 
                 userDataDir=self.data_dir, 
-                executablePath=chromium_path
+                executablePath=self.chromium_path
             )
         self.page = (await self.browser.pages())[0]
         await self.page.setViewport({"width": 1000, "height": 600})
@@ -168,11 +170,15 @@ class epicgames_claimer:
                 return
         raise TimeoutError("Waiting for element \"{}\" text content change failed: timeout {}s exceeds".format(element, timeout))
 
+    async def navigate_async(self, url: str, timeout: int = 30000, reload: bool = False) -> None:
+        if self.page.url == url and not reload:
+            return
+        await self.page.goto(url, options={"timeout": timeout})
+
     async def login_async(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
-        if self.page.url != "https://www.epicgames.com/store/en-US/":
-            await self.page.goto("https://www.epicgames.com/store/en-US/")
+        await self.navigate_async("https://www.epicgames.com/store/en-US/")
         await self.click_async("#user", timeout=120000)
         await self.click_async("#login-with-epic", timeout=120000)
         await self.type_async("#email", email)
@@ -190,7 +196,7 @@ class epicgames_claimer:
         return self.loop.run_until_complete(self.login_async(email, password, two_fa_enabled, remember_me))
 
     async def is_loggedin_async(self) -> bool:
-        await self.page.goto("https://www.epicgames.com/store/en-US/", options={"timeout": 120000})
+        await self.navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
         if (await self.get_property_async("#user", "data-component")) == "SignedIn":
             return True
         else:
@@ -200,8 +206,7 @@ class epicgames_claimer:
         return self.loop.run_until_complete(self.is_loggedin_async())
     
     async def get_freegame_links_async(self) -> List[str]:
-        if self.page.url != "https://www.epicgames.com/store/en-US/free-games":
-            await self.page.goto("https://www.epicgames.com/store/en-US/free-games")
+        await self.navigate_async("https://www.epicgames.com/store/en-US/free-games")
         await self.page.waitForSelector("div[data-component=OfferCard]")
         freegame_links = []
         freegame_links_len = len(await self.page.querySelectorAll("div[data-component=OfferCard]"))
@@ -212,12 +217,12 @@ class epicgames_claimer:
         return freegame_links
         
     async def claim_async(self) -> List[str]:
-        await self.page.goto("https://www.epicgames.com/store/en-US/free-games", options={"timeout": 480000})
+        await self.navigate_async("https://www.epicgames.com/store/en-US/free-games", timeout=480000)
         freegame_links = await self.get_freegame_links_async()
         claimed_game_titles = []
         for link in freegame_links:
             is_claim_successed = False
-            await self.page.goto(link, options={"timeout": 480000})
+            await self.navigate_async(link, timeout=480000)
             await self.try_click_async("div[class*=WarningLayout__layout] Button")
             game_title = (await self.page.title()).split(" | ")[0]
             purchase_buttons_len = len(await self.get_elements_async("button[data-testid=purchase-cta-button]"))
@@ -231,7 +236,7 @@ class epicgames_claimer:
                     await self.try_click_async("div[data-component=platformUnsupportedWarning] > Button")
                     await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
                     await self.try_click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
-                    await self.page.goto(link)
+                    await self.navigate_async(link, reload=True)
                     is_claim_successed = True
             if is_claim_successed:
                 claimed_game_titles.append(game_title)
@@ -266,8 +271,8 @@ class epicgames_claimer:
         log("Claim failed. Will retry next time.", level="error")
 
     def run(self, at: str) -> None:
-        import schedule
         import signal
+        import schedule
         def everyday_job() -> None:
             self.open_browser()
             self.logged_claim()
@@ -288,9 +293,17 @@ class epicgames_claimer:
             time.sleep(1)
 
 
+def get_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--chromium-path", "-c", type=str)
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == "__main__":
+    args = get_args()
     log("Claimer is starting...")
-    claimer = epicgames_claimer(headless=True)
+    claimer = epicgames_claimer(headless=False, chromium_path=args.chromium_path)
     if claimer.logged_login():
         log("Claim has started.")
         claimer.run("09:00")
