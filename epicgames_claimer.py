@@ -2,6 +2,7 @@ import argparse
 import ast
 import asyncio
 import os
+import signal
 import time
 from getpass import getpass
 from typing import List, Union
@@ -272,8 +273,14 @@ class epicgames_claimer:
         log("Claim failed. Will retry next time.", level="error")
 
     def run(self, at: str) -> None:
-        import signal
         import schedule
+        signal.signal(signal.SIGINT, self.quit)
+        signal.signal(signal.SIGTERM, self.quit)
+        signal.signal(signal.SIGBREAK, self.quit)
+        try:
+            signal.signal(signal.SIGHUP, self.quit)
+        except:
+            pass
         def everyday_job() -> None:
             self.open_browser()
             self.logged_claim()
@@ -281,24 +288,23 @@ class epicgames_claimer:
         self.logged_claim()
         self.close_browser()
         schedule.every().day.at(at).do(everyday_job)
-        def quit(signum, frame) -> None:
-            try:
-                self.close_browser()
-            except:
-                pass
-            exit(1)
-        signal.signal(signal.SIGINT, quit)
-        signal.signal(signal.SIGTERM, quit)
         while True:
             schedule.run_pending()
             time.sleep(1)
 
+    def quit(self, signum = None, frame = None) -> None:
+        try:
+            self.close_browser()
+        except:
+            pass
+        exit(1)
+
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--chromium-path", "-c", type=str)
-    parser.add_argument("--headless", "-hl", type=ast.literal_eval, default=True)
-    parser.add_argument("--time", "-t", type=str, default="09:00")
+    parser.add_argument("-hf", "--headful", action="store_true")
+    parser.add_argument("-c", "--chromium-path", type=str)
+    parser.add_argument("-t", "--time", type=str, default="09:00")
     args = parser.parse_args()
     return args
 
@@ -306,10 +312,9 @@ def get_args() -> argparse.Namespace:
 if __name__ == "__main__":
     args = get_args()
     log("Claimer is starting...")
-    claimer = epicgames_claimer(headless=args.headless, chromium_path=args.chromium_path)
+    claimer = epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
     if claimer.logged_login():
         log("Claim has started.")
         claimer.run(args.time)
     else:
-        time.sleep(8)
         exit(1)
