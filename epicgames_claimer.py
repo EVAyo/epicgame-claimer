@@ -1,4 +1,5 @@
 import argparse
+import ast
 import asyncio
 import os
 import time
@@ -296,6 +297,8 @@ class epicgames_claimer:
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--chromium-path", "-c", type=str)
+    parser.add_argument("--headless", "-hl", type=ast.literal_eval, default=True)
+    parser.add_argument("--time", "-t", type=str, default="09:00")
     args = parser.parse_args()
     return args
 
@@ -303,10 +306,10 @@ def get_args() -> argparse.Namespace:
 if __name__ == "__main__":
     args = get_args()
     log("Claimer is starting...")
-    claimer = epicgames_claimer(headless=True, chromium_path=args.chromium_path)
+    claimer = epicgames_claimer(headless=args.headless, chromium_path=args.chromium_path)
     if claimer.logged_login():
         log("Claim has started.")
-        claimer.run("09:00")
+        claimer.run(args.time)
     else:
         time.sleep(8)
         exit(1)
