@@ -1,5 +1,4 @@
 import argparse
-import ast
 import asyncio
 import os
 import signal
@@ -237,7 +236,7 @@ class epicgames_claimer:
                     await self.try_click_async("div[class*=accept] Button")
                     await self.try_click_async("div[data-component=platformUnsupportedWarning] > Button")
                     await self.click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
-                    await self.try_click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
+                    await self.click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
                     await self.navigate_async(link, reload=True)
                     is_claim_successed = True
             if is_claim_successed:
@@ -276,8 +275,8 @@ class epicgames_claimer:
         import schedule
         signal.signal(signal.SIGINT, self.quit)
         signal.signal(signal.SIGTERM, self.quit)
-        signal.signal(signal.SIGBREAK, self.quit)
         try:
+            signal.signal(signal.SIGBREAK, self.quit)
             signal.signal(signal.SIGHUP, self.quit)
         except:
             pass
@@ -304,7 +303,7 @@ def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("-hf", "--headful", action="store_true")
     parser.add_argument("-c", "--chromium-path", type=str)
-    parser.add_argument("-t", "--time", type=str, default="09:00")
+    parser.add_argument("-r", "--run-at", type=str, default="09:00")
     args = parser.parse_args()
     return args
 
@@ -315,6 +314,6 @@ if __name__ == "__main__":
     claimer = epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
     if claimer.logged_login():
         log("Claim has started.")
-        claimer.run(args.time)
+        claimer.run(args.run_at)
     else:
         exit(1)
