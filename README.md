@@ -20,6 +20,10 @@ docker run -it -e TZ=<TimeZone> -v <Path>:/User_Data luminoleon/epicgames-claime
 
 `-v`和`-e`参数是非必需的。如果遇到问题，`docker run -it luminoleon/epicgames-claimer`也可以正常运行。
 
+#### 指定每日运行时间
+
+docker命令添加参数`-e run_at=<Time>`。`<Time>`替换为任意时间（格式：HH:MM，e.g. 08:30）。
+
 ### Python
 
 ``` bash
@@ -28,6 +32,14 @@ git clone https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
 python3 epicgames_claimer.py
 ```
+
+#### 可选参数
+
+* `-hf`, `--headful`: 显示浏览器界面（有头模式）
+* `-c CHROMIUM_PATH`, `--chromium-path CHROMIUM_PATH`: 指定浏览器可执行文件路径
+* `-r RUN_AT`, `--run-at RUN_AT`: 指定每日运行时间（格式：HH:MM，e.g. 08:30）
+
+#### 注意事项
 
 在Linux系统中需要安装Chromium依赖。Ubuntu系统可以通过以下命令安装。
 
