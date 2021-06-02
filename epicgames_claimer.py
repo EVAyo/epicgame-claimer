@@ -10,16 +10,6 @@ from pyppeteer import launch, launcher
 from pyppeteer.element_handle import ElementHandle
 
 
-def log(text: str, level: str = "message") -> None:
-    localtime = time.asctime(time.localtime(time.time()))
-    if level == "message":
-        print("[{}] {}".format(localtime, text))
-    elif level == "warning":
-        print("\033[33m[{}] Warning: {}\033[0m".format(localtime, text))
-    elif level == "error":
-        print("\033[31m[{}] Error: {}\033[0m".format(localtime, text))
-
-
 class epicgames_claimer:
     def __init__(self, data_dir: str = "User_Data/Default", headless: bool = False, sandbox: bool = False, chromium_path: Union[str, None] = None) -> None:
         try:
@@ -32,6 +22,16 @@ class epicgames_claimer:
         self.chromium_path = chromium_path
         self._loop = asyncio.get_event_loop()
         self.open_browser()
+    
+    @staticmethod
+    def log(text: str, level: str = "message") -> None:
+        localtime = time.asctime(time.localtime(time.time()))
+        if level == "message":
+            print("[{}] {}".format(localtime, text))
+        elif level == "warning":
+            print("\033[33m[{}] Warning: {}\033[0m".format(localtime, text))
+        elif level == "error":
+            print("\033[31m[{}] Error: {}\033[0m".format(localtime, text))
 
     async def _headless_stealth_async(self):
         await self.page.evaluateOnNewDocument(
@@ -182,19 +182,19 @@ class epicgames_claimer:
     async def _login_async(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
-        await self._navigate_async("https://www.epicgames.com/store/en-US/")
-        await self._click_async("#user", timeout=120000)
-        await self._click_async("#login-with-epic", timeout=120000)
-        await self._type_async("#email", email)
-        await self._type_async("#password", password)
-        if not remember_me:
-            await self._click_async("#rememberMe")
-        await self._click_async("#sign-in[tabindex='0']", timeout=120000)
-        if two_fa_enabled:
-            if await self._find_async("#code", timeout=15000):
-                await self._type_async("#code", input("2FA code: "))
-                await self._click_async("#continue[tabindex='0']", timeout=120000)
-        await self.page.waitForSelector("#user", timeout=30000)
+        if not await self._is_logged_in_async():
+            await self._click_async("#user", timeout=120000)
+            await self._click_async("#login-with-epic", timeout=120000)
+            await self._type_async("#email", email)
+            await self._type_async("#password", password)
+            if not remember_me:
+                await self._click_async("#rememberMe")
+            await self._click_async("#sign-in[tabindex='0']", timeout=120000)
+            if two_fa_enabled:
+                if await self._find_async("#code", timeout=15000):
+                    await self._type_async("#code", input("2FA code: "))
+                    await self._click_async("#continue[tabindex='0']", timeout=120000)
+            await self.page.waitForSelector("#user", timeout=30000)
 
     def login(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         return self._loop.run_until_complete(self._login_async(email, password, two_fa_enabled, remember_me))
@@ -259,11 +259,11 @@ class epicgames_claimer:
                     email = input("Email: ")
                     password = getpass("Password: ")
                     self.login(email, password)
-                    log("Login successed.")
+                    self.log("Login successed.")
                 return True
             except Exception as e:
-                log("Login failed({}).".format(e), "warning")
-        log("Login failed.", "error")
+                self.log("Login failed({}).".format(e), "warning")
+        self.log("Login failed.", "error")
         return False
     
     def logged_claim(self) -> None:
@@ -271,11 +271,11 @@ class epicgames_claimer:
             try:
                 claimed_game_titles = self.claim()
                 if len(claimed_game_titles) > 0:
-                    log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
+                    self.log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
                 return
             except Exception as e:
-                log("{}.".format(str(e).rstrip(".")), level="warning")
-        log("Claim failed.", level="error")
+                self.log("{}.".format(str(e).rstrip(".")), level="warning")
+        self.log("Claim failed.", level="error")
 
     def run(self, at: str) -> None:
         import schedule
@@ -308,22 +308,20 @@ class epicgames_claimer:
         exit(1)
 
 
-def get_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Auto claim free games from Epic Games Store.")
-    parser.add_argument("-hf", "--headful", action="store_true")
-    parser.add_argument("-c", "--chromium-path", type=str)
-    parser.add_argument("-r", "--run-at", type=str, default="09:00")
-    parser.add_argument("-o", "--once", action="store_true")
-    args = parser.parse_args()
-    return args
-
-
 if __name__ == "__main__":
-    args = get_args()
-    log("Claimer is starting...")
+    parser = argparse.ArgumentParser(
+        description="Auto claim free games from Epic Games Store.",
+        usage="python epicgames_claimer.py [-h] [-hf] [-c CHROMIUM_PATH] [-r RUN_AT] [-o]"
+    )
+    parser.add_argument("-hf", "--headful", action="store_true", help="run Chromium in headful mode")
+    parser.add_argument("-c", "--chromium-path", type=str, help="set Chromium executable path")
+    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM)")
+    parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
+    args = parser.parse_args()
+    epicgames_claimer.log("Claimer is starting...")
     claimer = epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
     if claimer.logged_login():
-        log("Claim has started.")
+        epicgames_claimer.log("Claim has started.")
         if not args.once:
             claimer.run(args.run_at)
         else:
