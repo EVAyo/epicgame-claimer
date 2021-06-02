@@ -8,21 +8,23 @@
 
 [下载](https://github.com/luminoleon/epicgames-claimer/releases)
 
+#### Windwos版本可选参数
+
+见[Python版本可选参数](#Python版本可选参数)
+
 ### Docker
 
 ``` bash
-docker run -it -e TZ=<TimeZone> -v <Path>:/User_Data luminoleon/epicgames-claimer
+docker run -it luminoleon/epicgames-claimer
 ```
-
-将`<TimeZone>`替换成你所在的时区（Linux时区格式，e.g. Asia/Shanghai），`<Path>`替换成用来保存登录信息的路径（e.g. ~/epicgames-claimer/User_Data）。
 
 按Ctrl + P + Q可切换至后台运行。
 
-`-v`和`-e`参数是非必需的。如果遇到问题，`docker run -it luminoleon/epicgames-claimer`也可以正常运行。
+#### Docker版本可选参数
 
-#### 指定每日运行时间
-
-docker命令添加参数`-e run_at=<Time>`。`<Time>`替换为任意时间（格式：HH:MM，e.g. 08:30）。
+* `-e TZ=<TimeZone>`: 设定容器的时区信息（默认Asia/Shanghai, [时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)）
+* `-v <Path>:/User_Data`: 保存用户数据至本机路径
+* `-e run_at=<Time>`: 设定每日运行时间（默认09:00, 格式HH:MM）
 
 ### Python
 
@@ -33,11 +35,12 @@ cd epicgames-claimer
 python3 epicgames_claimer.py
 ```
 
-#### 可选参数
+#### Python版本可选参数
 
 * `-hf`, `--headful`: 显示浏览器界面（有头模式）
 * `-c CHROMIUM_PATH`, `--chromium-path CHROMIUM_PATH`: 指定浏览器可执行文件路径
 * `-r RUN_AT`, `--run-at RUN_AT`: 指定每日运行时间（格式：HH:MM，e.g. 08:30）
+* `-o`, `--once`: 运行一次领取过程后退出
 
 #### 注意事项
 
