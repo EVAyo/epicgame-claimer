@@ -13,7 +13,7 @@ RUN sed -i "s/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g" /etc/apt/source
 RUN pip3 install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple pyppeteer schedule \
     && pyppeteer-install
 
-ENV run_at=09:00
+ENV TZ=Asia/Shanghai run_at=09:00
 
 COPY epicgames_claimer.py /
 
