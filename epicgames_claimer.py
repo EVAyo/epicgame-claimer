@@ -182,19 +182,19 @@ class epicgames_claimer:
     async def _login_async(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
-        if not await self._is_logged_in_async():
-            await self._click_async("#user", timeout=120000)
-            await self._click_async("#login-with-epic", timeout=120000)
-            await self._type_async("#email", email)
-            await self._type_async("#password", password)
-            if not remember_me:
-                await self._click_async("#rememberMe")
-            await self._click_async("#sign-in[tabindex='0']", timeout=120000)
-            if two_fa_enabled:
-                if await self._find_async("#code", timeout=15000):
-                    await self._type_async("#code", input("2FA code: "))
-                    await self._click_async("#continue[tabindex='0']", timeout=120000)
-            await self.page.waitForSelector("#user", timeout=30000)
+        await self._navigate_async("https://www.epicgames.com/store/en-US/", reload=False)
+        await self._click_async("#user", timeout=120000)
+        await self._click_async("#login-with-epic", timeout=120000)
+        await self._type_async("#email", email)
+        await self._type_async("#password", password)
+        if not remember_me:
+            await self._click_async("#rememberMe")
+        await self._click_async("#sign-in[tabindex='0']", timeout=120000)
+        if two_fa_enabled:
+            if await self._find_async("#code", timeout=15000):
+                await self._type_async("#code", input("2FA code: "))
+                await self._click_async("#continue[tabindex='0']", timeout=120000)
+        await self.page.waitForSelector("#user", timeout=30000)
 
     def login(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         return self._loop.run_until_complete(self._login_async(email, password, two_fa_enabled, remember_me))
