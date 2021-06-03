@@ -14,6 +14,7 @@ jobs:
         uses: docker/setup-qemu-action@v1
       -
         name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v1
       -
         name: Login to DockerHub
@@ -80,6 +81,7 @@ jobs:
         with:
           draft: true
           prerelease: false
+          title: null
           automatic_release_tag: ${{ steps.get_version.outputs.version }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
