@@ -60,7 +60,7 @@ jobs:
         run: |
           ${pyppeteer_version} = ((pip show pyppeteer) -match "Version").split(":")[1].trim()
           ${pyppeteer_location} = ((pip show pyppeteer) -match "Location").trimStart("Location:").trim()
-          pyinstaller -F --add-data "${pyppeteer_location}/pyppeteer-${pyppeteer-version}.dist-info;pyppeteer-${pyppeteer-version}.dist-info" epicgames_claimer.py
+          pyinstaller -F --add-data "${pyppeteer_location}/pyppeteer-${pyppeteer_version}.dist-info;pyppeteer-${pyppeteer_version}.dist-info" epicgames_claimer.py
       -
         name: Move files to "zip/EpicGames Claimer"
         run: |
