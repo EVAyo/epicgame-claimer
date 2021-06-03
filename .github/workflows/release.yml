@@ -65,7 +65,7 @@ jobs:
         name: Move files to "zip/EpicGames Claimer"
         run: |
           mkdir "zip/EpicGames Claimer"
-          mv -r $HOME/AppData/Local/pyppeteer/pyppeteer/local-chromium/*/chrome-win32 "zip/EpicGames Claimer"
+          mv $HOME/AppData/Local/pyppeteer/pyppeteer/local-chromium/*/chrome-win32 "zip/EpicGames Claimer"
           mv dist/*.exe "zip/EpicGames Claimer"
       -
         name: Get current version
