@@ -58,8 +58,8 @@ class epicgames_claimer:
     
     async def _open_browser_async(self) -> None:
         if self.chromium_path == None:
-            if os.path.exists("chromium"):
-                self.chromium_path = "chromium/chrome.exe"
+            if os.path.exists("chrome-win32"):
+                self.chromium_path = "chrome-win32/chrome.exe"
             else:
                 self.chromium_path = launcher.executablePath()
         if self.sandbox:
