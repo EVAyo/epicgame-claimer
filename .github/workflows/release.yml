@@ -73,12 +73,13 @@ jobs:
         uses: battila7/get-version-action@v2
       -
         name: Zip files
-        run: Compress-Archive -Path "EpicGames Claimer" -DestinationPath EpicGames-Claimer-${{ steps.get_version.outputs.version-without-v }}-Windows.zip
+        run: Compress-Archive -Path "EpicGames Claimer" -DestinationPath EpicGames-Claimer-${{ steps.get_version.outputs.version }}-Windows.zip
       -
         name: Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
           draft: true
+          prerelease: false
           automatic_release_tag: ${{ steps.get_version.outputs.version }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
