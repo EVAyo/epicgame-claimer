@@ -194,7 +194,7 @@ class epicgames_claimer:
             if await self._find_async("#code", timeout=15000):
                 await self._type_async("#code", input("2FA code: "))
                 await self._click_async("#continue[tabindex='0']", timeout=120000)
-        await self.page.waitForSelector("#user", timeout=30000)
+        await self.page.waitForSelector("#user", timeout=120000)
 
     def login(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         return self._loop.run_until_complete(self._login_async(email, password, two_fa_enabled, remember_me))
