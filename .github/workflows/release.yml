@@ -62,20 +62,18 @@ jobs:
           ${pyppeteer_location} = ((pip show pyppeteer) -match "Location").trimStart("Location:").trim()
           pyinstaller -F --add-data "${pyppeteer_location}/pyppeteer-${pyppeteer_version}.dist-info;pyppeteer-${pyppeteer_version}.dist-info" epicgames_claimer.py
       -
-        name: Move files to "zip/EpicGames Claimer"
+        name: Move files to "EpicGames Claimer"
         run: |
-          mkdir "zip/EpicGames Claimer"
-          mv $HOME/AppData/Local/pyppeteer/pyppeteer/local-chromium/*/chrome-win32 "zip/EpicGames Claimer"
-          mv dist/*.exe "zip/EpicGames Claimer"
+          mkdir "EpicGames Claimer"
+          mv $HOME/AppData/Local/pyppeteer/pyppeteer/local-chromium/*/chrome-win32 "EpicGames Claimer"
+          mv dist/*.exe "EpicGames Claimer"
       -
         name: Get current version
         id: get_version
         uses: battila7/get-version-action@v2
       -
         name: Zip files
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r EpicGames-Claimer-${{ steps.get_version.outputs.version-without-v }}-Windows.zip zip
+        run: Compress-Archive -Path "EpicGames Claimer" -DestinationPath EpicGames-Claimer-${{ steps.get_version.outputs.version-without-v }}-Windows.zip
       -
         name: Release
         uses: marvinpinto/action-automatic-releases@latest
