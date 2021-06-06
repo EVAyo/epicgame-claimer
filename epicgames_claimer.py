@@ -179,6 +179,13 @@ class epicgames_claimer:
             return
         await self.page.goto(url, options={"timeout": timeout})
 
+    async def _close_autoplay_async(self):
+        await self._navigate_async("https://www.epicgames.com/store/en-US/p/fortnite")
+        await self._click_async("button[data-testid=settings-button]")
+        if await self._find_async("#on[checked]", timeout=4000):
+            await self._click_async("div[data-testid=settings-container] button")
+            await asyncio.sleep(2)
+
     async def _login_async(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
@@ -195,10 +202,11 @@ class epicgames_claimer:
                     await self._type_async("#code", input("2FA code: "))
                     await self._click_async("#continue[tabindex='0']", timeout=120000)
             await self.page.waitForSelector("#user", timeout=120000)
+            await self._close_autoplay_async()
 
     def login(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         return self._loop.run_until_complete(self._login_async(email, password, two_fa_enabled, remember_me))
-
+    
     async def _is_logged_in_async(self) -> bool:
         await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
         if (await self._get_property_async("#user", "data-component")) == "SignedIn":
@@ -242,7 +250,7 @@ class epicgames_claimer:
                     await self._try_click_async("div[class*=accept] Button")
                     await self._try_click_async("div[data-component=platformUnsupportedWarning] > Button")
                     await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
-                    await self._click_async("div.ReactModal__Content button[data-component=ModalCloseButton]")
+                    await self._click_async("div.ReactModal__Content button[data-component=ModalCloseButton]", timeout=120000)
                     await self._navigate_async(link, reload=True)
                     is_claim_successed = True
             if is_claim_successed:
