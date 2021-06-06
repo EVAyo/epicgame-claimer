@@ -50,8 +50,20 @@ python3 epicgames_claimer.py
 sudo apt install gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
 ```
 
+或者安装Chrome浏览器代替Chromium。
+
+```bash
+curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt install -y google-chrome-stable_current_amd64.deb
+python3 epicgames_claimer.py --chromium-path /usr/bin/google-chrome
+```
+
 ## FAQ
 
 ### 如何登录我的Epic账号
 
 在脚本启动后，如果没有已保存的登录信息则需要输入邮箱、密码以及两步验证代码完成登录。之后启动脚本无须再次登录。
+
+## 已知问题
+
+Windows系统中途结束脚本可能导致浏览器进程留在后台。请检查任务管理器并手动结束浏览器进程。
