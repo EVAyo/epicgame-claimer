@@ -198,8 +198,9 @@ class epicgames_claimer:
                 await self._click_async("#rememberMe")
             await self._click_async("#sign-in[tabindex='0']", timeout=120000)
             if two_fa_enabled:
-                if await self._find_async("#code", timeout=15000):
-                    await self._type_async("#code", input("2FA code: "))
+                await self.page.waitForNavigation(options={"timeout": 120000})
+                if self.page.url != "https://www.epicgames.com/store/en-US/":
+                    await self._type_async("input[name=code-input-0]", input("2FA code: "))
                     await self._click_async("#continue[tabindex='0']", timeout=120000)
             await self.page.waitForSelector("#user", timeout=120000)
             await self._close_autoplay_async()
