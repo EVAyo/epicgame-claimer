@@ -22,9 +22,11 @@ docker run -it luminoleon/epicgames-claimer
 
 #### Docker版本可选参数
 
-* `-e TZ=<TimeZone>`: 设定容器的时区信息（默认Asia/Shanghai, [时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)）
-* `-v <Path>:/User_Data`: 保存用户数据至本机路径
-* `-e run_at=<Time>`: 设定每日运行时间（默认09:00, 格式HH:MM）
+| 参数                    | 说明                                 |
+|----------------------- | ------------------------------------ |
+| `-e TZ=<TimeZone>`     | 设定容器的时区信息（默认Asia/Shanghai, [时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)） |
+| `-v <Path>:/User_Data` | 保存用户数据至本机路径                  |
+| `-e run_at=<Time>`     | 设定每日运行时间（默认09:00, 格式HH:MM） |
 
 ### Python
 
@@ -39,11 +41,13 @@ python3 epicgames_claimer.py
 
 #### Python版本可选参数
 
-* `-h`, `--help`: 查看帮助信息
-* `-hf`, `--headful`: 显示浏览器界面（有头模式）
-* `-c CHROMIUM_PATH`, `--chromium-path CHROMIUM_PATH`: 指定浏览器可执行文件路径
-* `-r RUN_AT`, `--run-at RUN_AT`: 指定每日运行时间（格式：HH:MM，e.g. 08:30）
-* `-o`, `--once`: 运行一次领取过程后退出
+| 参数                                                 | 说明                                    |
+|---------------------------------------------------- | --------------------------------------- |
+| `-h`, `--help`                                      | 查看帮助信息                              |
+| `-hf`, `--headful`                                  | 显示浏览器界面（有头模式）                  |
+| `-c CHROMIUM_PATH`, `--chromium-path CHROMIUM_PATH` | 指定浏览器可执行文件路径                   |
+| `-r RUN_AT`, `--run-at RUN_AT`                      | 指定每日运行时间（格式：HH:MM，e.g. 08:30） |
+| `-o`, `--once`                                      | 运行一次领取过程后退出                     |
 
 #### 注意事项
 
