@@ -28,15 +28,18 @@ docker run -it luminoleon/epicgames-claimer
 
 ### Python
 
+要求Python >= 3.6。
+
 ``` bash
-pip3 install schedule pyppeteer
 git clone https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
+pip3 install -r requirements.txt
 python3 epicgames_claimer.py
 ```
 
 #### Python版本可选参数
 
+* `-h`, `--help`: 查看帮助信息
 * `-hf`, `--headful`: 显示浏览器界面（有头模式）
 * `-c CHROMIUM_PATH`, `--chromium-path CHROMIUM_PATH`: 指定浏览器可执行文件路径
 * `-r RUN_AT`, `--run-at RUN_AT`: 指定每日运行时间（格式：HH:MM，e.g. 08:30）
@@ -46,13 +49,13 @@ python3 epicgames_claimer.py
 
 在Linux系统中需要安装Chromium依赖。Ubuntu系统可以通过以下命令安装。
 
-```bash
+``` bash
 sudo apt install gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
 ```
 
 或者安装Chrome浏览器代替Chromium。
 
-```bash
+``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install -y google-chrome-stable_current_amd64.deb
 python3 epicgames_claimer.py --chromium-path /usr/bin/google-chrome
