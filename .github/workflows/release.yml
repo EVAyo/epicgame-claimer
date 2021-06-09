@@ -86,3 +86,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             *.zip
+            epicgames_claimer.py
