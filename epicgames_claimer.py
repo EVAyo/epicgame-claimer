@@ -223,9 +223,11 @@ class epicgames_claimer:
         await self.page.waitForSelector("div[data-component=OfferCard]")
         freegame_links = []
         freegame_links_len = len(await self.page.querySelectorAll("div[data-component=OfferCard]"))
+        freegame_statuses = await self._get_texts_async("div[data-component=OfferCard] div[data-component=StatusBar]")
         for freegame_index in range(freegame_links_len):
+            freegame_status = freegame_statuses[freegame_index]
             freegame_link = await self.page.evaluate("document.querySelectorAll('div[data-component=OfferCard]')[{}].parentElement.href".format(freegame_index))
-            if freegame_link != "https://www.epicgames.com/store/en-US/free-games":
+            if freegame_link != "https://www.epicgames.com/store/en-US/free-games" and freegame_status == "Free Now":
                 freegame_links.append(freegame_link)
         return freegame_links
     
