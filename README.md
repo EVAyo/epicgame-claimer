@@ -2,6 +2,8 @@
 
 自动领取[Epic Games每周免费游戏](https://www.epicgames.com/store/free-games)。脚本会在每天上午9:00自动检查并领取免费游戏。
 
+如果你觉得本项目对你有帮助，你可以star本项目。
+
 ## 开始
 
 ### Windows
