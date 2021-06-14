@@ -254,7 +254,7 @@ class epicgames_claimer:
                     await self._try_click_async("div[data-component=platformUnsupportedWarning] > Button")
                     await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
                     await self._click_async("div.ReactModal__Content button[data-component=ModalCloseButton]", timeout=120000)
-                    await self._navigate_async(link, reload=True)
+                    await self._navigate_async(link, timeout=480000, reload=True)
                     is_claim_successed = True
             if is_claim_successed:
                 claimed_game_titles.append(game_title)
@@ -321,7 +321,7 @@ class epicgames_claimer:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Auto claim free games from Epic Games Store.",
+        description="Claim weekly free games from Epic Games Store.",
         usage="python epicgames_claimer.py [-h] [-hf] [-c CHROMIUM_PATH] [-r RUN_AT] [-o]"
     )
     parser.add_argument("-hf", "--headful", action="store_true", help="run Chromium in headful mode")
@@ -332,7 +332,7 @@ if __name__ == "__main__":
     epicgames_claimer.log("Claimer is starting...")
     claimer = epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
     if claimer.logged_login():
-        epicgames_claimer.log("Claim has started.")
+        epicgames_claimer.log("Claimer has started.")
         if not args.once:
             claimer.run(args.run_at)
         else:
