@@ -50,7 +50,7 @@ python3 epicgames_claimer.py
 | `-h`, `--help`                                      | show the help message                             |
 | `-hf`, `--headful`                                  | run Chromium in headful mode                      |
 | `-c CHROMIUM_PATH`, `--chromium-path CHROMIUM_PATH` | set path to Chromium executable                   |
-| `-r RUN_AT`, `--run-at RUN_AT`                      | set daily check and claim time(HH:MM, default: 08:30)                                                                                                    |
+| `-r RUN_AT`, `--run-at RUN_AT`                      | set daily check and claim time(HH:MM, default: 09:00)                                                                                                    |
 | `-o`, `--once`                                      | claim once then exit                              |
 
 #### Notice
