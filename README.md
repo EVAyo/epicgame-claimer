@@ -57,7 +57,7 @@ python3 epicgames_claimer.py
 
 In Linux system, you should install Chrome or any other browser that use Chromium kernel, then add `--chromium-path` to set path to the browser executable.
 
-For Debian-based Linux：
+For Debian-based Linux:
 
 ``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
@@ -66,7 +66,7 @@ rm google-chrome-stable_current_amd64.deb
 python3 epicgames_claimer.py --chromium-path /usr/bin/google-chrome
 ```
 
-For Redhat-based Linux：
+For Redhat-based Linux:
 
 ``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
