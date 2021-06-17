@@ -24,9 +24,9 @@ class epicgames_claimer:
         self.open_browser()
     
     @staticmethod
-    def log(text: str, level: str = "message") -> None:
+    def log(text: str, level: str = "info") -> None:
         localtime = time.asctime(time.localtime(time.time()))
-        if level == "message":
+        if level == "info":
             print("[{}] {}".format(localtime, text))
         elif level == "warning":
             print("\033[33m[{}] Warning: {}\033[0m".format(localtime, text))
@@ -62,24 +62,14 @@ class epicgames_claimer:
                 self.chromium_path = "chrome-win32/chrome.exe"
             else:
                 self.chromium_path = launcher.executablePath()
-        if self.sandbox:
-            self.browser = await launch(
-                options={
-                    "args": ["--disable-infobars", "--blink-settings=imagesEnabled=false"], 
-                    "headless": self.headless
-                }, 
-                userDataDir=self.data_dir, 
-                executablePath=self.chromium_path
-            )
-        else:
-            self.browser = await launch(
-                options={
-                    "args": ["--no-sandbox", "--disable-infobars", "--blink-settings=imagesEnabled=false"], 
-                    "headless": self.headless
-                }, 
-                userDataDir=self.data_dir, 
-                executablePath=self.chromium_path
-            )
+        browser_args = ["--disable-infobars", "--blink-settings=imagesEnabled=false"]
+        if not self.sandbox:
+            browser_args.append("--no-sandbox")
+        self.browser = await launch(
+            options={"args": browser_args, "headless": self.headless}, 
+            userDataDir=self.data_dir, 
+            executablePath=self.chromium_path
+        )
         self.page = (await self.browser.pages())[0]
         await self.page.setViewport({"width": 1000, "height": 600})
         if self.headless:
@@ -325,7 +315,7 @@ if __name__ == "__main__":
         usage="python epicgames_claimer.py [-h] [-hf] [-c CHROMIUM_PATH] [-r RUN_AT] [-o]"
     )
     parser.add_argument("-hf", "--headful", action="store_true", help="run Chromium in headful mode")
-    parser.add_argument("-c", "--chromium-path", type=str, help="set Chromium executable path")
+    parser.add_argument("-c", "--chromium-path", type=str, help="set path to Chromium executable")
     parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
     args = parser.parse_args()
