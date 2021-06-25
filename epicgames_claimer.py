@@ -57,11 +57,8 @@ class epicgames_claimer:
         self._loop.run_until_complete(self.browser.close())
     
     async def _open_browser_async(self) -> None:
-        if self.chromium_path == None:
-            if os.path.exists("chrome-win32"):
-                self.chromium_path = "chrome-win32/chrome.exe"
-            else:
-                self.chromium_path = launcher.executablePath()
+        if self.chromium_path == None and os.path.exists("chrome-win32"):
+            self.chromium_path = "chrome-win32/chrome.exe"
         browser_args = ["--disable-infobars", "--blink-settings=imagesEnabled=false"]
         if not self.sandbox:
             browser_args.append("--no-sandbox")
