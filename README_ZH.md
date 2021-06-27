@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-自动领取[Epic Games每周免费游戏](https://www.epicgames.com/store/free-games)。
+自动领取Epic游戏商城[每周免费游戏](https://www.epicgames.com/store/free-games)。
 
 如果你觉得本项目对你有帮助，请star本项目。
 
