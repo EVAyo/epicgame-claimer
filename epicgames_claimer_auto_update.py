@@ -1,12 +1,11 @@
 import argparse
 import importlib
+import os
 import signal
 import time
 
 import schedule
 import update_check
-
-import epicgames_claimer
 
 
 if __name__ == "__main__":
@@ -19,11 +18,24 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")    
     args = parser.parse_args()
+    def epicgames_claimer_exists() -> bool:
+        if os.path.exists("epicgames_claimer.py") and os.path.getsize("epicgames_claimer.py") > 0:
+            return True
+        else:
+            return False
+    if not epicgames_claimer_exists():
+        open("epicgames_claimer.py", "w").close()
+        try:
+            update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/dev/epicgames_claimer.py")
+        except:
+            print("Can not download \"epicgames_claimer.py\". Please try it manually.")
+            exit(1)
+    import epicgames_claimer
     def update_epicgmaes_claimer() -> None:
         try:
             if update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/dev/epicgames_claimer.py"):
+                importlib.reload(epicgames_claimer)
                 epicgames_claimer.epicgames_claimer.log("\"epicgames_claimer.py\" has been updated.")
-            importlib.reload(epicgames_claimer)
         except Exception as e:
             epicgames_claimer.epicgames_claimer.log("Update failed. {}: {}".format(e.__class__.__name__, e), level="warning")
     def run_once() -> None:
