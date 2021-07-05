@@ -1,21 +1,12 @@
 import argparse
 import importlib
+import signal
 import time
 
 import schedule
 import update_check
 
 import epicgames_claimer
-
-
-def run_auto_update(claimer: epicgames_claimer.epicgames_claimer):
-    claimer.run(args.run_at, once=True)
-    try:
-        update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/dev/epicgames_claimer.py")
-        importlib.reload(epicgames_claimer)
-        claimer = epicgames_claimer.epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
-    except Exception as e:
-        epicgames_claimer.epicgames_claimer.log("Update failed. {}: {}".format(e.__class__.__name__, e), level="warning")
 
 
 if __name__ == "__main__":
@@ -28,17 +19,39 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")    
     args = parser.parse_args()
+    def update_epicgmaes_claimer() -> None:
+        try:
+            update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/dev/epicgames_claimer.py")
+            importlib.reload(epicgames_claimer)
+        except Exception as e:
+            epicgames_claimer.epicgames_claimer.log("Update failed. {}: {}".format(e.__class__.__name__, e), level="warning")
+    def run_once() -> None:
+        claimer = epicgames_claimer.epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
+        signal.signal(signal.SIGINT, claimer._quit)
+        signal.signal(signal.SIGTERM, claimer._quit)
+        try:
+            signal.signal(signal.SIGBREAK, claimer._quit)
+        except AttributeError:
+            pass
+        try:
+            signal.signal(signal.SIGHUP, claimer._quit)
+        except AttributeError:
+            pass
+        claimer.logged_claim()
+        claimer.close_browser()
+    def run_once_with_update() -> None:
+        update_epicgmaes_claimer()
+        run_once()
     epicgames_claimer.epicgames_claimer.log("Claimer is starting...")
-    claimer = epicgames_claimer.epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
-    if claimer.logged_login():
+    claimer_for_login = epicgames_claimer.epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
+    if claimer_for_login.logged_login():
+        claimer_for_login.close_browser()
         epicgames_claimer.epicgames_claimer.log("Claimer has started.")
         if args.once:
-            run_auto_update(claimer)
+            run_once_with_update()
         else:
-            def job():
-                run_auto_update(claimer)
-            job()
-            schedule.every().day.at(args.run_at).do(job)
+            run_once_with_update()
+            schedule.every().day.at(args.run_at).do(run_once_with_update)
             while True:
                 schedule.run_pending()
                 time.sleep(1)        
