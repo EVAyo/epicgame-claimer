@@ -12,8 +12,8 @@ RUN apt update \
     && apt autoremove -y\
     && apt clean
 
-ENV TZ=Asia/Shanghai run_at=09:00
+ENV TZ=Asia/Shanghai run_at=09:00 auto_update=false
 
 COPY epicgames_claimer.py /
 
-CMD [ "bash", "-c", "python3 epicgames_claimer.py --run-at ${run_at}" ]
+CMD [ "bash", "-c", "if ${auto_update}; then file_name='epicgames_claimer_auto_update.py'; else file_name='epicgames_claimer.py'; fi && python3 ${file_name} --run-at ${run_at}" ]
