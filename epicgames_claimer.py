@@ -275,7 +275,7 @@ class epicgames_claimer:
                 self.log("{}.".format(str(e).rstrip(".")), level="warning")
         self.log("Claim failed.", level="error")
 
-    def run(self, at: str) -> None:
+    def run(self, at: str = None, once: bool = False) -> None:
         import schedule
         signal.signal(signal.SIGINT, self._quit)
         signal.signal(signal.SIGTERM, self._quit)
@@ -293,6 +293,8 @@ class epicgames_claimer:
             self.close_browser()
         self.logged_claim()
         self.close_browser()
+        if at == None or once:
+            return
         schedule.every().day.at(at).do(everyday_job)
         while True:
             schedule.run_pending()
@@ -320,9 +322,6 @@ if __name__ == "__main__":
     claimer = epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
     if claimer.logged_login():
         epicgames_claimer.log("Claimer has started.")
-        if not args.once:
-            claimer.run(args.run_at)
-        else:
-            claimer.logged_claim()
+        claimer.run(args.run_at, once=args.once)
     else:
         exit(1)
