@@ -21,7 +21,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     def update_epicgmaes_claimer() -> None:
         try:
-            update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/dev/epicgames_claimer.py")
+            if update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/dev/epicgames_claimer.py"):
+                epicgames_claimer.epicgames_claimer.log("\"epicgames_claimer.py\" has been updated.")
             importlib.reload(epicgames_claimer)
         except Exception as e:
             epicgames_claimer.epicgames_claimer.log("Update failed. {}: {}".format(e.__class__.__name__, e), level="warning")
