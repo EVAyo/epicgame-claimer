@@ -12,6 +12,8 @@ If you think this project is helpful to you, please star this project.
 
 [Download](https://github.com/luminoleon/epicgames-claimer/releases)
 
+Notice: Windows version does not currently support automatic update.
+
 #### Optional Arguments for Windows Version
 
 See [Optional Arguments for Python Version](#optional-arguments-for-python-version).
@@ -22,15 +24,7 @@ See [Optional Arguments for Python Version](#optional-arguments-for-python-versi
 docker run -it luminoleon/epicgames-claimer
 ```
 
-After successful login, you can press Ctrl + P + Q to switch to the background.
-
-#### Optional Arguments for Docker Version
-
-| Arguments              | Descriptions                                                      |
-|----------------------- | ----------------------------------------------------------------- |
-| `-e TZ=<TimeZone>`     | set the time zone of the container(default: Asia/Shanghai, [Available Time Zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List))                         |
-| `-v <Path>:/User_Data` | save the user data to the local path                              |
-| `-e run_at=<Time>`     | set daily check and claim time(HH:MM, default: 09:00) |
+See [Docker hub page](https://hub.docker.com/r/luminoleon/epicgames-claimer) for more informations.
 
 ### Python
 
@@ -40,7 +34,7 @@ Require Python >= 3.6.
 git clone -b master https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
 pip3 install -r requirements.txt
-python3 epicgames_claimer.py
+python3 epicgames_claimer_auto_update.py
 ```
 
 #### Optional Arguments for Python Version
@@ -63,7 +57,7 @@ For Debian-based Linux:
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install -y ./google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
-python3 epicgames_claimer.py --chromium-path /usr/bin/google-chrome
+python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
 ```
 
 For Redhat-based Linux:
@@ -72,7 +66,7 @@ For Redhat-based Linux:
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
-python3 epicgames_claimer.py --chromium-path /usr/bin/google-chrome
+python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
 ```
 
 ## Known Issues

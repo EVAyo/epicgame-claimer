@@ -12,6 +12,8 @@
 
 [下载](https://github.com/luminoleon/epicgames-claimer/releases)
 
+注意：Windows版本目前不支持自动更新脚本。
+
 #### Windwos版本可选参数
 
 见[Python版本可选参数](#Python版本可选参数)。
@@ -22,15 +24,7 @@
 docker run -it luminoleon/epicgames-claimer
 ```
 
-按Ctrl + P + Q可切换至后台运行。
-
-#### Docker版本可选参数
-
-| 参数                    | 说明                                 |
-|----------------------- | ------------------------------------ |
-| `-e TZ=<TimeZone>`     | 设定容器的时区信息（默认Asia/Shanghai， [可用时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)）                          |
-| `-v <Path>:/User_Data` | 保存用户数据至本机路径                  |
-| `-e run_at=<Time>`     | 设定每日运行时间（HH:MM， 默认09:00）|
+更多使用方法见[Docker hub页面](https://hub.docker.com/r/luminoleon/epicgames-claimer)。
 
 ### Python
 
@@ -40,7 +34,7 @@ docker run -it luminoleon/epicgames-claimer
 git clone -b master https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
 pip3 install -r requirements.txt
-python3 epicgames_claimer.py
+python3 epicgames_claimer_auto_update.py
 ```
 
 #### Python版本可选参数
@@ -63,7 +57,7 @@ python3 epicgames_claimer.py
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install -y ./google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
-python3 epicgames_claimer.py --chromium-path /usr/bin/google-chrome
+python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
 ```
 
 基于Redhat的Linux：
@@ -72,7 +66,7 @@ python3 epicgames_claimer.py --chromium-path /usr/bin/google-chrome
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
-python3 epicgames_claimer.py --chromium-path /usr/bin/google-chrome
+python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
 ```
 
 ## 已知问题
