@@ -15,7 +15,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("-hf", "--headful", action="store_true", help="run Chromium in headful mode")
     parser.add_argument("-c", "--chromium-path", type=str, help="set path to Chromium executable")
-    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM)")
+    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default: 09:00)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")    
     args = parser.parse_args()
     def epicgames_claimer_exists() -> bool:
@@ -37,7 +37,7 @@ if __name__ == "__main__":
                 importlib.reload(epicgames_claimer)
                 epicgames_claimer.epicgames_claimer.log("\"epicgames_claimer.py\" has been updated.")
         except Exception as e:
-            epicgames_claimer.epicgames_claimer.log("Update failed. {}: {}".format(e.__class__.__name__, e), level="warning")
+            epicgames_claimer.epicgames_claimer.log("Update \"epicgames_claimer.py\" failed. {}: {}".format(e.__class__.__name__, e), level="warning")
     def run_once() -> None:
         claimer = epicgames_claimer.epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
         signal.signal(signal.SIGINT, claimer._quit)

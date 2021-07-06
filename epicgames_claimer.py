@@ -315,7 +315,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("-hf", "--headful", action="store_true", help="run Chromium in headful mode")
     parser.add_argument("-c", "--chromium-path", type=str, help="set path to Chromium executable")
-    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM)")
+    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default: 09:00)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
     args = parser.parse_args()
     epicgames_claimer.log("Claimer is starting...")
