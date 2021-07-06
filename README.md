@@ -37,6 +37,8 @@ pip3 install -r requirements.txt
 python3 epicgames_claimer_auto_update.py
 ```
 
+If you don't want automatic update, use `python3 epicgames_claimer.py` instead of `python3 epicgames_claimer_auto_update.py`.
+
 #### Optional Arguments for Python Version
 
 | Arguments                                           | Descriptions                                      |

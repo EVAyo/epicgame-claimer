@@ -37,6 +37,8 @@ pip3 install -r requirements.txt
 python3 epicgames_claimer_auto_update.py
 ```
 
+如果你不想自动更新脚本，可以用`python3 epicgames_claimer.py`替代`python3 epicgames_claimer_auto_update.py`。
+
 #### Python版本可选参数
 
 | 参数                                                 | 说明                                    |
