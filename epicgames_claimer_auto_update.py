@@ -59,7 +59,7 @@ if __name__ == "__main__":
     claimer_for_login = epicgames_claimer.epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
     if claimer_for_login.logged_login():
         claimer_for_login.close_browser()
-        epicgames_claimer.epicgames_claimer.log("Claimer has started.")
+        epicgames_claimer.epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
         if args.once:
             run_once_with_update()
         else:

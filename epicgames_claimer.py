@@ -257,7 +257,7 @@ class epicgames_claimer:
                     email = input("Email: ")
                     password = getpass("Password: ")
                     self.login(email, password)
-                    self.log("Login successed.")
+                    self.log("Login successed. User data is saved at \"{}\".".format(self.data_dir))
                 return True
             except Exception as e:
                 self.log("Login failed({}).".format(e), "warning")
@@ -321,7 +321,7 @@ if __name__ == "__main__":
     epicgames_claimer.log("Claimer is starting...")
     claimer = epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
     if claimer.logged_login():
-        epicgames_claimer.log("Claimer has started.")
+        epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
         claimer.run(args.run_at, once=args.once)
     else:
         exit(1)
