@@ -2,7 +2,7 @@ FROM ubuntu
 
 LABEL maintainer="Luminoleon <luminoleon@outlook.com>"
 
-ENV DEBIAN_FRONTEND=noninteractive TZ=Asia/Shanghai run_at=09:00 auto_update=false
+ENV DEBIAN_FRONTEND=noninteractive TZ=Asia/Shanghai run_at=09:00 auto_update=true
 
 COPY requirements.txt /
 
