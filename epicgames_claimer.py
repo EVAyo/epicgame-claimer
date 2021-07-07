@@ -11,11 +11,9 @@ from pyppeteer.element_handle import ElementHandle
 
 
 class epicgames_claimer:
-    def __init__(self, data_dir: str = "User_Data/Default", headless: bool = False, sandbox: bool = False, chromium_path: Union[str, None] = None) -> None:
-        try:
+    def __init__(self, data_dir: str = None, headless: bool = True, sandbox: bool = False, chromium_path: Union[str, None] = None) -> None:
+        if "--enable-automation" in launcher.DEFAULT_ARGS:
             launcher.DEFAULT_ARGS.remove("--enable-automation")
-        except ValueError:
-            pass
         self.data_dir = data_dir
         self.headless = headless
         self.sandbox = sandbox
@@ -57,15 +55,20 @@ class epicgames_claimer:
         self._loop.run_until_complete(self.browser.close())
     
     async def _open_browser_async(self) -> None:
-        if self.chromium_path == None and os.path.exists("chrome-win32"):
-            self.chromium_path = "chrome-win32/chrome.exe"
-        browser_args = ["--disable-infobars", "--blink-settings=imagesEnabled=false"]
+        if "win" in launcher.current_platform():
+            if self.chromium_path == None and os.path.exists("chrome-win32"):
+                self.chromium_path = "chrome-win32/chrome.exe"
+        browser_args = [
+            "--disable-infobars", 
+            "--blink-settings=imagesEnabled=false", 
+            "--no-first-run"
+        ]
         if not self.sandbox:
             browser_args.append("--no-sandbox")
         self.browser = await launch(
             options={"args": browser_args, "headless": self.headless}, 
             userDataDir=self.data_dir, 
-            executablePath=self.chromium_path
+            executablePath=self.chromium_path,
         )
         self.page = (await self.browser.pages())[0]
         await self.page.setViewport({"width": 1000, "height": 600})
@@ -319,7 +322,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
     args = parser.parse_args()
     epicgames_claimer.log("Claimer is starting...")
-    claimer = epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
+    claimer = epicgames_claimer(data_dir="User_Data/Default", headless=(not args.headful), chromium_path=args.chromium_path)
     if claimer.logged_login():
         epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
         claimer.run(args.run_at, once=args.once)

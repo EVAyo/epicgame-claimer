@@ -39,7 +39,7 @@ if __name__ == "__main__":
         except Exception as e:
             epicgames_claimer.epicgames_claimer.log("Update \"epicgames_claimer.py\" failed. {}: {}".format(e.__class__.__name__, e), level="warning")
     def run_once() -> None:
-        claimer = epicgames_claimer.epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
+        claimer = epicgames_claimer.epicgames_claimer(data_dir="User_Data/Default", headless=(not args.headful), chromium_path=args.chromium_path)
         signal.signal(signal.SIGINT, claimer._quit)
         signal.signal(signal.SIGTERM, claimer._quit)
         try:
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         update_epicgmaes_claimer()
         run_once()
     epicgames_claimer.epicgames_claimer.log("Claimer is starting...")
-    claimer_for_login = epicgames_claimer.epicgames_claimer(headless=(not args.headful), chromium_path=args.chromium_path)
+    claimer_for_login = epicgames_claimer.epicgames_claimer(data_dir="User_Data/Default", headless=(not args.headful), chromium_path=args.chromium_path)
     if claimer_for_login.logged_login():
         claimer_for_login.close_browser()
         epicgames_claimer.epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
