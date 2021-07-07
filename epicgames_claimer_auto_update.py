@@ -52,7 +52,7 @@ if __name__ == "__main__":
             pass
         claimer.logged_claim()
         claimer.close_browser()
-    def run_once_with_update() -> None:
+    def update_and_run_once() -> None:
         update_epicgmaes_claimer()
         run_once()
     epicgames_claimer.epicgames_claimer.log("Claimer is starting...")
@@ -60,11 +60,9 @@ if __name__ == "__main__":
     if claimer_for_login.logged_login():
         claimer_for_login.close_browser()
         epicgames_claimer.epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
-        if args.once:
-            run_once_with_update()
-        else:
-            run_once_with_update()
-            schedule.every().day.at(args.run_at).do(run_once_with_update)
+        update_and_run_once()
+        if not args.once:
+            schedule.every().day.at(args.run_at).do(update_and_run_once)
             while True:
                 schedule.run_pending()
                 time.sleep(1)        
