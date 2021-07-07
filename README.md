@@ -1,12 +1,12 @@
 # EpicGames Claimer
 
-[简体中文](README_ZH.md)
+[简体中文](docs/README_ZH.md)
 
 Claim [weekly free games](https://www.epicgames.com/store/free-games) from Epic Games Store.
 
 If you think this project is helpful to you, please star this project.
 
-## Start
+## Getting Started
 
 ### Windows
 
@@ -41,17 +41,17 @@ If you don't want automatic update, use `python3 epicgames_claimer.py` instead o
 
 #### Optional Arguments for Python Version
 
-| Arguments                                           | Descriptions                                      |
-|---------------------------------------------------- | ------------------------------------------------- |
-| `-h`, `--help`                                      | show the help message                             |
-| `-hf`, `--headful`                                  | run Chromium in headful mode                      |
-| `-c CHROMIUM_PATH`, `--chromium-path CHROMIUM_PATH` | set path to Chromium executable                   |
-| `-r RUN_AT`, `--run-at RUN_AT`                      | set daily check and claim time(HH:MM, default: 09:00)                                                                                                    |
-| `-o`, `--once`                                      | claim once then exit                              |
+| Arguments               | Descriptions                                            |
+|------------------------ | ------------------------------------------------------- |
+| `-h`, `--help`          | show the help message                                   |
+| `-hf`, `--headful`      | run Chromium in headful mode                            |
+| `-c`, `--chromium-path` | set path to Chromium executable                         |
+| `-r`, `--run-at`        | set daily check and claim time(HH:MM, default to 09:00) |
+| `-o`, `--once`          | claim once then exit                                    |
 
 #### Notice
 
-In Linux system, you should install Chrome or any other browser that use Chromium kernel, then add `--chromium-path` to set path to the browser executable.
+In Linux system, you may need to install Chrome or any other browser that use Chromium kernel, then add `--chromium-path` to set path to the browser executable(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)).
 
 For Debian-based Linux:
 

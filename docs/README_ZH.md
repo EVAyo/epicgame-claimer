@@ -1,6 +1,6 @@
 # EpicGames Claimer
 
-[English](README.md)
+[English](../README.md)
 
 自动领取Epic游戏商城[每周免费游戏](https://www.epicgames.com/store/free-games)。
 
@@ -12,7 +12,7 @@
 
 [下载](https://github.com/luminoleon/epicgames-claimer/releases)
 
-注意：Windows版本目前不支持自动更新脚本。
+注意：Windows版本目前不支持自动更新。
 
 #### Windwos版本可选参数
 
@@ -41,17 +41,17 @@ python3 epicgames_claimer_auto_update.py
 
 #### Python版本可选参数
 
-| 参数                                                 | 说明                                    |
-|---------------------------------------------------- | --------------------------------------- |
-| `-h`, `--help`                                      | 查看帮助信息                              |
-| `-hf`, `--headful`                                  | 显示浏览器界面（有头模式）                  |
-| `-c CHROMIUM_PATH`, `--chromium-path CHROMIUM_PATH` | 指定浏览器可执行文件路径                   |
-| `-r RUN_AT`, `--run-at RUN_AT`                      | 指定每日运行时间（HH:MM，默认09:00）        |
-| `-o`, `--once`                                      | 运行一次领取过程后退出                     |
+| 参数                    | 说明                                |
+|------------------------ | ---------------------------------- |
+| `-h`, `--help`          | 查看帮助信息                        |
+| `-hf`, `--headful`      | 显示浏览器界面（有头模式）           |
+| `-c`, `--chromium-path` | 指定浏览器可执行文件路径             |
+| `-r`, `--run-at`        | 指定每日运行时间（HH:MM，默认09:00） |
+| `-o`, `--once`          | 运行一次领取过程后退出               |
 
 #### 注意事项
 
-在Linux系统中需要安装Chrome或其他Chromium内核的浏览器，并使用`--chromium-path`参数指定浏览器可执行文件。
+在Linux系统中你可能需要安装Chrome或其他Chromium内核的浏览器，并使用`--chromium-path`参数指定浏览器可执行文件（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。
 
 基于Debian的Linux：
 
@@ -69,6 +69,39 @@ curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.
 sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
+```
+
+## 进阶用法
+
+你可以将`epicgames_claimer.py`作为模块导入自己的Python脚本中。
+
+### 最简单用法
+
+``` Python
+from epicgames_claimer import epicgames_claimer
+
+claimer = epicgames_claimer()
+claimer.login(email, password)
+claimer.claim()
+claimer.close_browser()
+```
+
+### 多账号
+
+``` Python
+from epicgames_claimer import epicgames_claimer
+
+claimer_1 = epicgames_claimer(data_dir="user_1")
+claimer_1.login(email_1, password_1)
+claimer_1.claim()
+claimer_1.close_browser()
+
+claimer_2 = epicgames_claimer(data_dir="user_2")
+claimer_2.login(email_2, password_2)
+claimer_2.claim()
+claimer_2.close_browser()
+
+...
 ```
 
 ## 已知问题
