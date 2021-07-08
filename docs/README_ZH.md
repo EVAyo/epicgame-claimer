@@ -22,7 +22,7 @@
 
 注意：Windows版本目前不支持自动更新。
 
-#### Windwos版本可选参数
+#### Windows版本可选参数
 
 见[Python版本可选参数](#Python版本可选参数)。
 
