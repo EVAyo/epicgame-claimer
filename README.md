@@ -1,8 +1,22 @@
 # EpicGames Claimer
 
-[简体中文](docs/README_ZH.md)
+<!-- [START badges] -->
 
-Claim [weekly free games](https://www.epicgames.com/store/free-games) from Epic Games Store.
+<img src="https://img.shields.io/badge/language-python-3572A5.svg"/>
+
+<img src="https://img.shields.io/github/license/luminoleon/epicgames-claimer.svg"/>
+
+<img src="https://img.shields.io/github/last-commit/luminoleon/epicgames-claimer.svg"/>
+
+<!-- [END badges] -->
+
+###### Other language: [简体中文](docs/README_ZH.md)
+
+> Claim [weekly free games](https://www.epicgames.com/store/free-games) from Epic Games Store.
+
+###### Features
+
+Very easy and simple to use. You almost don't need to input or modify any arguments, and it can automatically synchronize with the latest GitHub version.
 
 If you think this project is helpful to you, please star this project.
 

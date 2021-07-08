@@ -10,7 +10,7 @@ If you think this project is helpful to you, please star this project.
 
 ## English
 
-### Start
+### Getting Started
 
 ``` bash
 docker run -it luminoleon/epicgames-claimer
@@ -25,7 +25,7 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
 | `-e TZ=<TimeZone>`      | set the time zone of the container(default to Asia/Shanghai, [Available Time Zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List))                                 |
 | `-v <Path>:/User_Data`  | save the user data to the local path(must be full path)         |
 | `-e run_at=<Time>`      | set daily check and claim time(HH:MM, default to 09:00)         |
-| `-e auto_update=<bool>` | enable or disable automatic update(true/false, default to true) |
+| `-e auto_update=<Bool>` | enable or disable automatic update(true/false, default to true) |
 
 ## 简体中文
 

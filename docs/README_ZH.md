@@ -1,8 +1,22 @@
 # EpicGames Claimer
 
-[English](../README.md)
+<!-- [START badges] -->
 
-自动领取Epic游戏商城[每周免费游戏](https://www.epicgames.com/store/free-games)。
+<img src="https://img.shields.io/badge/language-python-3572A5.svg"/>
+
+<img src="https://img.shields.io/github/license/luminoleon/epicgames-claimer.svg"/>
+
+<img src="https://img.shields.io/github/last-commit/luminoleon/epicgames-claimer.svg"/>
+
+<!-- [END badges] -->
+
+###### 其他语言：[English](../README.md)
+
+> 自动领取Epic游戏商城[每周免费游戏](https://www.epicgames.com/store/free-games)。
+
+###### 特点
+
+非常简单易用，使用过程中几乎不需要输入或修改任何参数，并且自动与GitHub最新版本保持同步。
 
 如果你觉得本项目对你有帮助，请star本项目。
 
@@ -71,7 +85,7 @@ rm -I google-chrome-stable_current_x86_64.rpm
 python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
 ```
 
-## 进阶用法
+<!--## 进阶用法
 
 你可以将`epicgames_claimer.py`作为模块导入自己的Python脚本中。
 
@@ -102,7 +116,7 @@ claimer_2.claim()
 claimer_2.close_browser()
 
 ...
-```
+```-->
 
 ## 已知问题
 
