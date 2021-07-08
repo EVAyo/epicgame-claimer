@@ -10,7 +10,7 @@
 
 > Claim [weekly free games](https://www.epicgames.com/store/free-games) from Epic Games Store.
 
-Very easy and simple to use. You almost don't need to input or modify any arguments, and it can automatically synchronize with the latest GitHub version.
+Very simple and easy to use. You almost don't need to input or modify any arguments, and it can automatically synchronize with the latest GitHub version.
 
 If you think this project is helpful to you, please star this project.
 
