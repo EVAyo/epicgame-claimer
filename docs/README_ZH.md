@@ -2,11 +2,7 @@
 
 <!-- [START badges] -->
 
-<img src="https://img.shields.io/badge/language-python-3572A5.svg"/>
-
-<img src="https://img.shields.io/github/license/luminoleon/epicgames-claimer.svg"/>
-
-<img src="https://img.shields.io/github/last-commit/luminoleon/epicgames-claimer.svg"/>
+![](https://img.shields.io/badge/language-python-3572A5.svg) ![](https://img.shields.io/github/license/luminoleon/epicgames-claimer.svg) ![](https://img.shields.io/github/last-commit/luminoleon/epicgames-claimer.svg)
 
 <!-- [END badges] -->
 
