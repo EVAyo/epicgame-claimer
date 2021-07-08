@@ -49,9 +49,9 @@ python3 epicgames_claimer_auto_update.py
 
 #### Python版本可选参数
 
-| 参数                    | 说明                                |
-|------------------------ | ---------------------------------- |
-| `-h`, `--help`          | 查看帮助信息                        |
+| 参数                    | 说明                                 |
+| ----------------------- | ------------------------------------ |
+| `-h`, `--help`          | 查看帮助信息                         |
 | `-hf`, `--headful`      | 显示浏览器界面（有头模式）           |
 | `-c`, `--chromium-path` | 指定浏览器可执行文件路径             |
 | `-r`, `--run-at`        | 指定每日运行时间（HH:MM，默认09:00） |
@@ -61,13 +61,14 @@ python3 epicgames_claimer_auto_update.py
 
 在Linux系统中你可能需要安装Chromium依赖以使Chromium正常运行。或者安装其他Chromium内核的浏览器（比如Chrome）并使用`--chromium-path`指定浏览器可执行文件（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。
 
+##### 如何安装Chrome
+
 基于Debian的Linux：
 
 ``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install -y ./google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
-python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
 ```
 
 基于Redhat的Linux：
@@ -76,6 +77,11 @@ python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
+```
+
+##### 如何指定Chrome浏览器
+
+``` bash
 python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
 ```
 

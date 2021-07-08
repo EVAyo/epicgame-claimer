@@ -50,7 +50,7 @@ If you don't want automatic update, use `python3 epicgames_claimer.py` instead o
 #### Optional Arguments for Python Version
 
 | Arguments               | Descriptions                                            |
-|------------------------ | ------------------------------------------------------- |
+| ----------------------- | ------------------------------------------------------- |
 | `-h`, `--help`          | show the help message                                   |
 | `-hf`, `--headful`      | run Chromium in headful mode                            |
 | `-c`, `--chromium-path` | set path to Chromium executable                         |
@@ -61,13 +61,14 @@ If you don't want automatic update, use `python3 epicgames_claimer.py` instead o
 
 In Linux system, you may need to install Chromium dependencies. Or you can use any other browser that use Chromium kernel(e.g. Chrome), then add `--chromium-path` to set path to the browser executable(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)).
 
+##### How to install Chrome
+
 For Debian-based Linux:
 
 ``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install -y ./google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
-python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
 ```
 
 For Redhat-based Linux:
@@ -76,6 +77,11 @@ For Redhat-based Linux:
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
+```
+
+##### How to set the path of Chrome
+
+``` bash
 python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
 ```
 
