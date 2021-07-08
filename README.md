@@ -79,7 +79,7 @@ sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
 
-##### How to set the path of Chrome
+##### How to set the path to Chrome
 
 ``` bash
 python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
