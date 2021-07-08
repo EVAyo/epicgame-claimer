@@ -59,7 +59,7 @@ python3 epicgames_claimer_auto_update.py
 
 #### 注意事项
 
-在Linux系统中你可能需要安装Chrome或其他Chromium内核的浏览器，并使用`--chromium-path`参数指定浏览器可执行文件（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。
+在Linux系统中你可能需要安装Chromium依赖以使Chromium正常运行。或者安装其他Chromium内核的浏览器（比如Chrome）并使用`--chromium-path`指定浏览器可执行文件（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。
 
 基于Debian的Linux：
 

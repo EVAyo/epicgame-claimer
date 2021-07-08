@@ -59,7 +59,7 @@ If you don't want automatic update, use `python3 epicgames_claimer.py` instead o
 
 #### Notice
 
-In Linux system, you may need to install Chrome or any other browser that use Chromium kernel, then add `--chromium-path` to set path to the browser executable(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)).
+In Linux system, you may need to install Chromium dependencies. Or you can use any other browser that use Chromium kernel(e.g. Chrome), then add `--chromium-path` to set path to the browser executable(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)).
 
 For Debian-based Linux:
 

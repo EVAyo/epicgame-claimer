@@ -41,8 +41,7 @@ docker run -it luminoleon/epicgames-claimer
 
 | 参数                    | 说明                                                    |
 |------------------------ | ------------------------------------------------------ |
-| `-e TZ=<TimeZone>`      | 设定容器的时区信息（默认Asia/Shanghai，
-[可用时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)） |
+| `-e TZ=<TimeZone>`      | 设定容器的时区信息（默认Asia/Shanghai，[可用时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)）                                             |
 | `-v <Path>:/User_Data`  | 保存用户数据至本机路径（必须是完整路径）                   |
 | `-e run_at=<Time>`      | 设定每日运行时间（HH:MM， 默认09:00）                    |
 | `-e auto_update=<bool>` | 启用或关闭自动更新(true/false, default: false)          |
