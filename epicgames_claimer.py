@@ -6,6 +6,7 @@ import time
 from getpass import getpass
 from typing import List, Union
 
+import schedule
 from pyppeteer import launch, launcher
 from pyppeteer.element_handle import ElementHandle
 
@@ -51,9 +52,6 @@ class epicgames_claimer:
         await self.page.setExtraHTTPHeaders({"Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8"})
         await self.page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3542.0 Safari/537.36")
 
-    def close_browser(self) -> None:
-        self._loop.run_until_complete(self.browser.close())
-    
     async def _open_browser_async(self) -> None:
         if "win" in launcher.current_platform():
             if self.chromium_path == None and os.path.exists("chrome-win32"):
@@ -75,9 +73,6 @@ class epicgames_claimer:
         if self.headless:
             await self._headless_stealth_async()
     
-    def open_browser(self) -> None:
-        return self._loop.run_until_complete(self._open_browser_async())
-
     async def _type_async(self, selector: str, text: str, sleep: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
         await asyncio.sleep(sleep)
@@ -195,9 +190,6 @@ class epicgames_claimer:
             await self.page.waitForSelector("#user", timeout=120000)
             await self._close_autoplay_async()
 
-    def login(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
-        return self._loop.run_until_complete(self._login_async(email, password, two_fa_enabled, remember_me))
-    
     async def _is_logged_in_async(self) -> bool:
         await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
         if (await self._get_property_async("#user", "data-component")) == "SignedIn":
@@ -205,9 +197,6 @@ class epicgames_claimer:
         else:
             return False
 
-    def is_logged_in(self) -> bool:
-        return self._loop.run_until_complete(self._is_logged_in_async())
-    
     async def _get_free_game_links_async(self) -> List[str]:
         await self._navigate_async("https://www.epicgames.com/store/en-US/free-games")
         await self.page.waitForSelector("div[data-component=OfferCard]")
@@ -220,10 +209,7 @@ class epicgames_claimer:
             if freegame_link != "https://www.epicgames.com/store/en-US/free-games" and freegame_status == "Free Now":
                 freegame_links.append(freegame_link)
         return freegame_links
-    
-    def get_free_game_links(self) -> List[str]:
-        return self._loop.run_until_complete(self._get_free_game_links_async())
-        
+       
     async def _claim_async(self) -> List[str]:
         await self._navigate_async("https://www.epicgames.com/store/en-US/free-games", timeout=480000)
         freegame_links = await self._get_free_game_links_async()
@@ -250,11 +236,40 @@ class epicgames_claimer:
                 claimed_game_titles.append(game_title)
         return claimed_game_titles
 
+    def _quit(self, signum = None, frame = None) -> None:
+        try:
+            self.close_browser()
+        except:
+            pass
+        exit(1)
+
+    def open_browser(self) -> None:
+        """Open the browser."""
+        return self._loop.run_until_complete(self._open_browser_async())
+
+    def close_browser(self) -> None:
+        """Close the browser."""
+        return self._loop.run_until_complete(self.browser.close())
+    
+    def is_logged_in(self) -> bool:
+        """Return login status."""
+        return self._loop.run_until_complete(self._is_logged_in_async())
+    
+    def login(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
+        """Login an Epic account."""
+        return self._loop.run_until_complete(self._login_async(email, password, two_fa_enabled, remember_me))
+    
+    def get_free_game_links(self) -> List[str]:
+        """Return all titles of unclaimed weekly free games."""
+        return self._loop.run_until_complete(self._get_free_game_links_async())
+
     def claim(self) -> List[str]:
+        """Claim available weekly free games and return all titles of claimed games."""
         return self._loop.run_until_complete(self._claim_async())
 
-    def logged_login(self) -> bool:
-        for _ in range(5):
+    def logged_login(self, retries: int = 5) -> bool:
+        """Login method Contains retry and log output."""
+        for _ in range(retries):
             try:
                 if not self.is_logged_in():
                     email = input("Email: ")
@@ -267,8 +282,9 @@ class epicgames_claimer:
         self.log("Login failed.", "error")
         return False
     
-    def logged_claim(self) -> None:
-        for _ in range(0, 5):
+    def logged_claim(self, retries: int = 5) -> None:
+        """Claim method Contains retry and log output."""
+        for _ in range(0, retries):
             try:
                 claimed_game_titles = self.claim()
                 if len(claimed_game_titles) > 0:
@@ -279,17 +295,13 @@ class epicgames_claimer:
         self.log("Claim failed.", level="error")
 
     def run(self, at: str = None, once: bool = False) -> None:
-        import schedule
+        """Claim all weekly free games everyday."""
         signal.signal(signal.SIGINT, self._quit)
         signal.signal(signal.SIGTERM, self._quit)
-        try:
-            signal.signal(signal.SIGBREAK, self._quit)
-        except AttributeError:
-            pass
-        try:
-            signal.signal(signal.SIGHUP, self._quit)
-        except AttributeError:
-            pass
+        if "SIGBREAK" in dir(signal):
+            signal.signal(signal.SIGBREAK, claimer._quit)
+        if "SIGHUP" in dir(signal):
+            signal.signal(signal.SIGHUP, claimer._quit)
         def everyday_job() -> None:
             self.open_browser()
             self.logged_claim()
@@ -303,13 +315,6 @@ class epicgames_claimer:
             schedule.run_pending()
             time.sleep(1)
 
-    def _quit(self, signum = None, frame = None) -> None:
-        try:
-            self.close_browser()
-        except:
-            pass
-        exit(1)
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -318,7 +323,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("-hf", "--headful", action="store_true", help="run Chromium in headful mode")
     parser.add_argument("-c", "--chromium-path", type=str, help="set path to Chromium executable")
-    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default: 09:00)")
+    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default to 09:00)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
     args = parser.parse_args()
     epicgames_claimer.log("Claimer is starting...")

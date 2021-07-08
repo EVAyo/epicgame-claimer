@@ -42,14 +42,10 @@ if __name__ == "__main__":
         claimer = epicgames_claimer.epicgames_claimer(data_dir="User_Data/Default", headless=(not args.headful), chromium_path=args.chromium_path)
         signal.signal(signal.SIGINT, claimer._quit)
         signal.signal(signal.SIGTERM, claimer._quit)
-        try:
+        if "SIGBREAK" in dir(signal):
             signal.signal(signal.SIGBREAK, claimer._quit)
-        except AttributeError:
-            pass
-        try:
+        if "SIGHUP" in dir(signal):
             signal.signal(signal.SIGHUP, claimer._quit)
-        except AttributeError:
-            pass
         claimer.logged_claim()
         claimer.close_browser()
     def update_and_run_once() -> None:
