@@ -16,6 +16,8 @@ class epicgames_claimer:
             launcher.DEFAULT_ARGS.remove("--enable-automation")
         except ValueError:
             pass
+        if "SIGCHLD" in dir(signal):
+            signal.signal(signal.SIGCHLD, signal.SIG_IGN)
         self.data_dir = data_dir
         self.headless = headless
         self.sandbox = sandbox
