@@ -15,6 +15,8 @@ class epicgames_claimer:
     def __init__(self, data_dir: str = None, headless: bool = True, sandbox: bool = False, chromium_path: Union[str, None] = None) -> None:
         if "--enable-automation" in launcher.DEFAULT_ARGS:
             launcher.DEFAULT_ARGS.remove("--enable-automation")
+        if "SIGCHLD" in dir(signal):
+            signal.signal(signal.SIGCHLD, signal.SIG_IGN)
         self.data_dir = data_dir
         self.headless = headless
         self.sandbox = sandbox
