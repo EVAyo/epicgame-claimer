@@ -272,10 +272,11 @@ class epicgames_claimer:
         for _ in range(retries):
             try:
                 if not self.is_logged_in():
+                    self.log("Need login.")
                     email = input("Email: ")
                     password = getpass("Password: ")
                     self.login(email, password)
-                    self.log("Login successed. User data is saved at \"{}\".".format(self.data_dir))
+                    self.log("Login successed.")
                 return True
             except Exception as e:
                 self.log("Login failed({}).".format(e), "warning")
