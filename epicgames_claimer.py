@@ -4,7 +4,7 @@ import os
 import signal
 import time
 from getpass import getpass
-from typing import List, Union
+from typing import List, Optional, Union
 
 import schedule
 from pyppeteer import launch, launcher
@@ -12,7 +12,7 @@ from pyppeteer.element_handle import ElementHandle
 
 
 class epicgames_claimer:
-    def __init__(self, data_dir: str = None, headless: bool = True, sandbox: bool = False, chromium_path: Union[str, None] = None) -> None:
+    def __init__(self, data_dir: Optional[str] = None, headless: bool = True, sandbox: bool = False, chromium_path: Optional[str] = None) -> None:
         if "--enable-automation" in launcher.DEFAULT_ARGS:
             launcher.DEFAULT_ARGS.remove("--enable-automation")
         if "SIGCHLD" in dir(signal):
@@ -67,7 +67,7 @@ class epicgames_claimer:
             browser_args.append("--no-sandbox")
         self.browser = await launch(
             options={"args": browser_args, "headless": self.headless}, 
-            userDataDir=self.data_dir, 
+            userDataDir=None if self.data_dir == None else os.path.abspath(self.data_dir), 
             executablePath=self.chromium_path,
         )
         self.page = (await self.browser.pages())[0]
@@ -275,8 +275,10 @@ class epicgames_claimer:
             try:
                 if not self.is_logged_in():
                     self.log("Need login.")
+                    self.close_browser()
                     email = input("Email: ")
                     password = getpass("Password: ")
+                    self.open_browser()
                     self.login(email, password)
                     self.log("Login successed.")
                 return True
@@ -320,17 +322,14 @@ class epicgames_claimer:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Claim weekly free games from Epic Games Store.",
-        usage="python epicgames_claimer.py [-h] [-hf] [-c CHROMIUM_PATH] [-r RUN_AT] [-o]"
-    )
-    parser.add_argument("-hf", "--headful", action="store_true", help="run Chromium in headful mode")
-    parser.add_argument("-c", "--chromium-path", type=str, help="set path to Chromium executable")
-    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default to 09:00)")
+    parser = argparse.ArgumentParser(description="Claim weekly free games from Epic Games Store.")
+    parser.add_argument("-n", "--no-headless", action="store_true", help="run the browser with GUI")
+    parser.add_argument("-c", "--chromium-path", type=str, help="set path to browser executable")
+    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default: 09:00)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
     args = parser.parse_args()
     epicgames_claimer.log("Claimer is starting...")
-    claimer = epicgames_claimer(data_dir="User_Data/Default", headless=(not args.headful), chromium_path=args.chromium_path)
+    claimer = epicgames_claimer(data_dir="User_Data/Default", headless=not args.no_headless, chromium_path=args.chromium_path)
     if claimer.logged_login():
         epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
         claimer.run(args.run_at, once=args.once)

@@ -9,14 +9,11 @@ import update_check
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Claim weekly free games from Epic Games Store.",
-        usage="python epicgames_claimer_auto_update.py [-h] [-hf] [-c CHROMIUM_PATH] [-r RUN_AT] [-o]"
-    )
-    parser.add_argument("-hf", "--headful", action="store_true", help="run Chromium in headful mode")
-    parser.add_argument("-c", "--chromium-path", type=str, help="set path to Chromium executable")
+    parser = argparse.ArgumentParser(description="Claim weekly free games from Epic Games Store.")
+    parser.add_argument("-n", "--no-headless", action="store_true", help="run the browser with GUI")
+    parser.add_argument("-c", "--chromium-path", type=str, help="set path to browser executable")
     parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default: 09:00)")
-    parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")    
+    parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
     args = parser.parse_args()
     def epicgames_claimer_exists() -> bool:
         if os.path.exists("epicgames_claimer.py") and os.path.getsize("epicgames_claimer.py") > 0:
@@ -39,7 +36,7 @@ if __name__ == "__main__":
         except Exception as e:
             epicgames_claimer.epicgames_claimer.log("Update \"epicgames_claimer.py\" failed. {}: {}".format(e.__class__.__name__, e), level="warning")
     def run_once() -> None:
-        claimer = epicgames_claimer.epicgames_claimer(data_dir="User_Data/Default", headless=(not args.headful), chromium_path=args.chromium_path)
+        claimer = epicgames_claimer.epicgames_claimer(data_dir="User_Data/Default", headless=not args.no_headless, chromium_path=args.chromium_path)
         signal.signal(signal.SIGINT, claimer._quit)
         signal.signal(signal.SIGTERM, claimer._quit)
         if "SIGBREAK" in dir(signal):
@@ -52,7 +49,7 @@ if __name__ == "__main__":
         update_epicgmaes_claimer()
         run_once()
     epicgames_claimer.epicgames_claimer.log("Claimer is starting...")
-    claimer_for_login = epicgames_claimer.epicgames_claimer(data_dir="User_Data/Default", headless=(not args.headful), chromium_path=args.chromium_path)
+    claimer_for_login = epicgames_claimer.epicgames_claimer(data_dir="User_Data/Default", headless=not args.no_headless, chromium_path=args.chromium_path)
     if claimer_for_login.logged_login():
         claimer_for_login.close_browser()
         epicgames_claimer.epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
