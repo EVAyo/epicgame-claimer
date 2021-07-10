@@ -52,8 +52,8 @@ If you don't want automatic update, use `python3 epicgames_claimer.py` instead o
 | Arguments               | Descriptions                                            |
 | ----------------------- | ------------------------------------------------------- |
 | `-h`, `--help`          | show the help message                                   |
-| `-hf`, `--headful`      | run Chromium in headful mode                            |
-| `-c`, `--chromium-path` | set path to Chromium executable                         |
+| `-n`, `--no-headless`   | run the browser with GUI                                |
+| `-c`, `--chromium-path` | set path to browser executable                          |
 | `-r`, `--run-at`        | set daily check and claim time(HH:MM, default to 09:00) |
 | `-o`, `--once`          | claim once then exit                                    |
 
