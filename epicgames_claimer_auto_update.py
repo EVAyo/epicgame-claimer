@@ -23,14 +23,14 @@ if __name__ == "__main__":
     if not epicgames_claimer_exists():
         open("epicgames_claimer.py", "w").close()
         try:
-            update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/dev/epicgames_claimer.py")
+            update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/master/epicgames_claimer.py")
         except:
             print("Can not download \"epicgames_claimer.py\". Please try it manually.")
             exit(1)
     import epicgames_claimer
     def update_epicgmaes_claimer() -> None:
         try:
-            if update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/dev/epicgames_claimer.py"):
+            if update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/master/epicgames_claimer.py"):
                 importlib.reload(epicgames_claimer)
                 epicgames_claimer.epicgames_claimer.log("\"epicgames_claimer.py\" has been updated.")
         except Exception as e:
