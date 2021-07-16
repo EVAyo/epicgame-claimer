@@ -49,6 +49,7 @@ if __name__ == "__main__":
         update_epicgmaes_claimer()
         run_once()
     epicgames_claimer.epicgames_claimer.log("Claimer is starting...")
+    update_epicgmaes_claimer()
     claimer_for_login = epicgames_claimer.epicgames_claimer(data_dir="User_Data/Default", headless=not args.no_headless, chromium_path=args.chromium_path)
     if claimer_for_login.logged_login():
         claimer_for_login.close_browser()
