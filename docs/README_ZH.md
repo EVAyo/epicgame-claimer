@@ -59,9 +59,9 @@ python3 main.py
 
 #### 注意事项
 
-在Linux系统中你可能需要安装Chromium依赖以使Chromium正常运行。或者安装其他Chromium内核的浏览器（比如Chrome）并使用`--chromium-path`指定浏览器可执行文件（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。
+在Linux系统中你可能需要安装Chromium依赖以使Chromium正常运行（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。或者安装其他Chromium内核的浏览器（比如Chrome）并使用`--chromium-path`指定浏览器可执行文件。以下命令或许可以解决一些问题。
 
-##### 如何安装Chrome
+##### 安装Chrome
 
 基于Debian的Linux：
 
@@ -79,7 +79,7 @@ sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
 
-##### 如何指定Chrome浏览器
+##### 指定使用Chrome浏览器
 
 ``` bash
 python3 main.py --chromium-path /usr/bin/google-chrome
