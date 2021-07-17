@@ -45,17 +45,16 @@ pip3 install -r requirements.txt
 python3 main.py
 ```
 
-If you don't want automatic update, use `python3 epicgames_claimer.py` instead of `python3 main.py`.
-
 #### Optional Arguments for Python Version
 
-| Arguments               | Descriptions                                            |
-| ----------------------- | ------------------------------------------------------- |
-| `-h`, `--help`          | show the help message                                   |
-| `-n`, `--no-headless`   | run the browser with GUI                                |
-| `-c`, `--chromium-path` | set path to browser executable                          |
-| `-r`, `--run-at`        | set daily check and claim time(HH:MM, default to 09:00) |
-| `-o`, `--once`          | claim once then exit                                    |
+| Arguments                 | Descriptions                                            |
+| ------------------------- | ------------------------------------------------------- |
+| `-h`, `--help`            | show the help message                                   |
+| `-n`, `--no-headless`     | run the browser with GUI                                |
+| `-c`, `--chromium-path`   | set path to browser executable                          |
+| `-r`, `--run-at`          | set daily check and claim time(HH:MM, default to 09:00) |
+| `-o`, `--once`            | claim once then exit                                    |
+| `-na`, `--no-auto-update` | disable auto update                                     |
 
 #### Notice
 
