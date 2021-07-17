@@ -58,9 +58,9 @@ python3 main.py
 
 #### Notice
 
-In Linux system, you may need to install Chromium dependencies. Or you can use any other browser that use Chromium kernel(e.g. Chrome), then add `--chromium-path` to set path to the browser executable(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)).
+In Linux system, you may need to install Chromium dependencies(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)). Or you can use any other browser that use Chromium kernel(e.g. Chrome), then add `--chromium-path` to set path to the browser executable. The following commands may fix some problems.
 
-##### How to install Chrome
+##### Install Chrome
 
 For Debian-based Linux:
 
@@ -78,7 +78,7 @@ sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
 
-##### How to set the path to Chrome
+##### Set the path to Chrome
 
 ``` bash
 python3 main.py --chromium-path /usr/bin/google-chrome
