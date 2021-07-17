@@ -16,4 +16,4 @@ RUN apt update \
 
 COPY *.py /
 
-CMD [ "bash", "-c", "if ${auto_update}; then file_name='epicgames_claimer_auto_update.py'; else file_name='epicgames_claimer.py'; fi && python3 ${file_name} --run-at ${run_at}" ]
+CMD [ "bash", "-c", "if ${auto_update}; then file_name='main.py'; else file_name='epicgames_claimer.py'; fi && python3 ${file_name} --run-at ${run_at}" ]

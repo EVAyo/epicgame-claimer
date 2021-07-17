@@ -42,10 +42,10 @@ docker run -it luminoleon/epicgames-claimer
 git clone -b master https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
 pip3 install -r requirements.txt
-python3 epicgames_claimer_auto_update.py
+python3 main.py
 ```
 
-如果你不想自动更新脚本，可以用`python3 epicgames_claimer.py`替代`python3 epicgames_claimer_auto_update.py`。
+如果你不想自动更新脚本，可以用`python3 epicgames_claimer.py`替代`python3 main.py`。
 
 #### Python版本可选参数
 
@@ -82,7 +82,7 @@ rm -I google-chrome-stable_current_x86_64.rpm
 ##### 如何指定Chrome浏览器
 
 ``` bash
-python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
+python3 main.py --chromium-path /usr/bin/google-chrome
 ```
 
 <!--## 进阶用法

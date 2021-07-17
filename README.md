@@ -42,10 +42,10 @@ Require Python >= 3.6.
 git clone -b master https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
 pip3 install -r requirements.txt
-python3 epicgames_claimer_auto_update.py
+python3 main.py
 ```
 
-If you don't want automatic update, use `python3 epicgames_claimer.py` instead of `python3 epicgames_claimer_auto_update.py`.
+If you don't want automatic update, use `python3 epicgames_claimer.py` instead of `python3 main.py`.
 
 #### Optional Arguments for Python Version
 
@@ -82,7 +82,7 @@ rm -I google-chrome-stable_current_x86_64.rpm
 ##### How to set the path to Chrome
 
 ``` bash
-python3 epicgames_claimer_auto_update.py --chromium-path /usr/bin/google-chrome
+python3 main.py --chromium-path /usr/bin/google-chrome
 ```
 
 ## Known Issues
