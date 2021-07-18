@@ -24,7 +24,13 @@ Notice: Windows version does not currently support automatic update.
 
 #### Optional Arguments for Windows Version
 
-See [Optional Arguments for Python Version](#optional-arguments-for-python-version).
+| Arguments                 | Descriptions                                            |
+| ------------------------- | ------------------------------------------------------- |
+| `-h`, `--help`            | show the help message                                   |
+| `-n`, `--no-headless`     | run the browser with GUI                                |
+| `-c`, `--chromium-path`   | set path to browser executable                          |
+| `-r`, `--run-at`          | set daily check and claim time(HH:MM, default to 09:00) |
+| `-o`, `--once`            | claim once then exit                                    |
 
 ### Docker
 
