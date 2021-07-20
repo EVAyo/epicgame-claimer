@@ -44,10 +44,23 @@ See [Docker hub page](https://hub.docker.com/r/luminoleon/epicgames-claimer) for
 
 Require Python >= 3.6.
 
+#### Download & Install
+
 ``` bash
 git clone -b master https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
 pip3 install -r requirements.txt
+```
+
+#### Install Dependencies(Linux Only)
+
+``` bash
+sudo ./install_dependencies.sh
+```
+
+#### Run
+
+``` bash
 python3 main.py
 ```
 
