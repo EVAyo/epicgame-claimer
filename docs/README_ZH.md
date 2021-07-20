@@ -44,14 +44,32 @@ docker run -it luminoleon/epicgames-claimer
 
 要求Python >= 3.6。
 
+#### 如何安装
+
+1. 下载
+
 ``` bash
 git clone -b master https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
-pip3 install -r requirements.txt
-python3 main.py
 ```
 
-如果你不想自动更新脚本，可以用`python3 epicgames_claimer.py`替代`python3 main.py`。
+2. 安装Python模块
+
+``` bash
+pip3 install -r requirements.txt
+```
+
+3. 安装依赖（仅Linux）
+
+``` bash
+sudo sh install_dependencies.sh
+```
+
+4. 运行
+
+``` bash
+python3 main.py
+```
 
 #### Python版本可选参数
 
@@ -66,7 +84,7 @@ python3 main.py
 
 #### 注意事项
 
-在Linux系统中你可能需要安装Chromium依赖以使Chromium正常运行（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。或者安装其他Chromium内核的浏览器（比如Chrome）并使用`--chromium-path`指定浏览器可执行文件。以下命令或许可以解决一些问题。
+在Linux系统中，如果脚本不能正确运行，你可以尝试安装Chrome替代默认的Chromium（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。以下命令或许可以解决一些问题。
 
 ##### 安装Chrome
 

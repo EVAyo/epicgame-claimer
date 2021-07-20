@@ -44,21 +44,28 @@ See [Docker hub page](https://hub.docker.com/r/luminoleon/epicgames-claimer) for
 
 Require Python >= 3.6.
 
-#### Download & Install
+#### How to Install
+
+1. Download
 
 ``` bash
 git clone -b master https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
+```
+
+2. Install Python Modules
+
+``` bash
 pip3 install -r requirements.txt
 ```
 
-#### Install Dependencies(Linux Only)
+3. Install Dependencies(Linux Only)
 
 ``` bash
-sudo ./install_dependencies.sh
+sudo sh install_dependencies.sh
 ```
 
-#### Run
+4. Run
 
 ``` bash
 python3 main.py
@@ -77,7 +84,7 @@ python3 main.py
 
 #### Notice
 
-In Linux system, you may need to install Chromium dependencies(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)). Or you can use any other browser that use Chromium kernel(e.g. Chrome), then add `--chromium-path` to set path to the browser executable. The following commands may fix some problems.
+If the script runs incorrectly in Linux system, you can try to use Chrome instead of default Chromium(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)). The following commands may fix some problems.
 
 ##### Install Chrome
 
