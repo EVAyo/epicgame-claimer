@@ -104,7 +104,7 @@ sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
 
-##### Set the path to Chrome
+##### Use Chrome Instead of Default Browser
 
 ``` bash
 python3 main.py --chromium-path /usr/bin/google-chrome

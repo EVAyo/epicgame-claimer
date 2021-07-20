@@ -10,7 +10,7 @@
 
 > 自动领取Epic游戏商城[每周免费游戏](https://www.epicgames.com/store/free-games)。
 
-非常简单易用，使用过程中几乎不需要输入或修改任何参数，并且自动与GitHub最新版本保持同步。
+十分简单易用，使用过程中几乎不需要输入或修改任何参数，并且可以自动与GitHub最新版本保持同步。
 
 如果你觉得本项目对你有帮助，请star本项目。
 
@@ -104,7 +104,7 @@ sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
 
-##### 指定使用Chrome浏览器
+##### 使用Chrome替代默认浏览器
 
 ``` bash
 python3 main.py --chromium-path /usr/bin/google-chrome
