@@ -44,7 +44,7 @@ See [Docker hub page](https://hub.docker.com/r/luminoleon/epicgames-claimer) for
 
 Require Python >= 3.6.
 
-#### How to Install
+#### How to Use
 
 1. Download
 
@@ -53,13 +53,13 @@ git clone -b master https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
 ```
 
-2. Install Python Modules
+2. Install Python modules
 
 ``` bash
 pip3 install -r requirements.txt
 ```
 
-3. Install Dependencies(Linux Only)
+3. Install dependencies(Linux only)
 
 ``` bash
 sudo sh install_dependencies.sh
@@ -104,7 +104,7 @@ sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
 
-##### Use Chrome Instead of Default Browser
+##### Use Chrome instead of default browser
 
 ``` bash
 python3 main.py --chromium-path /usr/bin/google-chrome

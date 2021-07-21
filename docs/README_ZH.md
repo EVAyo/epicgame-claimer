@@ -44,7 +44,7 @@ docker run -it luminoleon/epicgames-claimer
 
 要求Python >= 3.6。
 
-#### 如何安装
+#### 如何使用
 
 1. 下载
 
