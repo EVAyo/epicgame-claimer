@@ -10,7 +10,7 @@
 
 > 自动领取Epic游戏商城[每周免费游戏](https://www.epicgames.com/store/free-games)。
 
-非常简单易用，使用过程中几乎不需要输入或修改任何参数，并且自动与GitHub最新版本保持同步。
+十分简单易用，使用过程中几乎不需要输入或修改任何参数，并且可以自动与GitHub最新版本保持同步。
 
 如果你觉得本项目对你有帮助，请star本项目。
 
@@ -24,7 +24,13 @@
 
 #### Windows版本可选参数
 
-见[Python版本可选参数](#Python版本可选参数)。
+| 参数                      | 说明                                 |
+| ------------------------- | ----------------------------------- |
+| `-h`, `--help`            | 查看帮助信息                         |
+| `-n`, `--no-headless`     | 显示浏览器的图形界面                 |
+| `-c`, `--chromium-path`   | 指定浏览器可执行文件路径             |
+| `-r`, `--run-at`          | 指定每日运行时间（HH:MM，默认09:00） |
+| `-o`, `--once`            | 运行一次领取过程后退出               |
 
 ### Docker
 
@@ -38,28 +44,47 @@ docker run -it luminoleon/epicgames-claimer
 
 要求Python >= 3.6。
 
+#### 如何使用
+
+1. 下载
+
 ``` bash
 git clone -b master https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
+```
+
+2. 安装Python模块
+
+``` bash
 pip3 install -r requirements.txt
+```
+
+3. 安装依赖（仅Linux）
+
+``` bash
+sudo sh install_dependencies.sh
+```
+
+4. 运行
+
+``` bash
 python3 main.py
 ```
 
-如果你不想自动更新脚本，可以用`python3 epicgames_claimer.py`替代`python3 main.py`。
-
 #### Python版本可选参数
 
-| 参数                    | 说明                                 |
-| ----------------------- | ------------------------------------ |
-| `-h`, `--help`          | 查看帮助信息                         |
-| `-n`, `--no-headless`   | 显示浏览器的图形界面                 |
-| `-c`, `--chromium-path` | 指定浏览器可执行文件路径             |
-| `-r`, `--run-at`        | 指定每日运行时间（HH:MM，默认09:00） |
-| `-o`, `--once`          | 运行一次领取过程后退出               |
+| 参数                      | 说明                                 |
+| ------------------------- | ----------------------------------- |
+| `-h`, `--help`            | 查看帮助信息                         |
+| `-n`, `--no-headless`     | 显示浏览器的图形界面                 |
+| `-c`, `--chromium-path`   | 指定浏览器可执行文件路径             |
+| `-r`, `--run-at`          | 指定每日运行时间（HH:MM，默认09:00） |
+| `-o`, `--once`            | 运行一次领取过程后退出               |
+| `-na`, `--no-auto-update` | 关闭自动更新                        |
 
 #### 注意事项
 
-在Linux系统中你可能需要安装Chromium依赖以使Chromium正常运行（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。或者安装其他Chromium内核的浏览器（比如Chrome）并使用`--chromium-path`指定浏览器可执行文件。以下命令或许可以解决一些问题。
+在Linux系统中，如果脚本不能正确运行，你可以尝试安装Chrome替代默认的Chromium（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。以下命令或许可以解决一些问题。
 
 ##### 安装Chrome
 
@@ -79,7 +104,7 @@ sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
 
-##### 指定使用Chrome浏览器
+##### 使用Chrome替代默认浏览器
 
 ``` bash
 python3 main.py --chromium-path /usr/bin/google-chrome

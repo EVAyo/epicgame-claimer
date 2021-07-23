@@ -24,7 +24,13 @@ Notice: Windows version does not currently support automatic update.
 
 #### Optional Arguments for Windows Version
 
-See [Optional Arguments for Python Version](#optional-arguments-for-python-version).
+| Arguments                 | Descriptions                                            |
+| ------------------------- | ------------------------------------------------------- |
+| `-h`, `--help`            | show the help message                                   |
+| `-n`, `--no-headless`     | run the browser with GUI                                |
+| `-c`, `--chromium-path`   | set path to browser executable                          |
+| `-r`, `--run-at`          | set daily check and claim time(HH:MM, default to 09:00) |
+| `-o`, `--once`            | claim once then exit                                    |
 
 ### Docker
 
@@ -38,28 +44,47 @@ See [Docker hub page](https://hub.docker.com/r/luminoleon/epicgames-claimer) for
 
 Require Python >= 3.6.
 
+#### How to Use
+
+1. Download
+
 ``` bash
 git clone -b master https://github.com/luminoleon/epicgames-claimer.git
 cd epicgames-claimer
+```
+
+2. Install Python modules
+
+``` bash
 pip3 install -r requirements.txt
+```
+
+3. Install dependencies(Linux only)
+
+``` bash
+sudo sh install_dependencies.sh
+```
+
+4. Run
+
+``` bash
 python3 main.py
 ```
 
-If you don't want automatic update, use `python3 epicgames_claimer.py` instead of `python3 main.py`.
-
 #### Optional Arguments for Python Version
 
-| Arguments               | Descriptions                                            |
-| ----------------------- | ------------------------------------------------------- |
-| `-h`, `--help`          | show the help message                                   |
-| `-n`, `--no-headless`   | run the browser with GUI                                |
-| `-c`, `--chromium-path` | set path to browser executable                          |
-| `-r`, `--run-at`        | set daily check and claim time(HH:MM, default to 09:00) |
-| `-o`, `--once`          | claim once then exit                                    |
+| Arguments                 | Descriptions                                            |
+| ------------------------- | ------------------------------------------------------- |
+| `-h`, `--help`            | show the help message                                   |
+| `-n`, `--no-headless`     | run the browser with GUI                                |
+| `-c`, `--chromium-path`   | set path to browser executable                          |
+| `-r`, `--run-at`          | set daily check and claim time(HH:MM, default to 09:00) |
+| `-o`, `--once`            | claim once then exit                                    |
+| `-na`, `--no-auto-update` | disable auto update                                     |
 
 #### Notice
 
-In Linux system, you may need to install Chromium dependencies(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)). Or you can use any other browser that use Chromium kernel(e.g. Chrome), then add `--chromium-path` to set path to the browser executable. The following commands may fix some problems.
+If the script runs incorrectly in Linux system, you can try to use Chrome instead of default Chromium(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)). The following commands may fix some problems.
 
 ##### Install Chrome
 
@@ -79,7 +104,7 @@ sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
 
-##### Set the path to Chrome
+##### Use Chrome instead of default browser
 
 ``` bash
 python3 main.py --chromium-path /usr/bin/google-chrome

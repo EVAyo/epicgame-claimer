@@ -73,7 +73,9 @@ jobs:
         run: |
           mkdir epicgames-claimer
           mv *.py epicgames-claimer
+          mv *.sh epicgames-claimer
           mv requirements.txt epicgames-claimer
+          mv LICENSE epicgames-claimer
       -
         name: Get current version
         id: get_version
