@@ -46,7 +46,7 @@ Require Python >= 3.6.
 
 #### How to Use
 
-1. Download
+1. Clone/[Download](https://github.com/luminoleon/epicgames-claimer/releases)
 
 ``` bash
 git clone -b master https://github.com/luminoleon/epicgames-claimer.git
