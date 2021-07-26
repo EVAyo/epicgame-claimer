@@ -73,14 +73,16 @@ python3 main.py
 
 #### Optional Arguments for Python Version
 
-| Arguments                 | Descriptions                                            |
-| ------------------------- | ------------------------------------------------------- |
-| `-h`, `--help`            | show the help message                                   |
-| `-n`, `--no-headless`     | run the browser with GUI                                |
-| `-c`, `--chromium-path`   | set path to browser executable                          |
-| `-r`, `--run-at`          | set daily check and claim time(HH:MM, default to 09:00) |
-| `-o`, `--once`            | claim once then exit                                    |
-| `-na`, `--no-auto-update` | disable auto update                                     |
+| Arguments                 | Descriptions                   | Note                    |
+| ------------------------- | ------------------------------ | ----------------------- |
+| `-h`, `--help`            | show the help message          |                         |
+| `-n`, `--no-headless`     | run the browser with GUI       |                         |
+| `-c`, `--chromium-path`   | set path to browser executable |                         |
+| `-r`, `--run-at`          | set daily check and claim time | HH:MM, default to 09:00 |
+| `-o`, `--once`            | claim once then exit           |                         |
+| `-na`, `--no-auto-update` | disable auto update            |                         |
+| `-u`, `--username`        | set username/email             | need disable 2FA        |
+| `-p`, `--password`        | set password                   | need disable 2FA        |
 
 #### Notice
 
