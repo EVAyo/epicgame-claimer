@@ -286,6 +286,19 @@ class epicgames_claimer:
                 self.log("Login failed({}).".format(e), "warning")
         self.log("Login failed.", "error")
         return False
+
+    def logged_login_no_interactive(self, email: str, password: str, retries: int = 3) -> bool:
+        """Login method Contains retry and log output."""
+        for _ in range(retries):
+            try:
+                if not self.is_logged_in():
+                    self.login(email, password, two_fa_enabled=False)
+                    self.log("Login successed.")
+                return True
+            except Exception as e:
+                self.log("Login failed({}).".format(e), "warning")
+        self.log("Login failed.", "error")
+        return False
     
     def logged_claim(self, retries: int = 5) -> None:
         """Claim method Contains retry and log output."""
