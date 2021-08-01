@@ -6,6 +6,7 @@ import signal
 import time
 from getpass import getpass
 from typing import Dict, List, Optional, Union
+from pyppeteer.network_manager import Response
 
 import schedule
 from pyppeteer import launch, launcher
@@ -330,9 +331,9 @@ class epicgames_claimer:
         signal.signal(signal.SIGINT, self._quit)
         signal.signal(signal.SIGTERM, self._quit)
         if "SIGBREAK" in dir(signal):
-            signal.signal(signal.SIGBREAK, claimer._quit)
+            signal.signal(signal.SIGBREAK, self._quit)
         if "SIGHUP" in dir(signal):
-            signal.signal(signal.SIGHUP, claimer._quit)
+            signal.signal(signal.SIGHUP, self._quit)
         def everyday_job() -> None:
             self.open_browser()
             self.logged_claim()
@@ -345,6 +346,20 @@ class epicgames_claimer:
         while True:
             schedule.run_pending()
             time.sleep(1)
+    
+    async def _post_json_async(self, url: str, data: str, host: str = "www.epicgames.com"):
+        if not host in self.page.url:
+            await self.page.goto("https://{}".format(host))
+        response = await self.page.evaluate("""
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", "{}", true);
+            xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xmlhttp.send(String.raw`{}`);
+        """.format(url, data))
+        return response
+    
+    def post_json(self, url: str, data: str, host: str = "www.epicgames.com"):
+        return self._loop.run_until_complete(self._post_json_async(url, data, host))
 
 
 if __name__ == "__main__":
