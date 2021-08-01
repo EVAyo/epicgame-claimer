@@ -1,10 +1,11 @@
 import argparse
 import asyncio
+import json
 import os
 import signal
 import time
 from getpass import getpass
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import schedule
 from pyppeteer import launch, launcher
@@ -172,11 +173,17 @@ class epicgames_claimer:
         if await self._find_async("#on[checked]", timeout=4000):
             await self._click_async("div[data-testid=settings-container] button")
             await asyncio.sleep(2)
+    
+    async def _get_url_json_async(self, url: str) -> Dict:
+        await self._navigate_async(url)
+        page_content = await self._get_text_async("body")
+        page_content_json = json.loads(page_content)
+        return page_content_json
 
     async def _login_async(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
-        if not await self._is_logged_in_async():
+        if await self._need_login_async():
             await self._click_async("#user", timeout=120000)
             await self._click_async("#login-with-epic", timeout=120000)
             await self._type_async("#email", email)
@@ -192,12 +199,9 @@ class epicgames_claimer:
             await self.page.waitForSelector("#user", timeout=120000)
             await self._close_autoplay_async()
 
-    async def _is_logged_in_async(self) -> bool:
-        await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
-        if (await self._get_property_async("#user", "data-component")) == "SignedIn":
-            return True
-        else:
-            return False
+    async def _need_login_async(self) -> bool:
+        page_content_json = await self._get_url_json_async("https://www.epicgames.com/account/v2/ajaxCheckLogin")
+        return page_content_json["needLogin"]
 
     async def _get_free_game_links_async(self) -> List[str]:
         await self._navigate_async("https://www.epicgames.com/store/en-US/free-games")
@@ -237,7 +241,14 @@ class epicgames_claimer:
             if is_claim_successed:
                 claimed_game_titles.append(game_title)
         return claimed_game_titles
-
+    
+    async def _get_authentication_method_async(self) -> Optional[str]:
+        page_content_json = await self._get_url_json_async("https://www.epicgames.com/account/v2/security/settings/ajaxGet")
+        if page_content_json["settings"]["enabled"] == False:
+            return None
+        else:
+            return page_content_json["settings"]["defaultMethod"]
+    
     def _quit(self, signum = None, frame = None) -> None:
         try:
             self.close_browser()
@@ -253,13 +264,17 @@ class epicgames_claimer:
         """Close the browser."""
         return self._loop.run_until_complete(self.browser.close())
     
-    def is_logged_in(self) -> bool:
-        """Return login status."""
-        return self._loop.run_until_complete(self._is_logged_in_async())
+    def need_login(self) -> bool:
+        """Return whether need login."""
+        return self._loop.run_until_complete(self._need_login_async())
     
     def login(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         """Login an Epic account."""
-        return self._loop.run_until_complete(self._login_async(email, password, two_fa_enabled, remember_me))
+        return self._loop.run_until_complete(self._login_async(email, password, two_fa_enabled, remember_me))\
+    
+    def get_authentication_method(self) -> Optional[str]:
+        """Return authentication method. sms, authenticator, email or None."""
+        return self._loop.run_until_complete(self._get_authentication_method_async())
     
     def get_free_game_links(self) -> List[str]:
         """Return all titles of unclaimed weekly free games."""
@@ -273,7 +288,7 @@ class epicgames_claimer:
         """Login method Contains retry and log output."""
         for _ in range(retries):
             try:
-                if not self.is_logged_in():
+                if self.need_login():
                     self.log("Need login.")
                     self.close_browser()
                     email = input("Email: ")
@@ -291,7 +306,7 @@ class epicgames_claimer:
         """Login method Contains retry and log output."""
         for _ in range(retries):
             try:
-                if not self.is_logged_in():
+                if self.need_login():
                     self.login(email, password, two_fa_enabled=False)
                     self.log("Login successed.")
                 return True
