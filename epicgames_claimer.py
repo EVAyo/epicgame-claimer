@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+from asyncio.windows_events import SelectorEventLoop
 import json
 import os
 import signal
@@ -360,7 +361,17 @@ class epicgames_claimer:
     
     def post_json(self, url: str, data: str, host: str = "www.epicgames.com"):
         return self._loop.run_until_complete(self._post_json_async(url, data, host))
+    
+    async def _get_account_id_async(self):
+        if await self._need_login_async():
+            return None
+        else:
+            await self._navigate_async("https://www.epicgames.com/account/personal")
+            account_id =  (await self._get_text_async("#personalView div.paragraph-container p")).split(": ")[1]
+            return account_id
 
+    def get_account_id(self):
+        return self._loop.run_until_complete(self._get_account_id_async())
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Claim weekly free games from Epic Games Store.")
