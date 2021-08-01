@@ -205,17 +205,13 @@ class epicgames_claimer:
         return page_content_json["needLogin"]
 
     async def _get_free_game_links_async(self) -> List[str]:
-        await self._navigate_async("https://www.epicgames.com/store/en-US/free-games")
-        await self.page.waitForSelector("div[data-component=OfferCard]")
-        freegame_links = []
-        freegame_links_len = len(await self.page.querySelectorAll("div[data-component=OfferCard]"))
-        freegame_statuses = await self._get_texts_async("div[data-component=OfferCard] div[data-component=StatusBar]")
-        for freegame_index in range(freegame_links_len):
-            freegame_status = freegame_statuses[freegame_index]
-            freegame_link = await self.page.evaluate("document.querySelectorAll('div[data-component=OfferCard]')[{}].parentElement.href".format(freegame_index))
-            if freegame_link != "https://www.epicgames.com/store/en-US/free-games" and freegame_status == "Free Now":
-                freegame_links.append(freegame_link)
-        return freegame_links
+        page_content_json = await self._get_url_json_async("https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions")
+        free_games = page_content_json["data"]["Catalog"]["searchStore"]["elements"]
+        free_game_links = []
+        for free_game in free_games:
+            if free_game["price"]["totalPrice"]["discount"] != 0:
+                free_game_links.append("https://www.epicgames.com/store/p/{}".format(free_game["productSlug"]))
+        return free_game_links
        
     async def _claim_async(self) -> List[str]:
         await self._navigate_async("https://www.epicgames.com/store/en-US/free-games", timeout=480000)
@@ -278,7 +274,7 @@ class epicgames_claimer:
         return self._loop.run_until_complete(self._get_authentication_method_async())
     
     def get_free_game_links(self) -> List[str]:
-        """Return all titles of unclaimed weekly free games."""
+        """Return all titles of weekly free games."""
         return self._loop.run_until_complete(self._get_free_game_links_async())
 
     def claim(self) -> List[str]:
