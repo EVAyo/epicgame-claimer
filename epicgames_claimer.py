@@ -184,6 +184,7 @@ class epicgames_claimer:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
         if await self._need_login_async():
+            await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
             await self._click_async("#user", timeout=120000)
             await self._click_async("#login-with-epic", timeout=120000)
             await self._type_async("#email", email)
