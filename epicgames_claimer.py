@@ -5,6 +5,7 @@ import signal
 import time
 from getpass import getpass
 from typing import List, Optional, Union
+import json
 
 import schedule
 from pyppeteer import launch, launcher
@@ -317,9 +318,9 @@ class epicgames_claimer:
         signal.signal(signal.SIGINT, self._quit)
         signal.signal(signal.SIGTERM, self._quit)
         if "SIGBREAK" in dir(signal):
-            signal.signal(signal.SIGBREAK, claimer._quit)
+            signal.signal(signal.SIGBREAK, self._quit)
         if "SIGHUP" in dir(signal):
-            signal.signal(signal.SIGHUP, claimer._quit)
+            signal.signal(signal.SIGHUP, self._quit)
         def everyday_job() -> None:
             self.open_browser()
             self.logged_claim()
