@@ -209,8 +209,9 @@ class epicgames_claimer:
         free_games = page_content_json["data"]["Catalog"]["searchStore"]["elements"]
         free_game_links = []
         for free_game in free_games:
-            if free_game["price"]["totalPrice"]["discount"] != 0:
-                free_game_links.append("https://www.epicgames.com/store/p/{}".format(free_game["productSlug"]))
+            if {"path": "freegames"} in free_game["categories"]:
+                if free_game["price"]["totalPrice"]["discount"] != 0:
+                    free_game_links.append("https://www.epicgames.com/store/p/{}".format(free_game["productSlug"]))
         return free_game_links
        
     async def _claim_async(self) -> List[str]:
