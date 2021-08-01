@@ -5,7 +5,6 @@ import signal
 import time
 from getpass import getpass
 from typing import List, Optional, Union
-import json
 
 import schedule
 from pyppeteer import launch, launcher
