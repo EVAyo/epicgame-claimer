@@ -8,7 +8,7 @@ COPY requirements.txt install_dependencies.sh /
 
 RUN apt update \
     && apt install -y python3 python3-pip \
-    && ./install_dependencies.sh \
+    && sh ./install_dependencies.sh \
     && pip3 install --no-cache-dir -r requirements.txt \
     && pyppeteer-install \
     && apt purge -y python3-pip \
