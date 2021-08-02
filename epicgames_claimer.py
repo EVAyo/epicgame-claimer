@@ -1,13 +1,11 @@
 import argparse
 import asyncio
-from asyncio.windows_events import SelectorEventLoop
 import json
 import os
 import signal
 import time
 from getpass import getpass
 from typing import Dict, List, Optional, Union
-from pyppeteer.network_manager import Response
 
 import schedule
 from pyppeteer import launch, launcher
@@ -177,10 +175,9 @@ class epicgames_claimer:
             await asyncio.sleep(2)
     
     async def _get_url_json_async(self, url: str) -> Dict:
-        await self._navigate_async(url)
-        page_content = await self._get_text_async("body")
-        page_content_json = json.loads(page_content)
-        return page_content_json
+        response_text = await self._get_async(url)
+        response_json = json.loads(response_text)
+        return response_json
 
     async def _login_async(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
@@ -200,7 +197,6 @@ class epicgames_claimer:
                     await self._type_async("input[name=code-input-0]", input("2FA code: "))
                     await self._click_async("#continue[tabindex='0']", timeout=120000)
             await self.page.waitForSelector("#user", timeout=120000)
-            await self._close_autoplay_async()
 
     async def _need_login_async(self) -> bool:
         page_content_json = await self._get_url_json_async("https://www.epicgames.com/account/v2/ajaxCheckLogin")
@@ -217,29 +213,15 @@ class epicgames_claimer:
         return free_game_links
        
     async def _claim_async(self) -> List[str]:
-        await self._navigate_async("https://www.epicgames.com/store/en-US/free-games", timeout=480000)
-        freegame_links = await self._get_free_game_links_async()
+        free_games = await self._get_free_game_infos_async()
         claimed_game_titles = []
-        for link in freegame_links:
-            is_claim_successed = False
-            await self._navigate_async(link, timeout=480000)
-            await self._try_click_async("div[class*=WarningLayout__layout] Button")
-            game_title = (await self.page.title()).split(" | ")[0]
-            purchase_buttons_len = len(await self._get_elements_async("button[data-testid=purchase-cta-button]"))
-            for purchase_button_index in range(purchase_buttons_len):
-                purchase_button = (await self._get_elements_async("button[data-testid=purchase-cta-button]"))[purchase_button_index]
-                await self._wait_for_element_text_change_async(purchase_button, "Loading")
-                if await self._get_element_text_async(purchase_button) == "Get":
-                    await purchase_button.click()
-                    await self._try_click_async("#agree")
-                    await self._try_click_async("div[class*=accept] Button")
-                    await self._try_click_async("div[data-component=platformUnsupportedWarning] > Button")
-                    await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
-                    await self._click_async("div.ReactModal__Content button[data-component=ModalCloseButton]", timeout=120000)
-                    await self._navigate_async(link, timeout=480000, reload=True)
-                    is_claim_successed = True
-            if is_claim_successed:
-                claimed_game_titles.append(game_title)
+        for game in free_games:
+            await self._navigate_async(game["purchase_url"], timeout=480000)
+            await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])")
+            if await self._find_async("#purchase-app div.error-alert-container"):
+                continue
+            else:
+                claimed_game_titles.append(game["title"])
         return claimed_game_titles
     
     async def _get_authentication_method_async(self) -> Optional[str]:
@@ -350,12 +332,13 @@ class epicgames_claimer:
     
     async def _post_json_async(self, url: str, data: str, host: str = "www.epicgames.com"):
         if not host in self.page.url:
-            await self.page.goto("https://{}".format(host))
+            await self._navigate_async("https://{}".format(host))
         response = await self.page.evaluate("""
             xmlhttp = new XMLHttpRequest();
             xmlhttp.open("POST", "{}", true);
             xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xmlhttp.send(String.raw`{}`);
+            xmlhttp.send('{}');
+            xmlhttp.responseText;
         """.format(url, data))
         return response
     
@@ -372,6 +355,121 @@ class epicgames_claimer:
 
     def get_account_id(self):
         return self._loop.run_until_complete(self._get_account_id_async())
+    
+    async def _get_async(self, url: str):
+        await self._navigate_async(url)
+        response_text = await self._get_text_async("body")
+        return response_text
+
+    def get(self, url: str):
+        return self._loop.run_until_complete(self._get_async(url))
+    
+    async def _get_game_infos_async(self, url_slug: str):
+        game_infos = {}
+        response_text = await self._get_async("https://store-content.ak.epicgames.com/api/zh-CN/content/products/{}".format(url_slug))
+        response_json = json.loads(response_text)
+        game_infos["product_name"] = response_json["productName"]
+        game_infos["namespace"] = response_json["namespace"]
+        game_infos["pages"] = []
+        for page in response_json["pages"]:
+            game_info_page = {}
+            if page["offer"]["hasOffer"]:
+                game_info_page["offer_id"] = page["offer"]["id"]
+                game_info_page["namespace"] = page["offer"]["namespace"]
+                game_infos["pages"].append(game_info_page)
+        return game_infos
+    
+    def get_game_infos(self, url_slug: str):
+        return self._loop.run_until_complete(self._get_game_infos_async(url_slug))
+    
+    async def _get_order_sync_token_async(self, namespace:str, order_id: str):
+        post_text = """
+            {{
+                "useDefault":true,
+                "setDefault":false,
+                "orderId":null,
+                "namespace":"{}",
+                "country":null,
+                "countryName":null,
+                "orderComplete":null,
+                "orderError":null,
+                "orderPending":null,
+                "offers":["{}"],
+                "offerPrice":""
+            }}""".format(namespace, order_id)
+        post_text = post_text.replace(" ", "")
+        post_text = post_text.replace("\n", "")
+        response_text = await self._post_json_async("/purchase/order-preview", post_text, "payment-website-pci.ol.epicgames.com")
+        response_json = json.loads(response_text)
+        sync_token = response_json["syncToken"]
+        return sync_token
+    
+    def get_order_sync_token(self, namespace:str, offer_id: str):
+        return self._loop.run_until_complete(self._get_order_sync_token_async(namespace, offer_id))
+    
+    def get_purchase_url(self, namespace:str, offer_id: str):
+        purchase_url = "https://www.epicgames.com/store/purchase?namespace={}&offers={}".format(namespace, offer_id)
+        return purchase_url
+    
+    async def _get_library_items_async(self):
+        post_text = """
+            {
+                "query":"
+                    query libraryQuery($cursor: String, $excludeNs: [String]) {
+                        Library {
+                            libraryItems(cursor: $cursor, params: {excludeNs: $excludeNs, includeMetadata: true}) {
+                                records {
+                                    catalogItemId
+                                    namespace
+                                    appName
+                                    productId
+                                    product {
+                                        supportedTypes
+                                    }
+                                }
+                                responseMetadata {
+                                    nextCursor
+                                }
+                            }
+                        }
+                    }
+                    ",
+                "variables":{
+                    "cursor":"",
+                    "excludeNs":["ue"]
+                }
+            }
+        """
+        post_text = post_text.replace(" ", "")
+        post_text = post_text.replace("\n", "")
+        response_text = await self._post_json_async("https://store-launcher.epicgames.com/graphql", post_text, "store-launcher.epicgames.com")
+        response_json = json.loads(response_text)
+        library_items = response_json["data"]["Library"]["libraryItems"]["records"]
+        return library_items
+    
+    def get_library_items(self):
+        return self._loop.run_until_complete(self._get_library_items_async())
+    
+    async def _get_free_game_infos_async(self) -> List[Dict[str, str]]:
+        response_text = await self._get_async("https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions")
+        response_json = json.loads(response_text)
+        free_game_infos = []
+        for item in response_json["data"]["Catalog"]["searchStore"]["elements"]:
+            free_game_info = {}
+            if {"path": "freegames"} in item["categories"]:
+                if item["price"]["totalPrice"]["discount"] != 0:
+                    free_game_info["title"] = item["title"]
+                    free_game_info["url_slug"] = item["urlSlug"]
+                    free_game_info["namespace"] = item["namespace"]
+                    free_game_info["offer_id"] = item["id"]
+                    free_game_info["url"] = "https://www.epicgames.com/store/p/" + free_game_info["url_slug"]
+                    free_game_info["purchase_url"] = "https://www.epicgames.com/store/purchase?namespace={}&offers={}".format(free_game_info["namespace"], free_game_info["offer_id"])
+                    free_game_infos.append(free_game_info)
+        return free_game_infos
+    
+    def get_free_game_infos(self) -> List[Dict[str, str]]:
+        return self._loop.run_until_complete(self._get_free_game_infos_async())
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Claim weekly free games from Epic Games Store.")
