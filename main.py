@@ -1,5 +1,6 @@
 import argparse
 import importlib
+import os
 import signal
 import time
 
@@ -28,6 +29,10 @@ def login(args: argparse.Namespace) -> bool:
             claimer_for_login.close_browser()
             return False
     else:
+        try:
+            os.rmdir("User_Data/Default")
+        except FileNotFoundError:
+            pass
         if claimer_for_login.logged_login_no_interactive(args.username, args.password):
             claimer_for_login.close_browser()
             return True
