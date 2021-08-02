@@ -218,10 +218,12 @@ class epicgames_claimer:
         for game in free_games:
             await self._navigate_async(game["purchase_url"], timeout=480000)
             await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])")
-            if await self._find_async("#purchase-app div.error-alert-container"):
-                continue
-            else:
-                claimed_game_titles.append(game["title"])
+            for _ in range(30):
+                if await self._find_async("#purchase-app div.error-alert-container", timeout=1000):
+                    break
+                elif not await self._find_async("#purchase-app > div", timeout=1000):
+                    claimed_game_titles.append(game["title"])
+                    break
         return claimed_game_titles
     
     async def _get_authentication_method_async(self) -> Optional[str]:
