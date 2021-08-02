@@ -471,6 +471,13 @@ class epicgames_claimer:
     
     def get_free_game_infos(self) -> List[Dict[str, str]]:
         return self._loop.run_until_complete(self._get_free_game_infos_async())
+    
+    async def _is_in_library_async(self, account_id: str, namespace: str, sha256_hash: str):
+        # sha256_hash need to be decoded.
+        response_text = await self._get_async("https://www.epicgames.com/graphql?operationName=getAccountEntitlements&variables=%7B%22accountId%22:%22{}%22,%22namespace%22:%22{}%22%7D&extensions=%7B%22persistedQuery%22:%7B%22version%22:1,%22sha256Hash%22:%22{}%22%7D%7D".format(account_id, namespace, sha256_hash))
+        response_json = json.loads(response_text)
+        in_library = True if response_json["data"]["Entitlements"]["accountEntitlements"]["count"] > 0 else False
+        return in_library
 
 
 if __name__ == "__main__":
