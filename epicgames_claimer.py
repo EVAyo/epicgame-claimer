@@ -269,6 +269,9 @@ class epicgames_claimer:
     def claim(self) -> List[str]:
         """Claim available weekly free games and return all titles of claimed games."""
         return self._loop.run_until_complete(self._claim_async())
+    
+    def screenshot(self, path: str) -> None:
+        return self._loop.run_until_complete(self.page.screenshot({"path": path}))
 
     def logged_login(self, retries: int = 5) -> bool:
         """Login method Contains retry and log output."""
@@ -286,7 +289,7 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("Login failed({}).".format(e), "warning")
         self.log("Login failed.", "error")
-        self.page.screenshot("screenshot.png")
+        self.screenshot("screenshot.png")
         return False
 
     def logged_login_no_interactive(self, email: str, password: str, retries: int = 3) -> bool:
@@ -300,7 +303,7 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("Login failed({}).".format(e), "warning")
         self.log("Login failed.", "error")
-        self.page.screenshot("screenshot.png")
+        self.screenshot("screenshot.png")
         return False
     
     def logged_claim(self, retries: int = 5) -> None:
@@ -314,7 +317,7 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("{}.".format(str(e).rstrip(".")), level="warning")
         self.log("Claim failed.", level="error")
-        self.page.screenshot("screenshot.png")
+        self.screenshot("screenshot.png")
 
     def run(self, at: str = None, once: bool = False) -> None:
         """Claim all weekly free games everyday."""
