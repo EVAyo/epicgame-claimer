@@ -293,7 +293,7 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("Login failed({}).".format(e), "warning")
         self.log("Login failed.", "error")
-        self.screenshot("screenshot.png")
+        self.screenshot("screenshot/screenshot.png")
         return False
 
     def logged_login_no_interactive(self, email: str, password: str, retries: int = 3) -> bool:
@@ -307,7 +307,7 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("Login failed({}).".format(e), "warning")
         self.log("Login failed.", "error")
-        self.screenshot("screenshot.png")
+        self.screenshot("screenshot/screenshot.png")
         return False
     
     def logged_claim(self, retries: int = 5) -> None:
@@ -321,7 +321,7 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("{}.".format(str(e).rstrip(".")), level="warning")
         self.log("Claim failed.", level="error")
-        self.screenshot("screenshot.png")
+        self.screenshot("screenshot/screenshot.png")
 
     def run(self, at: str = None, once: bool = False) -> None:
         """Claim all weekly free games everyday."""
@@ -344,7 +344,8 @@ class epicgames_claimer:
             schedule.run_pending()
             time.sleep(1)
     
-    async def _post_json_async(self, url: str, data: str, host: str = "www.epicgames.com"):
+    async def _post_json_async(self, url: str, data: str, host: str = "www.epicgames.com", sleep: Union[int, float] = 2):
+        await asyncio.sleep(sleep)
         if not host in self.page.url:
             await self._navigate_async("https://{}".format(host))
         response = await self.page.evaluate("""
@@ -356,8 +357,8 @@ class epicgames_claimer:
         """.format(url, data))
         return response
     
-    def post_json(self, url: str, data: str, host: str = "www.epicgames.com"):
-        return self._loop.run_until_complete(self._post_json_async(url, data, host))
+    def post_json(self, url: str, data: str, host: str = "www.epicgames.com", sleep: Union[int, float] = 2):
+        return self._loop.run_until_complete(self._post_json_async(url, data, host, sleep))
     
     async def _get_account_id_async(self):
         if await self._need_login_async():
@@ -370,13 +371,14 @@ class epicgames_claimer:
     def get_account_id(self):
         return self._loop.run_until_complete(self._get_account_id_async())
     
-    async def _get_async(self, url: str):
+    async def _get_async(self, url: str, sleep: Union[int, float] = 2):
+        await asyncio.sleep(sleep)
         await self._navigate_async(url)
         response_text = await self._get_text_async("body")
         return response_text
 
-    def get(self, url: str):
-        return self._loop.run_until_complete(self._get_async(url))
+    def get(self, url: str, sleep: Union[int, float] = 2):
+        return self._loop.run_until_complete(self._get_async(url, sleep))
     
     async def _get_game_infos_async(self, url_slug: str):
         game_infos = {}
