@@ -216,8 +216,8 @@ class epicgames_claimer:
         free_games = await self._get_free_game_infos_async()
         claimed_game_titles = []
         for game in free_games:
-            await self._navigate_async(game["purchase_url"], timeout=480000)
-            await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", timeout=480000)
+            await self._navigate_async(game["purchase_url"], timeout=120000)
+            await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", timeout=120000)
             for i in range(60):
                 if await self._find_async("#purchase-app div.error-alert-container", timeout=1000):
                     break
