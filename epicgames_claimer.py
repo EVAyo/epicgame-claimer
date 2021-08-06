@@ -286,6 +286,7 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("Login failed({}).".format(e), "warning")
         self.log("Login failed.", "error")
+        self.page.screenshot("screenshot.png")
         return False
 
     def logged_login_no_interactive(self, email: str, password: str, retries: int = 3) -> bool:
@@ -299,6 +300,7 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("Login failed({}).".format(e), "warning")
         self.log("Login failed.", "error")
+        self.page.screenshot("screenshot.png")
         return False
     
     def logged_claim(self, retries: int = 5) -> None:
@@ -312,6 +314,7 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("{}.".format(str(e).rstrip(".")), level="warning")
         self.log("Claim failed.", level="error")
+        self.page.screenshot("screenshot.png")
 
     def run(self, at: str = None, once: bool = False) -> None:
         """Claim all weekly free games everyday."""
