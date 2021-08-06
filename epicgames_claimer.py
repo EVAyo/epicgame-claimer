@@ -273,7 +273,7 @@ class epicgames_claimer:
     def screenshot(self, path: str) -> None:
         return self._loop.run_until_complete(self.page.screenshot({"path": path}))
     
-    def _navigate_async(self, url: str, timeout: int = 30000, reload: bool = True) -> None:
+    def navigate(self, url: str, timeout: int = 30000, reload: bool = True) -> None:
         return self._loop.run_until_complete(self._navigate_async(url, timeout, reload))
 
 
