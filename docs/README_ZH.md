@@ -112,39 +112,6 @@ rm -I google-chrome-stable_current_x86_64.rpm
 python3 main.py --chromium-path /usr/bin/google-chrome
 ```
 
-<!--## 进阶用法
-
-你可以将`epicgames_claimer.py`作为模块导入自己的Python脚本中。
-
-### 最简单用法
-
-``` Python
-from epicgames_claimer import epicgames_claimer
-
-claimer = epicgames_claimer()
-claimer.login(email, password)
-claimer.claim()
-claimer.close_browser()
-```
-
-### 多账号
-
-``` Python
-from epicgames_claimer import epicgames_claimer
-
-claimer_1 = epicgames_claimer(data_dir="user_1")
-claimer_1.login(email_1, password_1)
-claimer_1.claim()
-claimer_1.close_browser()
-
-claimer_2 = epicgames_claimer(data_dir="user_2")
-claimer_2.login(email_2, password_2)
-claimer_2.claim()
-claimer_2.close_browser()
-
-...
-```-->
-
 ## 已知问题
 
 Windows系统中途结束脚本可能导致浏览器进程留在后台。请检查任务管理器并手动结束浏览器进程。
