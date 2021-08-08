@@ -16,6 +16,7 @@ class epicgames_claimer:
     def __init__(self, data_dir: Optional[str] = None, headless: bool = True, sandbox: bool = False, chromium_path: Optional[str] = None) -> None:
         if "--enable-automation" in launcher.DEFAULT_ARGS:
             launcher.DEFAULT_ARGS.remove("--enable-automation")
+        # Solve the problem of zombie processes
         if "SIGCHLD" in dir(signal):
             signal.signal(signal.SIGCHLD, signal.SIG_IGN)
         self.data_dir = data_dir
@@ -23,6 +24,7 @@ class epicgames_claimer:
         self.sandbox = sandbox
         self.chromium_path = chromium_path
         self._loop = asyncio.get_event_loop()
+        self.browser_opened = False
         self.open_browser()
     
     @staticmethod
@@ -56,25 +58,32 @@ class epicgames_claimer:
         await self.page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3542.0 Safari/537.36")
 
     async def _open_browser_async(self) -> None:
-        if "win" in launcher.current_platform():
-            if self.chromium_path == None and os.path.exists("chrome-win32"):
-                self.chromium_path = "chrome-win32/chrome.exe"
-        browser_args = [
-            "--disable-infobars", 
-            "--blink-settings=imagesEnabled=false", 
-            "--no-first-run"
-        ]
-        if not self.sandbox:
-            browser_args.append("--no-sandbox")
-        self.browser = await launch(
-            options={"args": browser_args, "headless": self.headless}, 
-            userDataDir=None if self.data_dir == None else os.path.abspath(self.data_dir), 
-            executablePath=self.chromium_path,
-        )
-        self.page = (await self.browser.pages())[0]
-        await self.page.setViewport({"width": 1000, "height": 600})
-        if self.headless:
-            await self._headless_stealth_async()
+        if not self.browser_opened:
+            if "win" in launcher.current_platform():
+                if self.chromium_path == None and os.path.exists("chrome-win32"):
+                    self.chromium_path = "chrome-win32/chrome.exe"
+            browser_args = [
+                "--disable-infobars", 
+                "--blink-settings=imagesEnabled=false", 
+                "--no-first-run"
+            ]
+            if not self.sandbox:
+                browser_args.append("--no-sandbox")
+            self.browser = await launch(
+                options={"args": browser_args, "headless": self.headless}, 
+                userDataDir=None if self.data_dir == None else os.path.abspath(self.data_dir), 
+                executablePath=self.chromium_path,
+            )
+            self.page = (await self.browser.pages())[0]
+            await self.page.setViewport({"width": 1000, "height": 600})
+            if self.headless:
+                await self._headless_stealth_async()
+            self.browser_opened = True
+        
+    async def _close_browser_async(self):
+        if self.browser_opened:
+            await self.browser.close()
+            self.browser_opened = False
     
     async def _type_async(self, selector: str, text: str, sleep: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
@@ -128,15 +137,26 @@ class epicgames_claimer:
                 links.append(link)
         return links
 
-    async def _find_async(self, selector: str, timeout: Union[int, None] = None) -> str:
-        try:
-            if timeout != None:
-                await self.page.waitForSelector(selector, options={"timeout": timeout})
-            else:
-                await self.page.waitForSelector(selector)
-            return True
-        except:
-            return False
+    async def _find_async(self, selectors: Union[str, List[str]], timeout: Union[int, None] = None) -> Union[bool, int]:
+        if type(selectors) == str:
+            try:
+                if timeout != None:
+                    await self.page.waitForSelector(selectors, options={"timeout": timeout})
+                else:
+                    await self.page.waitForSelector(selectors)
+                return True
+            except:
+                return False
+        elif type(selectors) == list:
+            if timeout == None:
+                timeout = 300000
+            for _ in range(int(timeout / 1000 / len(selectors))):
+                for i in range(len(selectors)):
+                    if await self._find_async(selectors[i], timeout=1000):
+                        return i
+            return -1
+        else:
+            raise
 
     async def _try_click_async(self, selector: str, sleep: Union[int, float] = 2) -> bool:
         try:
@@ -179,7 +199,7 @@ class epicgames_claimer:
         response_json = json.loads(response_text)
         return response_json
 
-    async def _login_async(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
+    async def _login_async(self, email: str, password: str, tfa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
         if await self._need_login_async():
@@ -191,7 +211,7 @@ class epicgames_claimer:
             if not remember_me:
                 await self._click_async("#rememberMe")
             await self._click_async("#sign-in[tabindex='0']", timeout=120000)
-            if two_fa_enabled:
+            if tfa_enabled:
                 await self.page.waitForNavigation(options={"timeout": 120000})
                 if self.page.url != "https://www.epicgames.com/store/en-US/":
                     await self._type_async("input[name=code-input-0]", input("2FA code: "))
@@ -248,7 +268,7 @@ class epicgames_claimer:
 
     def close_browser(self) -> None:
         """Close the browser."""
-        return self._loop.run_until_complete(self.browser.close())
+        return self._loop.run_until_complete(self._close_browser_async())
     
     def need_login(self) -> bool:
         """Return whether need login."""
@@ -323,6 +343,7 @@ class epicgames_claimer:
         self.log("Claim failed.", level="error")
         self.screenshot("screenshot.png")
 
+
     def run(self, at: str = None, once: bool = False) -> None:
         """Claim all weekly free games everyday."""
         signal.signal(signal.SIGINT, self._quit)
@@ -372,9 +393,9 @@ class epicgames_claimer:
         return self._loop.run_until_complete(self._get_account_id_async())
     
     async def _get_async(self, url: str, sleep: Union[int, float] = 2):
-        await asyncio.sleep(sleep)
         await self._navigate_async(url)
         response_text = await self._get_text_async("body")
+        await asyncio.sleep(sleep)
         return response_text
 
     def get(self, url: str, sleep: Union[int, float] = 2):
@@ -493,18 +514,109 @@ class epicgames_claimer:
         in_library = True if response_json["data"]["Entitlements"]["accountEntitlements"]["count"] > 0 else False
         return in_library
 
+    async def _run_async(self, retries: int = 5) -> None:
+        await self._open_browser_async()
+        for i in range(retries):
+            try:
+                if await self._need_login_async():
+                    self.log("Need login.")
+                    self._close_browser_async()
+                    email = input("Email: ")
+                    password = getpass("Password: ")
+                    await self._open_browser_async()
+                    await self._login_async(email, password)
+                    self.log("Login successed.")
+                break
+            except Exception as e:
+                self.log("Login failed({}).".format(e), "warning")
+                if i == retries - 1:
+                    self.log("Login failed.", "error")
+                    self.screenshot("screenshot.png")
+                    await self._close_browser_async()
+                    exit(1)
+        for i in range(retries):
+            try:
+                claimed_game_titles = await self._claim_async()
+                if len(claimed_game_titles) > 0:
+                    self.log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
+                break
+            except Exception as e:
+                self.log("{}.".format(str(e).rstrip(".")), level="warning")
+                if i == retries - 1:
+                    self.log("Claim failed.", level="error")
+                    self.screenshot("screenshot.png")
+        await self._close_browser_async()
+    
+    async def _run_no_interactive_async(self, email: str, password: str, retries: int = 5) -> None:
+        await self._open_browser_async()
+        for i in range(retries):
+            try:
+                if await self._need_login_async():
+                    await self._login_async(email, password, tfa_enabled=False, remember_me=False)
+                    self.log("Login successed.")
+                break
+            except Exception as e:
+                self.log("Login failed({}).".format(e), "warning")
+                if i == retries - 1:
+                    self.log("Login failed.", "error")
+                    self.screenshot("screenshot.png")
+                    await self._close_browser_async()
+                    exit(1)
+        for i in range(retries):
+            try:
+                claimed_game_titles = await self._claim_async()
+                if len(claimed_game_titles) > 0:
+                    self.log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
+                break
+            except Exception as e:
+                self.log("{}.".format(str(e).rstrip(".")), level="warning")
+                if i == retries - 1:
+                    self.log("Claim failed.", level="error")
+                    self.screenshot("screenshot.png")
+        await self._close_browser_async()
+    
+    def run_once(self, interactive: bool = True, email: str = None, password: str = None) -> None:
+        if interactive:
+            return self._loop.run_until_complete(self._run_async(retries=5))
+        else:
+            return self._loop.run_until_complete(self._run_no_interactive_async(email, password, retries=5))
+    
+    def scheduled_run(self, at: str, interactive: bool = True, email: str = None, password: str = None) -> None:
+        self.add_quit_signal()
+        schedule.every().day.at(at).do(self.run_once, interactive, email, password)
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+    
+    def add_quit_signal(self):
+        signal.signal(signal.SIGINT, self._quit)
+        signal.signal(signal.SIGTERM, self._quit)
+        if "SIGBREAK" in dir(signal):
+            signal.signal(signal.SIGBREAK, self._quit)
+        if "SIGHUP" in dir(signal):
+            signal.signal(signal.SIGHUP, self._quit)
 
-if __name__ == "__main__":
+
+def main() -> None:
     parser = argparse.ArgumentParser(description="Claim weekly free games from Epic Games Store.")
     parser.add_argument("-n", "--no-headless", action="store_true", help="run the browser with GUI")
     parser.add_argument("-c", "--chromium-path", type=str, help="set path to browser executable")
     parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default: 09:00)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
+    parser.add_argument("-u", "--username", type=str, help="set username/email")
+    parser.add_argument("-p", "--password", type=str, help="set password")
     args = parser.parse_args()
+    interactive = True if args.username == None else False
     epicgames_claimer.log("Claimer is starting...")
     claimer = epicgames_claimer(data_dir="User_Data/Default", headless=not args.no_headless, chromium_path=args.chromium_path)
-    if claimer.logged_login():
-        epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
-        claimer.run(args.run_at, once=args.once)
+    if args.once == True:
+        epicgames_claimer.log("Claimer has started.")
+        claimer.run_once(interactive, args.username, args.password)
     else:
-        exit(1)
+        epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
+        claimer.run_once(interactive, args.username, args.password)
+        claimer.scheduled_run(args.run_at, interactive, args.username, args.password)
+
+
+if __name__ == "__main__":
+    main()
