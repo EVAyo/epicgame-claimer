@@ -25,12 +25,13 @@ def main() -> None:
     args = get_args()
     interactive = True if args.username == None else False
     def update() -> None:
-        try:
-            if update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/master/epicgames_claimer.py"):
-                importlib.reload(epicgames_claimer)
-                epicgames_claimer.epicgames_claimer.log("\"epicgames_claimer.py\" has been updated.")
-        except Exception as e:
-            epicgames_claimer.epicgames_claimer.log("Update \"epicgames_claimer.py\" failed. {}: {}".format(e.__class__.__name__, e), level="warning")
+        if not args.no_auto_update:
+            try:
+                if update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/master/epicgames_claimer.py"):
+                    importlib.reload(epicgames_claimer)
+                    epicgames_claimer.epicgames_claimer.log("\"epicgames_claimer.py\" has been updated.")
+            except Exception as e:
+                epicgames_claimer.epicgames_claimer.log("Update \"epicgames_claimer.py\" failed. {}: {}".format(e.__class__.__name__, e), level="warning")
     def run(claimer: epicgames_claimer.epicgames_claimer) -> None:
         claimer.close_browser()
         update()
