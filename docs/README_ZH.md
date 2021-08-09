@@ -73,6 +73,12 @@ sudo sh install_dependencies.sh
 python3 main.py
 ```
 
+无交互输入（需要关闭两步验证）:
+
+```bash
+python3 main.py -u <你的邮箱> -p <你的密码>
+```
+
 #### Python版本可选参数
 
 | 参数                    | 说明                     | 备注            |

@@ -73,6 +73,12 @@ sudo sh install_dependencies.sh
 python3 main.py
 ```
 
+No interactive input(Need disable 2FA):
+
+```bash
+python3 main.py -u <YOUR EMAIL> -p <YOUR PASSWORD>
+```
+
 #### Optional Arguments for Python Version
 
 | Arguments               | Descriptions                   | Note                    |
