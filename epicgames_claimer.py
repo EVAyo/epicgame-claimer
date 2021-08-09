@@ -213,7 +213,7 @@ class epicgames_claimer:
             if not remember_me:
                 await self._click_async("#rememberMe")
             await self._click_async("#sign-in[tabindex='0']", timeout=120000)
-            if await self._find_async("#talon_frame_login_prod"):
+            if await self._find_async("#talon_frame_login_prod[style*=visible]"):
                 raise PermissionError("CAPTCHA appeared for unknown reasons.")
             if await self._find_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]"):
                 alert_text = await self._get_text_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]")
@@ -238,7 +238,7 @@ class epicgames_claimer:
         if not remember_me:
             await self._click_async("#rememberMe")
         await self._click_async("#sign-in[tabindex='0']", timeout=120000)
-        if await self._find_async("#talon_frame_login_prod"):
+        if await self._find_async("#talon_frame_login_prod[style*=visible]"):
             raise PermissionError("CAPTCHA appeared for unknown reasons.")
         if await self._find_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]"):
             alert_text = await self._get_text_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]")
