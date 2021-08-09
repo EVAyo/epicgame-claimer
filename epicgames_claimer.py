@@ -65,8 +65,10 @@ class epicgames_claimer:
             browser_args = [
                 "--disable-infobars", 
                 "--blink-settings=imagesEnabled=false", 
-                "--no-first-run"
+                "--no-first-run"                
             ]
+            if launcher.current_platform() == "linux":
+                browser_args.append("--single-process")
             if not self.sandbox:
                 browser_args.append("--no-sandbox")
             self.browser = await launch(
@@ -217,6 +219,24 @@ class epicgames_claimer:
                     await self._type_async("input[name=code-input-0]", input("2FA code: "))
                     await self._click_async("#continue[tabindex='0']", timeout=120000)
             await self.page.waitForSelector("#user", timeout=120000)
+
+    async def _login_no_check_async(self, email: str, password: str, tfa_enabled: bool = True, remember_me: bool = True) -> None:
+        if email == None or email == "":
+            raise ValueError("Email can't be null.")
+        await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
+        await self._click_async("#user", timeout=120000)
+        await self._click_async("#login-with-epic", timeout=120000)
+        await self._type_async("#email", email)
+        await self._type_async("#password", password)
+        if not remember_me:
+            await self._click_async("#rememberMe")
+        await self._click_async("#sign-in[tabindex='0']", timeout=120000)
+        if tfa_enabled:
+            await self.page.waitForNavigation(options={"timeout": 120000})
+            if self.page.url != "https://www.epicgames.com/store/en-US/":
+                await self._type_async("input[name=code-input-0]", input("2FA code: "))
+                await self._click_async("#continue[tabindex='0']", timeout=120000)
+        await self.page.waitForSelector("#user", timeout=120000)
 
     async def _need_login_async(self) -> bool:
         page_content_json = await self._get_url_json_async("https://www.epicgames.com/account/v2/ajaxCheckLogin")
@@ -392,7 +412,7 @@ class epicgames_claimer:
     def get_account_id(self):
         return self._loop.run_until_complete(self._get_account_id_async())
     
-    async def _get_async(self, url: str, sleep: Union[int, float] = 2):
+    async def _get_async(self, url: str, sleep: Union[int, float] = 3):
         await self._navigate_async(url)
         response_text = await self._get_text_async("body")
         await asyncio.sleep(sleep)
@@ -524,7 +544,7 @@ class epicgames_claimer:
                     email = input("Email: ")
                     password = getpass("Password: ")
                     await self._open_browser_async()
-                    await self._login_async(email, password)
+                    await self._login_no_check_async(email, password)
                     self.log("Login successed.")
                 break
             except Exception as e:
@@ -552,7 +572,7 @@ class epicgames_claimer:
         for i in range(retries):
             try:
                 if await self._need_login_async():
-                    await self._login_async(email, password, tfa_enabled=False, remember_me=False)
+                    await self._login_no_check_async(email, password, tfa_enabled=False, remember_me=False)
                     self.log("Login successed.")
                 break
             except Exception as e:
@@ -607,11 +627,13 @@ def main() -> None:
     parser.add_argument("-p", "--password", type=str, help="set password")
     args = parser.parse_args()
     interactive = True if args.username == None else False
+    data_dir = "User_Data/Default" if interactive else None
     epicgames_claimer.log("Claimer is starting...")
-    claimer = epicgames_claimer(data_dir="User_Data/Default", headless=not args.no_headless, chromium_path=args.chromium_path)
+    claimer = epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
     if args.once == True:
         epicgames_claimer.log("Claimer has started.")
         claimer.run_once(interactive, args.username, args.password)
+        epicgames_claimer.log("Claim has been completed.")
     else:
         epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
         claimer.run_once(interactive, args.username, args.password)

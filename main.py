@@ -24,6 +24,7 @@ def get_args() -> argparse.Namespace:
 def main() -> None:
     args = get_args()
     interactive = True if args.username == None else False
+    data_dir = "User_Data/Default" if interactive else None
     def update() -> None:
         if not args.no_auto_update:
             try:
@@ -35,7 +36,7 @@ def main() -> None:
     def run(claimer: epicgames_claimer.epicgames_claimer) -> None:
         claimer.close_browser()
         update()
-        claimer = epicgames_claimer.epicgames_claimer(data_dir="User_Data/Default", headless=not args.no_headless, chromium_path=args.chromium_path)
+        claimer = epicgames_claimer.epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
         claimer.run_once(interactive, args.username, args.password)
     def scheduled_run(claimer: epicgames_claimer.epicgames_claimer, at: str):
         claimer.add_quit_signal()
@@ -45,10 +46,11 @@ def main() -> None:
             time.sleep(1)
     epicgames_claimer.epicgames_claimer.log("Claimer is starting...")
     update()
-    claimer = epicgames_claimer.epicgames_claimer(data_dir="User_Data/Default", headless=not args.no_headless, chromium_path=args.chromium_path)
+    claimer = epicgames_claimer.epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
     if args.once == True:
         epicgames_claimer.epicgames_claimer.log("Claimer has started.")
         claimer.run_once(interactive, args.username, args.password)
+        epicgames_claimer.epicgames_claimer.log("Claim has been completed.")
     else:
         epicgames_claimer.epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
         claimer.run_once(interactive, args.username, args.password)
