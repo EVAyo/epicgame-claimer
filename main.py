@@ -26,7 +26,7 @@ def main() -> None:
     interactive = True if args.username == None else False
     data_dir = "User_Data/Default" if interactive else None
     def update() -> None:
-        if args.auto-update:
+        if args.auto_update:
             try:
                 if update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/master/epicgames_claimer.py"):
                     importlib.reload(epicgames_claimer)
