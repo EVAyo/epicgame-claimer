@@ -90,7 +90,8 @@ python3 main.py
 
 ##### 安装Chrome
 
-基于Debian的Linux：
+<details>
+<summary>Debian（e.g. Ubuntu）</summary>
 
 ``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
@@ -98,7 +99,10 @@ sudo apt install -y ./google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
 ```
 
-基于Redhat的Linux：
+</details>
+
+<details>
+<summary>CentOS</summary>
 
 ``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
@@ -106,10 +110,12 @@ sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
 
+</details>
+
 ##### 使用Chrome替代默认浏览器
 
 ``` bash
-python3 main.py --chromium-path /usr/bin/google-chrome
+python3 main.py --chromium-path google-chrome
 ```
 
 ## 已知问题

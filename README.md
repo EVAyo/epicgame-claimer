@@ -90,7 +90,8 @@ If the script runs incorrectly in Linux system, you can try to use Chrome instea
 
 ##### Install Chrome
 
-For Debian-based Linux:
+<details>
+<summary>Debian (e.g. Ubuntu)</summary>
 
 ``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
@@ -98,13 +99,18 @@ sudo apt install -y ./google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
 ```
 
-For Redhat-based Linux:
+</details>
+
+<details>
+<summary>CentOS</summary>
 
 ``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
+
+</details>
 
 ##### Use Chrome instead of default browser
 
