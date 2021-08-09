@@ -74,7 +74,7 @@ docker run -it luminoleon/epicgames-claimer
     ```
 
     <details>
-    <summary>启用启动更新</summary>
+    <summary>启用自动更新</summary>
 
     ```bash
     python3 main.py --auto-update
