@@ -308,8 +308,11 @@ class epicgames_claimer:
         """Claim available weekly free games and return all titles of claimed games."""
         return self._loop.run_until_complete(self._claim_async())
     
+    async def _screenshot_async(self, path: str) -> None:
+        await self.page.screenshot({"path": path})
+
     def screenshot(self, path: str) -> None:
-        return self._loop.run_until_complete(self.page.screenshot({"path": path}))
+        return self._loop.run_until_complete(self.page.screenshot({"path": path}))    
     
     def navigate(self, url: str, timeout: int = 30000, reload: bool = True) -> None:
         return self._loop.run_until_complete(self._navigate_async(url, timeout, reload))
@@ -549,7 +552,7 @@ class epicgames_claimer:
                 self.log("Login failed({}).".format(e), "warning")
                 if i == retries - 1:
                     self.log("Login failed.", "error")
-                    self.screenshot("screenshot.png")
+                    await self._screenshot_async("screenshot.png")
                     await self._close_browser_async()
                     exit(1)
         for i in range(retries):
@@ -564,7 +567,7 @@ class epicgames_claimer:
                 self.log("{}.".format(str(e).rstrip(".")), level="warning")
                 if i == retries - 1:
                     self.log("Claim failed.", level="error")
-                    self.screenshot("screenshot.png")
+                    await self._screenshot_async("screenshot.png")
         await self._close_browser_async()
     
     async def _run_no_interactive_async(self, email: str, password: str, retries: int = 5) -> None:
@@ -579,7 +582,7 @@ class epicgames_claimer:
                 self.log("Login failed({}).".format(e), "warning")
                 if i == retries - 1:
                     self.log("Login failed.", "error")
-                    self.screenshot("screenshot.png")
+                    await self._screenshot_async("screenshot.png")
                     await self._close_browser_async()
                     exit(1)
         for i in range(retries):
@@ -594,7 +597,7 @@ class epicgames_claimer:
                 self.log("{}.".format(str(e).rstrip(".")), level="warning")
                 if i == retries - 1:
                     self.log("Claim failed.", level="error")
-                    self.screenshot("screenshot.png")
+                    await self._screenshot_async("screenshot.png")
         await self._close_browser_async()
     
     def run_once(self, interactive: bool = True, email: str = None, password: str = None) -> None:
