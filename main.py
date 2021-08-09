@@ -23,6 +23,9 @@ def get_args() -> argparse.Namespace:
 
 def main() -> None:
     args = get_args()
+    if args.username != None:
+        if args.password == None:
+            raise ValueError("Must input both username and password.")
     interactive = True if args.username == None else False
     data_dir = "User_Data/Default" if interactive else None
     def update() -> None:

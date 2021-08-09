@@ -202,6 +202,8 @@ class epicgames_claimer:
     async def _login_async(self, email: str, password: str, tfa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
+        if password == None or password == "":
+            raise ValueError("Password can't be null.")
         if await self._need_login_async():
             await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
             await self._click_async("#user", timeout=120000)
@@ -211,6 +213,11 @@ class epicgames_claimer:
             if not remember_me:
                 await self._click_async("#rememberMe")
             await self._click_async("#sign-in[tabindex='0']", timeout=120000)
+            if await self._find_async("#talon_frame_login_prod"):
+                raise PermissionError("CAPTCHA appeared for unknown reasons.")
+            if await self._find_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]"):
+                alert_text = await self._get_text_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]")
+                raise PermissionError(alert_text)
             if tfa_enabled:
                 await self.page.waitForNavigation(options={"timeout": 120000})
                 if self.page.url != "https://www.epicgames.com/store/en-US/":
@@ -221,6 +228,8 @@ class epicgames_claimer:
     async def _login_no_check_async(self, email: str, password: str, tfa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
+        if password == None or password == "":
+            raise ValueError("Password can't be null.")
         await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
         await self._click_async("#user", timeout=120000)
         await self._click_async("#login-with-epic", timeout=120000)
@@ -229,6 +238,11 @@ class epicgames_claimer:
         if not remember_me:
             await self._click_async("#rememberMe")
         await self._click_async("#sign-in[tabindex='0']", timeout=120000)
+        if await self._find_async("#talon_frame_login_prod"):
+            raise PermissionError("CAPTCHA appeared for unknown reasons.")
+        if await self._find_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]"):
+            alert_text = await self._get_text_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]")
+            raise PermissionError(alert_text)
         if tfa_enabled:
             await self.page.waitForNavigation(options={"timeout": 120000})
             if self.page.url != "https://www.epicgames.com/store/en-US/":
@@ -631,6 +645,9 @@ def main() -> None:
     parser.add_argument("-u", "--username", type=str, help="set username/email")
     parser.add_argument("-p", "--password", type=str, help="set password")
     args = parser.parse_args()
+    if args.username != None:
+        if args.password == None:
+            raise ValueError("Must input both username and password.")
     interactive = True if args.username == None else False
     data_dir = "User_Data/Default" if interactive else None
     epicgames_claimer.log("Claimer is starting...")
