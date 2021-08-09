@@ -557,6 +557,8 @@ class epicgames_claimer:
                 claimed_game_titles = await self._claim_async()
                 if len(claimed_game_titles) > 0:
                     self.log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
+                else:
+                    self.log("All Current weekly free games are already in your library.")
                 break
             except Exception as e:
                 self.log("{}.".format(str(e).rstrip(".")), level="warning")
@@ -585,6 +587,8 @@ class epicgames_claimer:
                 claimed_game_titles = await self._claim_async()
                 if len(claimed_game_titles) > 0:
                     self.log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
+                else:
+                    self.log("All Current weekly free games are already in your library.")
                 break
             except Exception as e:
                 self.log("{}.".format(str(e).rstrip(".")), level="warning")
