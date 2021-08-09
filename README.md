@@ -50,34 +50,46 @@ Require Python >= 3.6.
 
 1. Clone/[Download](https://github.com/luminoleon/epicgames-claimer/releases)
 
-``` bash
-git clone -b master https://github.com/luminoleon/epicgames-claimer.git
-cd epicgames-claimer
-```
+    ``` bash
+    git clone -b master https://github.com/luminoleon/epicgames-claimer.git
+    cd epicgames-claimer
+    ```
 
 2. Install Python modules
 
-``` bash
-pip3 install -r requirements.txt
-```
+    ``` bash
+    pip3 install -r requirements.txt
+    ```
 
 3. Install dependencies(Linux only)
 
-``` bash
-sudo sh install_dependencies.sh
-```
+    ``` bash
+    sudo sh install_dependencies.sh
+    ```
 
 4. Run
 
-``` bash
-python3 main.py
-```
+    ``` bash
+    python3 main.py
+    ```
 
-No interactive input(Need disable 2FA):
+    <details>
+    <summary>Enable auto update</summary>
 
-```bash
-python3 main.py -u <YOUR EMAIL> -p <YOUR PASSWORD>
-```
+    ```bash
+    python3 main.py --auto-update
+    ```
+
+    </details>
+
+    <details>
+    <summary>No interactive input(Need disable 2FA)</summary>
+
+    ```bash
+    python3 main.py -u <YOUR EMAIL> -p <YOUR PASSWORD>
+    ```
+
+    </details>
 
 #### Optional Arguments for Python Version
 

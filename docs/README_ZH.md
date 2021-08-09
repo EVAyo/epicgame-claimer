@@ -50,34 +50,46 @@ docker run -it luminoleon/epicgames-claimer
 
 1. 克隆/[下载](https://github.com/luminoleon/epicgames-claimer/releases)
 
-``` bash
-git clone -b master https://github.com/luminoleon/epicgames-claimer.git
-cd epicgames-claimer
-```
+    ``` bash
+    git clone -b master https://github.com/luminoleon/epicgames-claimer.git
+    cd epicgames-claimer
+    ```
 
 2. 安装Python模块
 
-``` bash
-pip3 install -r requirements.txt
-```
+    ``` bash
+    pip3 install -r requirements.txt
+    ```
 
 3. 安装依赖（仅Linux）
 
-``` bash
-sudo sh install_dependencies.sh
-```
+    ``` bash
+    sudo sh install_dependencies.sh
+    ```
 
 4. 运行
 
-``` bash
-python3 main.py
-```
+    ``` bash
+    python3 main.py
+    ```
 
-无交互输入（需要关闭两步验证）:
+    <details>
+    <summary>启用启动更新</summary>
 
-```bash
-python3 main.py -u <你的邮箱> -p <你的密码>
-```
+    ```bash
+    python3 main.py --auto-update
+    ```
+
+    </details>
+
+    <details>
+    <summary>无交互输入（需要关闭两步验证）</summary>
+
+    ```bash
+    python3 main.py -u <你的邮箱> -p <你的密码>
+    ```
+
+    </details>
 
 #### Python版本可选参数
 
