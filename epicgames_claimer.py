@@ -538,7 +538,7 @@ class epicgames_claimer:
             try:
                 if await self._need_login_async():
                     self.log("Need login.")
-                    self._close_browser_async()
+                    await self._close_browser_async()
                     email = input("Email: ")
                     password = getpass("Password: ")
                     await self._open_browser_async()
