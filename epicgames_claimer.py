@@ -67,8 +67,6 @@ class epicgames_claimer:
                 "--blink-settings=imagesEnabled=false", 
                 "--no-first-run"                
             ]
-            if launcher.current_platform() == "linux":
-                browser_args.append("--single-process")
             if not self.sandbox:
                 browser_args.append("--no-sandbox")
             self.browser = await launch(
