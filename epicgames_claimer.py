@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import json
+from json.decoder import JSONDecodeError
 import os
 import signal
 import time
@@ -196,7 +197,10 @@ class epicgames_claimer:
     
     async def _get_url_json_async(self, url: str) -> Dict:
         response_text = await self._get_async(url)
-        response_json = json.loads(response_text)
+        try:
+            response_json = json.loads(response_text)
+        except JSONDecodeError:
+            raise JSONDecodeError("Epic Games returnes content that cannot be resolved. Response: {}.".format(response_text))
         return response_json
 
     async def _login_async(self, email: str, password: str, tfa_enabled: bool = True, remember_me: bool = True) -> None:
