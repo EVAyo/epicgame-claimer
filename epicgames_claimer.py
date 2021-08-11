@@ -256,8 +256,15 @@ class epicgames_claimer:
         await self.page.waitForSelector("#user", timeout=120000)
 
     async def _need_login_async(self) -> bool:
-        page_content_json = await self._get_url_json_async("https://www.epicgames.com/account/v2/ajaxCheckLogin")
-        return page_content_json["needLogin"]
+        try:
+            page_content_json = await self._get_url_json_async("https://www.epicgames.com/account/v2/ajaxCheckLogin")
+            return page_content_json["needLogin"]
+        except ValueError:
+            await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
+            if (await self._get_property_async("#user", "data-component")) == "SignedIn":
+                return True
+            else:
+                return False
 
     async def _get_free_game_links_async(self) -> List[str]:
         page_content_json = await self._get_url_json_async("https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions")
