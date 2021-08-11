@@ -258,9 +258,9 @@ class epicgames_claimer:
     async def _need_login_async(self) -> bool:
         await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
         if (await self._get_property_async("#user", "data-component")) == "SignedIn":
-            return True
-        else:
             return False
+        else:
+            return True
 
     async def _get_free_game_links_async(self) -> List[str]:
         page_content_json = await self._get_url_json_async("https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions")
