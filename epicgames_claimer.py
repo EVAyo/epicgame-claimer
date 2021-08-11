@@ -138,13 +138,12 @@ class epicgames_claimer:
                 links.append(link)
         return links
 
-    async def _find_async(self, selectors: Union[str, List[str]], timeout: Union[int, None] = None) -> Union[bool, int]:
+    async def _find_async(self, selectors: Union[str, List[str]], timeout: int = None) -> Union[bool, int]:
         if type(selectors) == str:
             try:
-                if timeout != None:
-                    await self.page.waitForSelector(selectors, options={"timeout": timeout})
-                else:
-                    await self.page.waitForSelector(selectors)
+                if timeout == None:
+                    timeout = 1000
+                await self.page.waitForSelector(selectors, options={"timeout": timeout})
                 return True
             except:
                 return False
@@ -157,7 +156,15 @@ class epicgames_claimer:
                         return i
             return -1
         else:
-            raise
+            raise ValueError
+    
+    async def _find_and_not_find_async(self, find_selector: str, not_find_selector: str, timeout: int = 60000) -> int:
+        for _ in range(int(timeout / 1000 / 2)):
+            if await self._find_async(find_selector, timeout=1000):
+                return 0
+            elif not await self._find_async(not_find_selector, timeout=1000):
+                return 1
+        return -1
 
     async def _try_click_async(self, selector: str, sleep: Union[int, float] = 2) -> bool:
         try:
@@ -218,17 +225,19 @@ class epicgames_claimer:
             if not remember_me:
                 await self._click_async("#rememberMe")
             await self._click_async("#sign-in[tabindex='0']", timeout=120000)
-            if await self._find_async("#talon_frame_login_prod[style*=visible]"):
-                raise PermissionError("CAPTCHA appeared for unknown reasons.")
-            if await self._find_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]"):
+            login_result = await self._find_async(["#talon_frame_login_prod[style*=visible]", "div.MuiPaper-root[role=alert] h6[class*=subtitle1]", "#modal-content", "#user"], timeout=60000)
+            if login_result == 0:
+                raise PermissionError("CAPTCHA is required for unknown reasons.")
+            elif login_result == 1:
                 alert_text = await self._get_text_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]")
                 raise PermissionError(alert_text)
-            if tfa_enabled:
-                await self.page.waitForNavigation(options={"timeout": 120000})
-                if self.page.url != "https://www.epicgames.com/store/en-US/":
-                    await self._type_async("input[name=code-input-0]", input("2FA code: "))
+            elif login_result == 2: 
+                if tfa_enabled:
+                    await self._type_async("input[name=code-input-0]", input("Verification code: "))
                     await self._click_async("#continue[tabindex='0']", timeout=120000)
-            await self.page.waitForSelector("#user", timeout=120000)
+                    await self.page.waitForSelector("#user")
+                else:
+                    raise ValueError("Verification code is required. You need to turn off two-factor authentication of this account.")
 
     async def _login_no_check_async(self, email: str, password: str, tfa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
@@ -243,17 +252,19 @@ class epicgames_claimer:
         if not remember_me:
             await self._click_async("#rememberMe")
         await self._click_async("#sign-in[tabindex='0']", timeout=120000)
-        if await self._find_async("#talon_frame_login_prod[style*=visible]"):
-            raise PermissionError("CAPTCHA appeared for unknown reasons.")
-        if await self._find_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]"):
+        login_result = await self._find_async(["#talon_frame_login_prod[style*=visible]", "div.MuiPaper-root[role=alert] h6[class*=subtitle1]", "#modal-content", "#user"], timeout=90000)
+        if login_result == 0:
+            raise PermissionError("CAPTCHA is required for unknown reasons.")
+        elif login_result == 1:
             alert_text = await self._get_text_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]")
             raise PermissionError(alert_text)
-        if tfa_enabled:
-            await self.page.waitForNavigation(options={"timeout": 120000})
-            if self.page.url != "https://www.epicgames.com/store/en-US/":
-                await self._type_async("input[name=code-input-0]", input("2FA code: "))
+        elif login_result == 2: 
+            if tfa_enabled:
+                await self._type_async("input[name=code-input-0]", input("Verification code: "))
                 await self._click_async("#continue[tabindex='0']", timeout=120000)
-        await self.page.waitForSelector("#user", timeout=120000)
+                await self.page.waitForSelector("#user")
+            else:
+                raise ValueError("Verification code is required. You need to turn off two-factor authentication of this account.")
 
     async def _need_login_async(self, use_web_api: bool = False) -> bool:
         if use_web_api:
@@ -282,14 +293,13 @@ class epicgames_claimer:
         for game in free_games:
             await self._navigate_async(game["purchase_url"], timeout=60000)
             await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", timeout=60000)
-            for i in range(60):
-                if await self._find_async("#purchase-app div.error-alert-container", timeout=1000):
-                    break
-                elif not await self._find_async("#purchase-app > div", timeout=1000):
-                    claimed_game_titles.append(game["title"])
-                    break
-                if i == 59:
-                    raise TimeoutError("Check claim result failed.")
+            claim_result = await self._find_and_not_find_async("#purchase-app div.error-alert-container", "#purchase-app > div", timeout=120000)
+            if claim_result == 0:
+                continue
+            elif claim_result == 1:
+                claimed_game_titles.append(game["title"])
+            elif claim_result == -1:
+                raise TimeoutError("Check claim result failed.")
         return claimed_game_titles
     
     async def _get_authentication_method_async(self) -> Optional[str]:
