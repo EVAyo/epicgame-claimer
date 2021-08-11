@@ -568,7 +568,7 @@ class epicgames_claimer:
                     self.log("Login successed.")
                 break
             except Exception as e:
-                self.log("{}".format(e, level="warning"))
+                self.log("{}".format(e), level="warning")
                 if i == retries - 1:
                     self.log("Login failed.", "error")
                     await self._screenshot_async("screenshot.png")
@@ -583,7 +583,7 @@ class epicgames_claimer:
                     self.log("All Current weekly free games are already in your library.")
                 break
             except Exception as e:
-                self.log("{}".format(e, level="warning"))
+                self.log("{}".format(e), level="warning")
                 if i == retries - 1:
                     self.log("Claim failed.", level="error")
                     await self._screenshot_async("screenshot.png")
@@ -598,7 +598,7 @@ class epicgames_claimer:
                     self.log("Login successed.")
                 break
             except Exception as e:
-                self.log("Login failed({}).".format(e), "warning")
+                self.log("{}".format(e), level="warning")
                 if i == retries - 1:
                     self.log("Login failed.", "error")
                     await self._screenshot_async("screenshot.png")
@@ -613,7 +613,7 @@ class epicgames_claimer:
                     self.log("All Current weekly free games are already in your library.")
                 break
             except Exception as e:
-                self.log("{}.".format(str(e).rstrip(".")), level="warning")
+                self.log("{}".format(e), level="warning")
                 if i == retries - 1:
                     self.log("Claim failed.", level="error")
                     await self._screenshot_async("screenshot.png")
