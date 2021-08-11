@@ -31,8 +31,8 @@
 | `-c`, `--chromium-path`   | 指定浏览器可执行文件路径 |                 |
 | `-r`, `--run-at`          | 指定每日运行时间        | HH:MM，默认09:00 |
 | `-o`, `--once`            | 运行一次领取过程后退出   |                 |
-| `-u`, `--username`        | 设置用户名/邮箱         | 需要关闭两步验证  |
-| `-p`, `--password`        | 设置密码                | 需要关闭两步验证 |
+| `-u`, `--username`        | 设置用户名/邮箱         | 需要关闭双重验证  |
+| `-p`, `--password`        | 设置密码                | 需要关闭双重验证 |
 
 ### Docker
 
@@ -83,7 +83,7 @@ docker run -it luminoleon/epicgames-claimer
     </details>
 
     <details>
-    <summary>无交互输入（需要关闭两步验证）</summary>
+    <summary>无交互输入（需要关闭双重验证（2FA））</summary>
 
     ```bash
     python3 main.py -u <你的邮箱> -p <你的密码>
@@ -101,8 +101,8 @@ docker run -it luminoleon/epicgames-claimer
 | `-r`, `--run-at`        | 指定每日运行时间         | HH:MM，默认09:00 |
 | `-o`, `--once`          | 运行一次领取过程后退出    |                 |
 | `-a`, `--auto-update`   | 启用自动更新             |                 |
-| `-u`, `--username`      | 设置用户名/邮箱          | 需要关闭两步验证  |
-| `-p`, `--password`      | 设置密码                 | 需要关闭两步验证 |
+| `-u`, `--username`      | 设置用户名/邮箱          | 需要关闭双重验证  |
+| `-p`, `--password`      | 设置密码                 | 需要关闭双重验证 |
 
 #### 注意事项
 
