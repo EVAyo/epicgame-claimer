@@ -230,7 +230,7 @@ class epicgames_claimer:
                 raise PermissionError("CAPTCHA is required for unknown reasons.")
             elif login_result == 1:
                 alert_text = await self._get_text_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]")
-                raise PermissionError(alert_text)
+                raise PermissionError("From Epic Games: {}".format(alert_text))
             elif login_result == 2: 
                 if tfa_enabled:
                     await self._type_async("input[name=code-input-0]", input("Verification code: "))
@@ -252,12 +252,12 @@ class epicgames_claimer:
         if not remember_me:
             await self._click_async("#rememberMe")
         await self._click_async("#sign-in[tabindex='0']", timeout=120000)
-        login_result = await self._find_async(["#talon_frame_login_prod[style*=visible]", "div.MuiPaper-root[role=alert] h6[class*=subtitle1]", "#modal-content", "#user"], timeout=90000)
+        login_result = await self._find_async(["#talon_frame_login_prod[style*=visible]", "div.MuiPaper-root[role=alert] h6[class*=subtitle1]", "input[name=code-input-0]", "#user"], timeout=90000)
         if login_result == 0:
             raise PermissionError("CAPTCHA is required for unknown reasons.")
         elif login_result == 1:
             alert_text = await self._get_text_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]")
-            raise PermissionError(alert_text)
+            raise PermissionError("From Epic Games: {}".format(alert_text))
         elif login_result == 2: 
             if tfa_enabled:
                 await self._type_async("input[name=code-input-0]", input("Verification code: "))
