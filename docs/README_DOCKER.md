@@ -20,12 +20,12 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
 
 #### Optional Arguments
 
-| Arguments               | Descriptions                                                    |
-|------------------------ | --------------------------------------------------------------- |
-| `-e TZ=<TimeZone>`      | set the time zone of the container(default to Asia/Shanghai, [Available Time Zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List))                                 |
-| `-v <Path>:/User_Data`  | save the user data to the local path(must be full path)         |
-| `-e run_at=<Time>`      | set daily check and claim time(HH:MM, default to 09:00)         |
-| `-e auto_update=<Bool>` | enable or disable automatic update(true/false, default to true) |
+| Arguments               | Descriptions                         | Note                         |
+|------------------------ | ------------------------------------ | ---------------------------- |
+| `-e TZ=<TimeZone>`      | set the time zone of the container   | default to Asia/Shanghai, [Available Time Zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)                             |
+| `-v <Path>:/User_Data`  | save the user data to the local path | must be full path            |
+| `-e run_at=<Time>`      | set daily check and claim time       | HH:MM, default to 09:00      |
+| `-e auto_update=<Bool>` | enable or disable automatic update   | true/false, default to false |
 
 ## 简体中文
 
@@ -39,9 +39,9 @@ docker run -it luminoleon/epicgames-claimer
 
 #### 可选参数
 
-| 参数                    | 说明                                                    |
-|------------------------ | ------------------------------------------------------ |
-| `-e TZ=<TimeZone>`      | 设定容器的时区信息（默认Asia/Shanghai，[可用时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)）                                             |
-| `-v <Path>:/User_Data`  | 保存用户数据至本机路径（必须是完整路径）                   |
-| `-e run_at=<Time>`      | 设定每日运行时间（HH:MM， 默认09:00）                    |
-| `-e auto_update=<bool>` | 启用或关闭自动更新（true/false，默认false）              |
+| 参数                    | 说明                  | 备注                  |
+|------------------------ | -------------------- | --------------------- |
+| `-e TZ=<TimeZone>`      | 设定容器的时区信息     | 默认Asia/Shanghai，[可用时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)                                     |
+| `-v <Path>:/User_Data`  | 保存用户数据至本机路径 | 必须是完整路径         |
+| `-e run_at=<Time>`      | 设定每日运行时间       | HH:MM， 默认09:00     |
+| `-e auto_update=<bool>` | 启用或关闭自动更新     | true/false，默认false |

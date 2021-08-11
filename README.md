@@ -24,13 +24,15 @@ Notice: Windows version does not currently support automatic update.
 
 #### Optional Arguments for Windows Version
 
-| Arguments                 | Descriptions                                            |
-| ------------------------- | ------------------------------------------------------- |
-| `-h`, `--help`            | show the help message                                   |
-| `-n`, `--no-headless`     | run the browser with GUI                                |
-| `-c`, `--chromium-path`   | set path to browser executable                          |
-| `-r`, `--run-at`          | set daily check and claim time(HH:MM, default to 09:00) |
-| `-o`, `--once`            | claim once then exit                                    |
+| Arguments                 | Descriptions                   | Note                    |
+| ------------------------- | -------------------------------|------------------------ |
+| `-h`, `--help`            | show the help message          |                         |
+| `-n`, `--no-headless`     | run the browser with GUI       |                         |
+| `-c`, `--chromium-path`   | set path to browser executable |                         |
+| `-r`, `--run-at`          | set daily check and claim time | HH:MM, default to 09:00 |
+| `-o`, `--once`            | claim once then exit           |                         |
+| `-u`, `--username`        | set username/email             | need disable 2FA        |
+| `-p`, `--password`        | set password                   | need disable 2FA        |
 
 ### Docker
 
@@ -48,41 +50,59 @@ Require Python >= 3.6.
 
 1. Clone/[Download](https://github.com/luminoleon/epicgames-claimer/releases)
 
-``` bash
-git clone -b master https://github.com/luminoleon/epicgames-claimer.git
-cd epicgames-claimer
-```
+    ``` bash
+    git clone -b master https://github.com/luminoleon/epicgames-claimer.git
+    cd epicgames-claimer
+    ```
 
 2. Install Python modules
 
-``` bash
-pip3 install -r requirements.txt
-```
+    ``` bash
+    pip3 install -r requirements.txt
+    ```
 
 3. Install dependencies(Linux only)
 
-``` bash
-sudo sh install_dependencies.sh
-```
+    ``` bash
+    sudo sh install_dependencies.sh
+    ```
 
 4. Run
 
-``` bash
-python3 main.py
-```
+    ``` bash
+    python3 main.py
+    ```
+
+    <details>
+    <summary>Enable auto update</summary>
+
+    ```bash
+    python3 main.py --auto-update
+    ```
+
+    </details>
+
+    <details>
+    <summary>No interactive input(Need disable two-factor authentication(2FA))</summary>
+
+    ```bash
+    python3 main.py -u <YOUR EMAIL> -p <YOUR PASSWORD>
+    ```
+
+    </details>
 
 #### Optional Arguments for Python Version
 
-| Arguments                 | Descriptions                   | Note                    |
-| ------------------------- | ------------------------------ | ----------------------- |
-| `-h`, `--help`            | show the help message          |                         |
-| `-n`, `--no-headless`     | run the browser with GUI       |                         |
-| `-c`, `--chromium-path`   | set path to browser executable |                         |
-| `-r`, `--run-at`          | set daily check and claim time | HH:MM, default to 09:00 |
-| `-o`, `--once`            | claim once then exit           |                         |
-| `-na`, `--no-auto-update` | disable auto update            |                         |
-| `-u`, `--username`        | set username/email             | need disable 2FA        |
-| `-p`, `--password`        | set password                   | need disable 2FA        |
+| Arguments               | Descriptions                   | Note                    |
+| ----------------------- | ------------------------------ | ----------------------- |
+| `-h`, `--help`          | show the help message          |                         |
+| `-n`, `--no-headless`   | run the browser with GUI       |                         |
+| `-c`, `--chromium-path` | set path to browser executable |                         |
+| `-r`, `--run-at`        | set daily check and claim time | HH:MM, default to 09:00 |
+| `-o`, `--once`          | claim once then exit           |                         |
+| `-a`, `--auto-update`   | enable auto update             |                         |
+| `-u`, `--username`      | set username/email             | need disable 2FA        |
+| `-p`, `--password`      | set password                   | need disable 2FA        |
 
 #### Notice
 
@@ -90,7 +110,8 @@ If the script runs incorrectly in Linux system, you can try to use Chrome instea
 
 ##### Install Chrome
 
-For Debian-based Linux:
+<details>
+<summary>Debian (e.g. Ubuntu)</summary>
 
 ``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
@@ -98,13 +119,18 @@ sudo apt install -y ./google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
 ```
 
-For Redhat-based Linux:
+</details>
+
+<details>
+<summary>CentOS</summary>
 
 ``` bash
 curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
 rm -I google-chrome-stable_current_x86_64.rpm
 ```
+
+</details>
 
 ##### Use Chrome instead of default browser
 

@@ -1,10 +1,12 @@
 import argparse
 import asyncio
+import json
+from json.decoder import JSONDecodeError
 import os
 import signal
 import time
 from getpass import getpass
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import schedule
 from pyppeteer import launch, launcher
@@ -15,6 +17,7 @@ class epicgames_claimer:
     def __init__(self, data_dir: Optional[str] = None, headless: bool = True, sandbox: bool = False, chromium_path: Optional[str] = None) -> None:
         if "--enable-automation" in launcher.DEFAULT_ARGS:
             launcher.DEFAULT_ARGS.remove("--enable-automation")
+        # Solve the problem of zombie processes
         if "SIGCHLD" in dir(signal):
             signal.signal(signal.SIGCHLD, signal.SIG_IGN)
         self.data_dir = data_dir
@@ -22,6 +25,7 @@ class epicgames_claimer:
         self.sandbox = sandbox
         self.chromium_path = chromium_path
         self._loop = asyncio.get_event_loop()
+        self.browser_opened = False
         self.open_browser()
     
     @staticmethod
@@ -55,25 +59,32 @@ class epicgames_claimer:
         await self.page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3542.0 Safari/537.36")
 
     async def _open_browser_async(self) -> None:
-        if "win" in launcher.current_platform():
-            if self.chromium_path == None and os.path.exists("chrome-win32"):
-                self.chromium_path = "chrome-win32/chrome.exe"
-        browser_args = [
-            "--disable-infobars", 
-            "--blink-settings=imagesEnabled=false", 
-            "--no-first-run"
-        ]
-        if not self.sandbox:
-            browser_args.append("--no-sandbox")
-        self.browser = await launch(
-            options={"args": browser_args, "headless": self.headless}, 
-            userDataDir=None if self.data_dir == None else os.path.abspath(self.data_dir), 
-            executablePath=self.chromium_path,
-        )
-        self.page = (await self.browser.pages())[0]
-        await self.page.setViewport({"width": 1000, "height": 600})
-        if self.headless:
-            await self._headless_stealth_async()
+        if not self.browser_opened:
+            if "win" in launcher.current_platform():
+                if self.chromium_path == None and os.path.exists("chrome-win32"):
+                    self.chromium_path = "chrome-win32/chrome.exe"
+            browser_args = [
+                "--disable-infobars", 
+                "--blink-settings=imagesEnabled=false", 
+                "--no-first-run"                
+            ]
+            if not self.sandbox:
+                browser_args.append("--no-sandbox")
+            self.browser = await launch(
+                options={"args": browser_args, "headless": self.headless}, 
+                userDataDir=None if self.data_dir == None else os.path.abspath(self.data_dir), 
+                executablePath=self.chromium_path,
+            )
+            self.page = (await self.browser.pages())[0]
+            await self.page.setViewport({"width": 1000, "height": 600})
+            if self.headless:
+                await self._headless_stealth_async()
+            self.browser_opened = True
+        
+    async def _close_browser_async(self):
+        if self.browser_opened:
+            await self.browser.close()
+            self.browser_opened = False
     
     async def _type_async(self, selector: str, text: str, sleep: Union[int, float] = 0) -> None:
         await self.page.waitForSelector(selector)
@@ -127,15 +138,33 @@ class epicgames_claimer:
                 links.append(link)
         return links
 
-    async def _find_async(self, selector: str, timeout: Union[int, None] = None) -> str:
-        try:
-            if timeout != None:
-                await self.page.waitForSelector(selector, options={"timeout": timeout})
-            else:
-                await self.page.waitForSelector(selector)
-            return True
-        except:
-            return False
+    async def _find_async(self, selectors: Union[str, List[str]], timeout: int = None) -> Union[bool, int]:
+        if type(selectors) == str:
+            try:
+                if timeout == None:
+                    timeout = 1000
+                await self.page.waitForSelector(selectors, options={"timeout": timeout})
+                return True
+            except:
+                return False
+        elif type(selectors) == list:
+            if timeout == None:
+                timeout = 300000
+            for _ in range(int(timeout / 1000 / len(selectors))):
+                for i in range(len(selectors)):
+                    if await self._find_async(selectors[i], timeout=1000):
+                        return i
+            return -1
+        else:
+            raise ValueError
+    
+    async def _find_and_not_find_async(self, find_selector: str, not_find_selector: str, timeout: int = 60000) -> int:
+        for _ in range(int(timeout / 1000 / 2)):
+            if await self._find_async(find_selector, timeout=1000):
+                return 0
+            elif not await self._find_async(not_find_selector, timeout=1000):
+                return 1
+        return -1
 
     async def _try_click_async(self, selector: str, sleep: Union[int, float] = 2) -> bool:
         try:
@@ -172,11 +201,23 @@ class epicgames_claimer:
         if await self._find_async("#on[checked]", timeout=4000):
             await self._click_async("div[data-testid=settings-container] button")
             await asyncio.sleep(2)
+    
+    async def _get_url_json_async(self, url: str) -> Dict:
+        response_text = await self._get_async(url)
+        try:
+            response_json = json.loads(response_text)
+        except JSONDecodeError:
+            response_text_partial = response_text if len(response_text) <= 96 else response_text[0:96]
+            raise ValueError("Epic Games returnes content that cannot be resolved. Response: {} ...".format(response_text_partial))
+        return response_json
 
-    async def _login_async(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
+    async def _login_async(self, email: str, password: str, tfa_enabled: bool = True, remember_me: bool = True) -> None:
         if email == None or email == "":
             raise ValueError("Email can't be null.")
-        if not await self._is_logged_in_async():
+        if password == None or password == "":
+            raise ValueError("Password can't be null.")
+        if await self._need_login_async():
+            await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000, reload=False)
             await self._click_async("#user", timeout=120000)
             await self._click_async("#login-with-epic", timeout=120000)
             await self._type_async("#email", email)
@@ -184,60 +225,90 @@ class epicgames_claimer:
             if not remember_me:
                 await self._click_async("#rememberMe")
             await self._click_async("#sign-in[tabindex='0']", timeout=120000)
-            if two_fa_enabled:
-                await self.page.waitForNavigation(options={"timeout": 120000})
-                if self.page.url != "https://www.epicgames.com/store/en-US/":
-                    await self._type_async("input[name=code-input-0]", input("2FA code: "))
+            login_result = await self._find_async(["#talon_frame_login_prod[style*=visible]", "div.MuiPaper-root[role=alert] h6[class*=subtitle1]", "#modal-content", "#user"], timeout=60000)
+            if login_result == 0:
+                raise PermissionError("CAPTCHA is required for unknown reasons.")
+            elif login_result == 1:
+                alert_text = await self._get_text_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]")
+                raise PermissionError("From Epic Games: {}".format(alert_text))
+            elif login_result == 2: 
+                if tfa_enabled:
+                    await self._type_async("input[name=code-input-0]", input("Verification code: "))
                     await self._click_async("#continue[tabindex='0']", timeout=120000)
-            await self.page.waitForSelector("#user", timeout=120000)
-            await self._close_autoplay_async()
+                    await self.page.waitForSelector("#user")
+                else:
+                    raise ValueError("Verification code is required. You need to turn off two-factor authentication of this account.")
 
-    async def _is_logged_in_async(self) -> bool:
-        await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
-        if (await self._get_property_async("#user", "data-component")) == "SignedIn":
-            return True
+    async def _login_no_check_async(self, email: str, password: str, tfa_enabled: bool = True, remember_me: bool = True) -> None:
+        if email == None or email == "":
+            raise ValueError("Email can't be null.")
+        if password == None or password == "":
+            raise ValueError("Password can't be null.")
+        await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000, reload=False)
+        await self._click_async("#user", timeout=120000)
+        await self._click_async("#login-with-epic", timeout=120000)
+        await self._type_async("#email", email)
+        await self._type_async("#password", password)
+        if not remember_me:
+            await self._click_async("#rememberMe")
+        await self._click_async("#sign-in[tabindex='0']", timeout=120000)
+        login_result = await self._find_async(["#talon_frame_login_prod[style*=visible]", "div.MuiPaper-root[role=alert] h6[class*=subtitle1]", "input[name=code-input-0]", "#user"], timeout=90000)
+        if login_result == 0:
+            raise PermissionError("CAPTCHA is required for unknown reasons.")
+        elif login_result == 1:
+            alert_text = await self._get_text_async("div.MuiPaper-root[role=alert] h6[class*=subtitle1]")
+            raise PermissionError("From Epic Games: {}".format(alert_text))
+        elif login_result == 2: 
+            if tfa_enabled:
+                await self._type_async("input[name=code-input-0]", input("Verification code: "))
+                await self._click_async("#continue[tabindex='0']", timeout=120000)
+                await self.page.waitForSelector("#user")
+            else:
+                raise ValueError("Verification code is required. You need to turn off two-factor authentication of this account.")
+
+    async def _need_login_async(self, use_web_api: bool = False) -> bool:
+        if use_web_api:
+            page_content_json = await self._get_url_json_async("https://www.epicgames.com/account/v2/ajaxCheckLogin")
+            return page_content_json["needLogin"]
         else:
-            return False
+            await self._navigate_async("https://www.epicgames.com/store/en-US/", timeout=120000)
+            if (await self._get_property_async("#user", "data-component")) == "SignedIn":
+                return False
+            else:
+                return True
 
     async def _get_free_game_links_async(self) -> List[str]:
-        await self._navigate_async("https://www.epicgames.com/store/en-US/free-games")
-        await self.page.waitForSelector("div[data-component=OfferCard]")
-        freegame_links = []
-        freegame_links_len = len(await self.page.querySelectorAll("div[data-component=OfferCard]"))
-        freegame_statuses = await self._get_texts_async("div[data-component=OfferCard] div[data-component=StatusBar]")
-        for freegame_index in range(freegame_links_len):
-            freegame_status = freegame_statuses[freegame_index]
-            freegame_link = await self.page.evaluate("document.querySelectorAll('div[data-component=OfferCard]')[{}].parentElement.href".format(freegame_index))
-            if freegame_link != "https://www.epicgames.com/store/en-US/free-games" and freegame_status == "Free Now":
-                freegame_links.append(freegame_link)
-        return freegame_links
+        page_content_json = await self._get_url_json_async("https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions")
+        free_games = page_content_json["data"]["Catalog"]["searchStore"]["elements"]
+        free_game_links = []
+        for free_game in free_games:
+            if {"path": "freegames"} in free_game["categories"]:
+                if free_game["price"]["totalPrice"]["discount"] != 0:
+                    free_game_links.append("https://www.epicgames.com/store/p/{}".format(free_game["productSlug"]))
+        return free_game_links
        
     async def _claim_async(self) -> List[str]:
-        await self._navigate_async("https://www.epicgames.com/store/en-US/free-games", timeout=480000)
-        freegame_links = await self._get_free_game_links_async()
+        free_games = await self._get_free_game_infos_async()
         claimed_game_titles = []
-        for link in freegame_links:
-            is_claim_successed = False
-            await self._navigate_async(link, timeout=480000)
-            await self._try_click_async("div[class*=WarningLayout__layout] Button")
-            game_title = (await self.page.title()).split(" | ")[0]
-            purchase_buttons_len = len(await self._get_elements_async("button[data-testid=purchase-cta-button]"))
-            for purchase_button_index in range(purchase_buttons_len):
-                purchase_button = (await self._get_elements_async("button[data-testid=purchase-cta-button]"))[purchase_button_index]
-                await self._wait_for_element_text_change_async(purchase_button, "Loading")
-                if await self._get_element_text_async(purchase_button) == "Get":
-                    await purchase_button.click()
-                    await self._try_click_async("#agree")
-                    await self._try_click_async("div[class*=accept] Button")
-                    await self._try_click_async("div[data-component=platformUnsupportedWarning] > Button")
-                    await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", frame_index=1)
-                    await self._click_async("div.ReactModal__Content button[data-component=ModalCloseButton]", timeout=120000)
-                    await self._navigate_async(link, timeout=480000, reload=True)
-                    is_claim_successed = True
-            if is_claim_successed:
-                claimed_game_titles.append(game_title)
+        for game in free_games:
+            await self._navigate_async(game["purchase_url"], timeout=60000)
+            await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", timeout=60000)
+            claim_result = await self._find_and_not_find_async("#purchase-app div.error-alert-container", "#purchase-app > div", timeout=120000)
+            if claim_result == 0:
+                continue
+            elif claim_result == 1:
+                claimed_game_titles.append(game["title"])
+            elif claim_result == -1:
+                raise TimeoutError("Check claim result failed.")
         return claimed_game_titles
-
+    
+    async def _get_authentication_method_async(self) -> Optional[str]:
+        page_content_json = await self._get_url_json_async("https://www.epicgames.com/account/v2/security/settings/ajaxGet")
+        if page_content_json["settings"]["enabled"] == False:
+            return None
+        else:
+            return page_content_json["settings"]["defaultMethod"]
+    
     def _quit(self, signum = None, frame = None) -> None:
         try:
             self.close_browser()
@@ -251,29 +322,43 @@ class epicgames_claimer:
 
     def close_browser(self) -> None:
         """Close the browser."""
-        return self._loop.run_until_complete(self.browser.close())
+        return self._loop.run_until_complete(self._close_browser_async())
     
-    def is_logged_in(self) -> bool:
-        """Return login status."""
-        return self._loop.run_until_complete(self._is_logged_in_async())
+    def need_login(self) -> bool:
+        """Return whether need login."""
+        return self._loop.run_until_complete(self._need_login_async())
     
     def login(self, email: str, password: str, two_fa_enabled: bool = True, remember_me: bool = True) -> None:
         """Login an Epic account."""
-        return self._loop.run_until_complete(self._login_async(email, password, two_fa_enabled, remember_me))
+        return self._loop.run_until_complete(self._login_async(email, password, two_fa_enabled, remember_me))\
+    
+    def get_authentication_method(self) -> Optional[str]:
+        """Return authentication method. sms, authenticator, email or None."""
+        return self._loop.run_until_complete(self._get_authentication_method_async())
     
     def get_free_game_links(self) -> List[str]:
-        """Return all titles of unclaimed weekly free games."""
+        """Return all titles of weekly free games."""
         return self._loop.run_until_complete(self._get_free_game_links_async())
 
     def claim(self) -> List[str]:
         """Claim available weekly free games and return all titles of claimed games."""
         return self._loop.run_until_complete(self._claim_async())
+    
+    async def _screenshot_async(self, path: str) -> None:
+        await self.page.screenshot({"path": path})
+
+    def screenshot(self, path: str) -> None:
+        return self._loop.run_until_complete(self.page.screenshot({"path": path}))    
+    
+    def navigate(self, url: str, timeout: int = 30000, reload: bool = True) -> None:
+        return self._loop.run_until_complete(self._navigate_async(url, timeout, reload))
+
 
     def logged_login(self, retries: int = 5) -> bool:
         """Login method Contains retry and log output."""
         for _ in range(retries):
             try:
-                if not self.is_logged_in():
+                if self.need_login():
                     self.log("Need login.")
                     self.close_browser()
                     email = input("Email: ")
@@ -285,19 +370,21 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("Login failed({}).".format(e), "warning")
         self.log("Login failed.", "error")
+        self.screenshot("screenshot.png")
         return False
 
     def logged_login_no_interactive(self, email: str, password: str, retries: int = 3) -> bool:
         """Login method Contains retry and log output."""
         for _ in range(retries):
             try:
-                if not self.is_logged_in():
+                if self.need_login():
                     self.login(email, password, two_fa_enabled=False)
                     self.log("Login successed.")
                 return True
             except Exception as e:
                 self.log("Login failed({}).".format(e), "warning")
         self.log("Login failed.", "error")
+        self.screenshot("screenshot.png")
         return False
     
     def logged_claim(self, retries: int = 5) -> None:
@@ -311,6 +398,8 @@ class epicgames_claimer:
             except Exception as e:
                 self.log("{}.".format(str(e).rstrip(".")), level="warning")
         self.log("Claim failed.", level="error")
+        self.screenshot("screenshot.png")
+
 
     def run(self, at: str = None, once: bool = False) -> None:
         """Claim all weekly free games everyday."""
@@ -332,19 +421,268 @@ class epicgames_claimer:
         while True:
             schedule.run_pending()
             time.sleep(1)
+    
+    async def _post_json_async(self, url: str, data: str, host: str = "www.epicgames.com", sleep: Union[int, float] = 2):
+        await asyncio.sleep(sleep)
+        if not host in self.page.url:
+            await self._navigate_async("https://{}".format(host))
+        response = await self.page.evaluate("""
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", "{}", true);
+            xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xmlhttp.send('{}');
+            xmlhttp.responseText;
+        """.format(url, data))
+        return response
+    
+    def post_json(self, url: str, data: str, host: str = "www.epicgames.com", sleep: Union[int, float] = 2):
+        return self._loop.run_until_complete(self._post_json_async(url, data, host, sleep))
+    
+    async def _get_account_id_async(self):
+        if await self._need_login_async():
+            return None
+        else:
+            await self._navigate_async("https://www.epicgames.com/account/personal")
+            account_id =  (await self._get_text_async("#personalView div.paragraph-container p")).split(": ")[1]
+            return account_id
+
+    def get_account_id(self):
+        return self._loop.run_until_complete(self._get_account_id_async())
+    
+    async def _get_async(self, url: str, sleep: Union[int, float] = 3):
+        await self._navigate_async(url)
+        response_text = await self._get_text_async("body")
+        await asyncio.sleep(sleep)
+        return response_text
+
+    def get(self, url: str, sleep: Union[int, float] = 2):
+        return self._loop.run_until_complete(self._get_async(url, sleep))
+    
+    async def _get_game_infos_async(self, url_slug: str):
+        game_infos = {}
+        response_text = await self._get_async("https://store-content.ak.epicgames.com/api/zh-CN/content/products/{}".format(url_slug))
+        response_json = json.loads(response_text)
+        game_infos["product_name"] = response_json["productName"]
+        game_infos["namespace"] = response_json["namespace"]
+        game_infos["pages"] = []
+        for page in response_json["pages"]:
+            game_info_page = {}
+            if page["offer"]["hasOffer"]:
+                game_info_page["offer_id"] = page["offer"]["id"]
+                game_info_page["namespace"] = page["offer"]["namespace"]
+                game_infos["pages"].append(game_info_page)
+        return game_infos
+    
+    def get_game_infos(self, url_slug: str):
+        return self._loop.run_until_complete(self._get_game_infos_async(url_slug))
+    
+    async def _get_order_sync_token_async(self, namespace:str, order_id: str):
+        post_text = """
+            {{
+                "useDefault":true,
+                "setDefault":false,
+                "orderId":null,
+                "namespace":"{}",
+                "country":null,
+                "countryName":null,
+                "orderComplete":null,
+                "orderError":null,
+                "orderPending":null,
+                "offers":["{}"],
+                "offerPrice":""
+            }}""".format(namespace, order_id)
+        post_text = post_text.replace(" ", "")
+        post_text = post_text.replace("\n", "")
+        response_text = await self._post_json_async("/purchase/order-preview", post_text, "payment-website-pci.ol.epicgames.com")
+        response_json = json.loads(response_text)
+        sync_token = response_json["syncToken"]
+        return sync_token
+    
+    def get_order_sync_token(self, namespace:str, offer_id: str):
+        return self._loop.run_until_complete(self._get_order_sync_token_async(namespace, offer_id))
+    
+    def get_purchase_url(self, namespace:str, offer_id: str):
+        purchase_url = "https://www.epicgames.com/store/purchase?namespace={}&offers={}".format(namespace, offer_id)
+        return purchase_url
+    
+    async def _get_library_items_async(self):
+        post_text = """
+            {
+                "query":"
+                    query libraryQuery($cursor: String, $excludeNs: [String]) {
+                        Library {
+                            libraryItems(cursor: $cursor, params: {excludeNs: $excludeNs, includeMetadata: true}) {
+                                records {
+                                    catalogItemId
+                                    namespace
+                                    appName
+                                    productId
+                                    product {
+                                        supportedTypes
+                                    }
+                                }
+                                responseMetadata {
+                                    nextCursor
+                                }
+                            }
+                        }
+                    }
+                    ",
+                "variables":{
+                    "cursor":"",
+                    "excludeNs":["ue"]
+                }
+            }
+        """
+        post_text = post_text.replace(" ", "")
+        post_text = post_text.replace("\n", "")
+        response_text = await self._post_json_async("https://store-launcher.epicgames.com/graphql", post_text, "store-launcher.epicgames.com")
+        response_json = json.loads(response_text)
+        library_items = response_json["data"]["Library"]["libraryItems"]["records"]
+        return library_items
+    
+    def get_library_items(self):
+        return self._loop.run_until_complete(self._get_library_items_async())
+    
+    async def _get_free_game_infos_async(self) -> List[Dict[str, str]]:
+        response_text = await self._get_async("https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions")
+        response_json = json.loads(response_text)
+        free_game_infos = []
+        for item in response_json["data"]["Catalog"]["searchStore"]["elements"]:
+            free_game_info = {}
+            if {"path": "freegames"} in item["categories"]:
+                if item["price"]["totalPrice"]["discount"] != 0:
+                    free_game_info["title"] = item["title"]
+                    free_game_info["url_slug"] = item["urlSlug"]
+                    free_game_info["namespace"] = item["namespace"]
+                    free_game_info["offer_id"] = item["id"]
+                    free_game_info["url"] = "https://www.epicgames.com/store/p/" + free_game_info["url_slug"]
+                    free_game_info["purchase_url"] = "https://www.epicgames.com/store/purchase?namespace={}&offers={}".format(free_game_info["namespace"], free_game_info["offer_id"])
+                    free_game_infos.append(free_game_info)
+        return free_game_infos
+    
+    def get_free_game_infos(self) -> List[Dict[str, str]]:
+        return self._loop.run_until_complete(self._get_free_game_infos_async())
+    
+    async def _is_in_library_async(self, account_id: str, namespace: str, sha256_hash: str):
+        # sha256_hash need to be decoded.
+        response_text = await self._get_async("https://www.epicgames.com/graphql?operationName=getAccountEntitlements&variables=%7B%22accountId%22:%22{}%22,%22namespace%22:%22{}%22%7D&extensions=%7B%22persistedQuery%22:%7B%22version%22:1,%22sha256Hash%22:%22{}%22%7D%7D".format(account_id, namespace, sha256_hash))
+        response_json = json.loads(response_text)
+        in_library = True if response_json["data"]["Entitlements"]["accountEntitlements"]["count"] > 0 else False
+        return in_library
+
+    async def _run_async(self, retries: int = 5) -> None:
+        await self._open_browser_async()
+        for i in range(retries):
+            try:
+                if await self._need_login_async():
+                    self.log("Need login.")
+                    await self._close_browser_async()
+                    email = input("Email: ")
+                    password = getpass("Password: ")
+                    await self._open_browser_async()
+                    await self._login_no_check_async(email, password)
+                    self.log("Login successed.")
+                break
+            except Exception as e:
+                self.log("{}".format(e), level="warning")
+                if i == retries - 1:
+                    self.log("Login failed.", "error")
+                    await self._screenshot_async("screenshot.png")
+                    await self._close_browser_async()
+                    exit(1)
+        for i in range(retries):
+            try:
+                claimed_game_titles = await self._claim_async()
+                if len(claimed_game_titles) > 0:
+                    self.log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
+                else:
+                    self.log("All Current weekly free games are already in your library.")
+                break
+            except Exception as e:
+                self.log("{}".format(e), level="warning")
+                if i == retries - 1:
+                    self.log("Claim failed.", level="error")
+                    await self._screenshot_async("screenshot.png")
+        await self._close_browser_async()
+    
+    async def _run_no_interactive_async(self, email: str, password: str, retries: int = 5) -> None:
+        await self._open_browser_async()
+        for i in range(retries):
+            try:
+                if await self._need_login_async():
+                    await self._login_no_check_async(email, password, tfa_enabled=False, remember_me=False)
+                    self.log("Login successed.")
+                break
+            except Exception as e:
+                self.log("{}".format(e), level="warning")
+                if i == retries - 1:
+                    self.log("Login failed.", "error")
+                    await self._screenshot_async("screenshot.png")
+                    await self._close_browser_async()
+                    exit(1)
+        for i in range(retries):
+            try:
+                claimed_game_titles = await self._claim_async()
+                if len(claimed_game_titles) > 0:
+                    self.log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
+                else:
+                    self.log("All Current weekly free games are already in your library.")
+                break
+            except Exception as e:
+                self.log("{}".format(e), level="warning")
+                if i == retries - 1:
+                    self.log("Claim failed.", level="error")
+                    await self._screenshot_async("screenshot.png")
+        await self._close_browser_async()
+    
+    def run_once(self, interactive: bool = True, email: str = None, password: str = None) -> None:
+        if interactive:
+            return self._loop.run_until_complete(self._run_async(retries=5))
+        else:
+            return self._loop.run_until_complete(self._run_no_interactive_async(email, password, retries=5))
+    
+    def scheduled_run(self, at: str, interactive: bool = True, email: str = None, password: str = None) -> None:
+        self.add_quit_signal()
+        schedule.every().day.at(at).do(self.run_once, interactive, email, password)
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+    
+    def add_quit_signal(self):
+        signal.signal(signal.SIGINT, self._quit)
+        signal.signal(signal.SIGTERM, self._quit)
+        if "SIGBREAK" in dir(signal):
+            signal.signal(signal.SIGBREAK, self._quit)
+        if "SIGHUP" in dir(signal):
+            signal.signal(signal.SIGHUP, self._quit)
 
 
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(description="Claim weekly free games from Epic Games Store.")
     parser.add_argument("-n", "--no-headless", action="store_true", help="run the browser with GUI")
     parser.add_argument("-c", "--chromium-path", type=str, help="set path to browser executable")
     parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default: 09:00)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
+    parser.add_argument("-u", "--username", type=str, help="set username/email")
+    parser.add_argument("-p", "--password", type=str, help="set password")
     args = parser.parse_args()
+    if args.username != None:
+        if args.password == None:
+            raise ValueError("Must input both username and password.")
+    interactive = True if args.username == None else False
+    data_dir = "User_Data/Default" if interactive else None
     epicgames_claimer.log("Claimer is starting...")
-    claimer = epicgames_claimer(data_dir="User_Data/Default", headless=not args.no_headless, chromium_path=args.chromium_path)
-    if claimer.logged_login():
-        epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
-        claimer.run(args.run_at, once=args.once)
+    claimer = epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
+    if args.once == True:
+        epicgames_claimer.log("Claimer has started.")
+        claimer.run_once(interactive, args.username, args.password)
+        epicgames_claimer.log("Claim has been completed.")
     else:
-        exit(1)
+        epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
+        claimer.run_once(interactive, args.username, args.password)
+        claimer.scheduled_run(args.run_at, interactive, args.username, args.password)
+
+
+if __name__ == "__main__":
+    main()
