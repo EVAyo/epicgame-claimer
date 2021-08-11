@@ -200,7 +200,8 @@ class epicgames_claimer:
         try:
             response_json = json.loads(response_text)
         except JSONDecodeError:
-            raise ValueError("Epic Games returnes content that cannot be resolved. Response: {} ...".format(response_text[0:32]))
+            response_text_partial = response_text if len(response_text) <= 96 else response_text[0:96]
+            raise ValueError("Epic Games returnes content that cannot be resolved. Response: {} ...".format(response_text_partial))
         return response_json
 
     async def _login_async(self, email: str, password: str, tfa_enabled: bool = True, remember_me: bool = True) -> None:
@@ -567,7 +568,7 @@ class epicgames_claimer:
                     self.log("Login successed.")
                 break
             except Exception as e:
-                self.log("{}.".format(str(e).rstrip(".")), level="warning")
+                self.log("{}".format(e, level="warning"))
                 if i == retries - 1:
                     self.log("Login failed.", "error")
                     await self._screenshot_async("screenshot.png")
@@ -582,7 +583,7 @@ class epicgames_claimer:
                     self.log("All Current weekly free games are already in your library.")
                 break
             except Exception as e:
-                self.log("{}.".format(str(e).rstrip(".")), level="warning")
+                self.log("{}".format(e, level="warning"))
                 if i == retries - 1:
                     self.log("Claim failed.", level="error")
                     await self._screenshot_async("screenshot.png")
