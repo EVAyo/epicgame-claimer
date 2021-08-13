@@ -83,7 +83,7 @@ Require Python >= 3.6.
     </details>
 
     <details>
-    <summary>No interactive input(Need disable 2FA)</summary>
+    <summary>No interactive input(Need disable two-factor authentication(2FA))</summary>
 
     ```bash
     python3 main.py -u <YOUR EMAIL> -p <YOUR PASSWORD>
