@@ -2,7 +2,7 @@ FROM ubuntu
 
 LABEL maintainer="Luminoleon <luminoleon@outlook.com>"
 
-ENV DEBIAN_FRONTEND=noninteractive TZ=Asia/Shanghai run_at=09:00 auto_update=false
+ENV DEBIAN_FRONTEND=noninteractive TZ=Asia/Shanghai
 
 COPY requirements.txt install_dependencies.sh /
 
@@ -17,4 +17,4 @@ RUN apt update \
 
 COPY *.py /
 
-CMD [ "bash", "-c", "if ${auto_update}; then arg='--auto-update'; else arg=''; fi && python3 main.py --run-at ${run_at} ${arg}" ]
+ENTRYPOINT [ "python3", "-u", "main.py" ]
