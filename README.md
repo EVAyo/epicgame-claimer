@@ -10,7 +10,7 @@
 
 > Claim [weekly free games](https://www.epicgames.com/store/free-games) from Epic Games Store.
 
-Very simple and easy to use. You almost don't need to input or modify any arguments, and it can automatically synchronize with the latest GitHub version.
+It's very simple and easy to use.In most cases, you don't need to input or modify any arguments, and it automatically Synchronizes with the latest GitHub version.
 
 If you think this project is helpful to you, please star this project.
 
@@ -31,8 +31,8 @@ Notice: Windows version does not currently support automatic update.
 | `-c`, `--chromium-path`   | set path to browser executable |                         |
 | `-r`, `--run-at`          | set daily check and claim time | HH:MM, default to 09:00 |
 | `-o`, `--once`            | claim once then exit           |                         |
-| `-u`, `--username`        | set username/email             | need disable 2FA        |
-| `-p`, `--password`        | set password                   | need disable 2FA        |
+| `-u`, `--username`        | set username/email             | need to disable 2FA     |
+| `-p`, `--password`        | set password                   | need to disable 2FA     |
 
 ### Docker
 
@@ -83,7 +83,7 @@ Require Python >= 3.6.
     </details>
 
     <details>
-    <summary>No interactive input(Need disable two-factor authentication(2FA))</summary>
+    <summary>No interactive input(Need to disable two-factor authentication(2FA))</summary>
 
     ```bash
     python3 main.py -u <YOUR EMAIL> -p <YOUR PASSWORD>
@@ -101,12 +101,12 @@ Require Python >= 3.6.
 | `-r`, `--run-at`        | set daily check and claim time | HH:MM, default to 09:00 |
 | `-o`, `--once`          | claim once then exit           |                         |
 | `-a`, `--auto-update`   | enable auto update             |                         |
-| `-u`, `--username`      | set username/email             | need disable 2FA        |
-| `-p`, `--password`      | set password                   | need disable 2FA        |
+| `-u`, `--username`      | set username/email             | need to disable 2FA     |
+| `-p`, `--password`      | set password                   | need to disable 2FA     |
 
 #### Notice
 
-If the script runs incorrectly in Linux system, you can try to use Chrome instead of default Chromium(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)). The following commands may fix some problems.
+If the script runs incorrectly in Linux, you can try to use Chrome instead of default Chromium(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)). The following commands may fix some problems.
 
 ##### Install Chrome
 
@@ -140,4 +140,4 @@ python3 main.py --chromium-path /usr/bin/google-chrome
 
 ## Known Issues
 
-Stop the script midway in Windows system may cause the browser process remain in the background. You should check task manager and kill the browser process manually.
+Stopping the script midway in Windows may cause the browser process remain in the background. You should check task manager and kill the browser process manually.

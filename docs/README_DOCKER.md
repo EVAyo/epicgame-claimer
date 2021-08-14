@@ -20,13 +20,13 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
 
 ### Some Examples
 
-* Save account information to local path(Then you don't need to login next time when you start a new container):
+* Save account information to local path(Then you don't need to login the next time when you start a new container):
 
     ```bash
     docker run -it -v ~/epicgames_claimer/User_Data:/User_Data luminoleon/epicgames-claimer
     ```
 
-* Fix the time zone of the container:
+* Adjust to the time zone of the container:
 
     ```bash
     docker run -it -e TZ=<YOUR TIME ZONE> luminoleon/epicgames-claimer
@@ -34,7 +34,7 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
 
     [Available Time Zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)
 
-* No interactive input(Need disable two-factor authentication(2FA)):
+* No interactive input(Need to disable two-factor authentication(2FA)):
 
     ```bash
     docker run -d luminoleon/epicgames-claimer -u <YOUR EMAIL> -p <YOUR PASSWORD>
@@ -48,8 +48,8 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
 | `-r`, `--run-at`        | set daily check and claim time | HH:MM, default to 09:00 |
 | `-o`, `--once`          | claim once then exit           |                         |
 | `-a`, `--auto-update`   | enable auto update             |                         |
-| `-u`, `--username`      | set username/email             | need disable 2FA        |
-| `-p`, `--password`      | set password                   | need disable 2FA        |
+| `-u`, `--username`      | set username/email             | need to disable 2FA     |
+| `-p`, `--password`      | set password                   | need to disable 2FA     |
 
 ## 简体中文
 
