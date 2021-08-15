@@ -1,6 +1,7 @@
 import argparse
 import importlib
 import time
+from pyppeteer.errors import BrowserError
 
 import schedule
 import update_check
@@ -37,9 +38,18 @@ def main() -> None:
             except Exception as e:
                 epicgames_claimer.epicgames_claimer.log("Update \"epicgames_claimer.py\" failed. {}: {}".format(e.__class__.__name__, e), level="warning")
     def run(claimer: epicgames_claimer.epicgames_claimer) -> None:
-        claimer.close_browser()
-        update()
-        claimer = epicgames_claimer.epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
+        if args.auto_update:
+            claimer.close_browser()
+            update()
+            for i in range(3):
+                try:
+                    claimer = epicgames_claimer.epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
+                    break
+                except BrowserError as e:
+                    epicgames_claimer.epicgames_claimer.log(e, "warning")
+                    if i == 2:
+                        epicgames_claimer.epicgames_claimer.log("Failed to open the browser.", "error")
+                        return
         claimer.run_once(interactive, args.username, args.password)
     def scheduled_run(claimer: epicgames_claimer.epicgames_claimer, at: str):
         claimer.add_quit_signal()
