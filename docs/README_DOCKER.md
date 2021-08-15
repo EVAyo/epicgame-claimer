@@ -40,9 +40,17 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
     docker run -d luminoleon/epicgames-claimer -u <YOUR EMAIL> -p <YOUR PASSWORD>
     ```
 
+#### Environment Variables
+
+| Variable | Description                    | Default       |
+| -------- | ------------------------------ | ------------- |
+| TZ       | the time zone of the container, [Available Time Zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)        | Asia/Shanghai |
+
 #### Optional Arguments
 
-| Arguments               | Descriptions                   | Note                    |
+Usage: `docker run luminoleon/epicgames-claimer [-h] [-r RUN_AT] [-o] [-a] [-u USERNAME] [-p PASSWORD]`
+
+| Arguments               | Description                    | Note                    |
 | ----------------------- | ------------------------------ | ----------------------- |
 | `-h`, `--help`          | show the help message          |                         |
 | `-r`, `--run-at`        | set daily check and claim time | HH:MM, default to 09:00 |
@@ -83,7 +91,15 @@ docker run -it luminoleon/epicgames-claimer
     docker run -d luminoleon/epicgames-claimer -u <你的邮箱> -p <你的密码>
     ```
 
+#### 环境变量
+
+| Variable | Description                    | Default       |
+| -------- | ------------------------------ | ------------- |
+| TZ       | 容器的时区, [可用时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) | Asia/Shanghai |
+
 #### 可选参数
+
+使用方法: `docker run luminoleon/epicgames-claimer [-h] [-r RUN_AT] [-o] [-a] [-u USERNAME] [-p PASSWORD]`
 
 | 参数                    | 说明                     | 备注            |
 | ----------------------- | ----------------------- | --------------- |
