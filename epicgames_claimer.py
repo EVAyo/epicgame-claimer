@@ -290,17 +290,25 @@ class epicgames_claimer:
     async def _claim_async(self) -> List[str]:
         free_games = await self._get_free_game_infos_async()
         claimed_game_titles = []
+        alert_text_list = []
+        claim_failed = False
         for game in free_games:
             await self._navigate_async(game["purchase_url"], timeout=60000)
             await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", timeout=60000)
             claim_result = await self._find_and_not_find_async("#purchase-app div.error-alert-container", "#purchase-app > div", timeout=120000)
             if claim_result == 0:
-                continue
+                alert_text = await self._get_text_async("#purchase-app div.error-alert-container")
+                if not "already own this item" in alert_text:
+                    claim_failed = True
+                    alert_text_list.append(alert_text)
             elif claim_result == 1:
                 claimed_game_titles.append(game["title"])
             elif claim_result == -1:
                 raise TimeoutError("Check claim result failed.")
-        return claimed_game_titles
+        if claim_failed:
+            raise PermissionError("From Epic Games: {}".format(str(alert_text_list).strip("[]").replace("'", "").replace(",", "")))
+        else:
+            return claimed_game_titles
     
     async def _get_authentication_method_async(self) -> Optional[str]:
         page_content_json = await self._get_url_json_async("https://www.epicgames.com/account/v2/security/settings/ajaxGet")
@@ -502,7 +510,7 @@ class epicgames_claimer:
         return self._loop.run_until_complete(self._get_order_sync_token_async(namespace, offer_id))
     
     def get_purchase_url(self, namespace:str, offer_id: str):
-        purchase_url = "https://www.epicgames.com/store/purchase?namespace={}&offers={}".format(namespace, offer_id)
+        purchase_url = "https://www.epicgames.com/store/purchase?lang=en-US&namespace={}&offers={}".format(namespace, offer_id)
         return purchase_url
     
     async def _get_library_items_async(self):
@@ -557,7 +565,7 @@ class epicgames_claimer:
                     free_game_info["namespace"] = item["namespace"]
                     free_game_info["offer_id"] = item["id"]
                     free_game_info["url"] = "https://www.epicgames.com/store/p/" + free_game_info["url_slug"]
-                    free_game_info["purchase_url"] = "https://www.epicgames.com/store/purchase?namespace={}&offers={}".format(free_game_info["namespace"], free_game_info["offer_id"])
+                    free_game_info["purchase_url"] = "https://www.epicgames.com/store/purchase?lang=en-US&namespace={}&offers={}".format(free_game_info["namespace"], free_game_info["offer_id"])
                     free_game_infos.append(free_game_info)
         return free_game_infos
     
