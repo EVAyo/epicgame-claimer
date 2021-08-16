@@ -597,7 +597,7 @@ class epicgames_claimer:
                 if len(claimed_game_titles) > 0:
                     self.log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
                 else:
-                    self.log("All Current weekly free games are already in your library.")
+                    self.log("All available weekly free games are already in your library.")
                 break
             except Exception as e:
                 self.log("{}".format(e), level="warning")
@@ -657,16 +657,21 @@ class epicgames_claimer:
         if "SIGHUP" in dir(signal):
             signal.signal(signal.SIGHUP, self._quit)
 
-
-def main() -> None:
+def get_args(include_auto_update: bool = False) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Claim weekly free games from Epic Games Store.")
     parser.add_argument("-n", "--no-headless", action="store_true", help="run the browser with GUI")
     parser.add_argument("-c", "--chromium-path", type=str, help="set path to browser executable")
-    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default: 09:00)")
+    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default to 09:00)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
+    if include_auto_update:
+        parser.add_argument("-a", "--auto-update", action="store_true", help="enable auto update")
     parser.add_argument("-u", "--username", type=str, help="set username/email")
     parser.add_argument("-p", "--password", type=str, help="set password")
     args = parser.parse_args()
+    return args
+
+def main() -> None:
+    args = get_args()
     if args.username != None:
         if args.password == None:
             raise ValueError("Must input both username and password.")
@@ -677,7 +682,7 @@ def main() -> None:
     if args.once == True:
         epicgames_claimer.log("Claimer has started.")
         claimer.run_once(interactive, args.username, args.password)
-        epicgames_claimer.log("Claim has been completed.")
+        epicgames_claimer.log("Claim completed.")
     else:
         epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
         claimer.run_once(interactive, args.username, args.password)
