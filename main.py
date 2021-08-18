@@ -52,11 +52,11 @@ def main() -> None:
         update()
     claimer = epicgames_claimer.epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
     if args.once == True:
-        epicgames_claimer.epicgames_claimer.log("Claimer has started.")
+        epicgames_claimer.epicgames_claimer.log("Claimer started.")
         claimer.run_once(interactive, args.username, args.password)
         epicgames_claimer.epicgames_claimer.log("Claim completed.")
     else:
-        epicgames_claimer.epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
+        epicgames_claimer.epicgames_claimer.log("Claimer started. Run at {} everyday.".format(args.run_at))
         claimer.run_once(interactive, args.username, args.password)
         scheduled_run(claimer, args.run_at)
 

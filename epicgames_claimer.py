@@ -1,16 +1,17 @@
 import argparse
 import asyncio
 import json
-from json.decoder import JSONDecodeError
 import os
 import signal
 import time
 from getpass import getpass
+from json.decoder import JSONDecodeError
 from typing import Dict, List, Optional, Union
 
 import schedule
 from pyppeteer import launch, launcher
 from pyppeteer.element_handle import ElementHandle
+from pyppeteer.network_manager import Request
 
 
 class epicgames_claimer:
@@ -26,6 +27,7 @@ class epicgames_claimer:
         self.chromium_path = chromium_path
         self._loop = asyncio.get_event_loop()
         self.browser_opened = False
+        self.page = None
         self.open_browser()
     
     @staticmethod
@@ -64,9 +66,9 @@ class epicgames_claimer:
                 if self.chromium_path == None and os.path.exists("chrome-win32"):
                     self.chromium_path = "chrome-win32/chrome.exe"
             browser_args = [
-                "--disable-infobars", 
-                "--blink-settings=imagesEnabled=false", 
-                "--no-first-run"                
+                "--disable-infobars",
+                "--blink-settings=imagesEnabled=false",
+                "--no-first-run"
             ]
             if not self.sandbox:
                 browser_args.append("--no-sandbox")
@@ -77,9 +79,18 @@ class epicgames_claimer:
             )
             self.page = (await self.browser.pages())[0]
             await self.page.setViewport({"width": 1000, "height": 600})
+            # Async callback functions aren't possible to use(Refer to https://github.com/pyppeteer/pyppeteer/issues/220).
+            # await self.page.setRequestInterception(True)
+            # self.page.on('request', self._intercept_request_async)
             if self.headless:
                 await self._headless_stealth_async()
             self.browser_opened = True
+
+    async def _intercept_request_async(self, request: Request) -> None:
+        if request.resourceType in ["image", "media", "font"]:
+            await request.abort()
+        else:
+            await request.continue_()
         
     async def _close_browser_async(self):
         if self.browser_opened:
@@ -688,11 +699,11 @@ def main() -> None:
     epicgames_claimer.log("Claimer is starting...")
     claimer = epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
     if args.once == True:
-        epicgames_claimer.log("Claimer has started.")
+        epicgames_claimer.log("Claimer started.")
         claimer.run_once(interactive, args.username, args.password)
         epicgames_claimer.log("Claim completed.")
     else:
-        epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
+        epicgames_claimer.log("Claimer started. Run at {} everyday.".format(args.run_at))
         claimer.run_once(interactive, args.username, args.password)
         claimer.scheduled_run(args.run_at, interactive, args.username, args.password)
 
