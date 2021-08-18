@@ -303,6 +303,7 @@ class epicgames_claimer:
         claimed_game_titles = []
         alert_text_list = []
         claim_failed = False
+        check_claim_result_failed = []
         for game in free_games:
             await self._navigate_async(game["purchase_url"], timeout=60000)
             await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", timeout=60000)
@@ -315,9 +316,11 @@ class epicgames_claimer:
             elif claim_result == 1:
                 claimed_game_titles.append(game["title"])
             elif claim_result == -1:
-                raise TimeoutError("Check claim result failed.")
+                check_claim_result_failed.append(game["title"])
         if claim_failed:
             raise PermissionError("From Epic Games: {}".format(str(alert_text_list).strip("[]").replace("'", "").replace(",", "")))
+        elif len(check_claim_result_failed) != 0:
+            raise TimeoutError("Check claim result failed: {}.".format(str(check_claim_result_failed).strip("[]").replace("'", "")))
         else:
             return claimed_game_titles
     
