@@ -1,16 +1,17 @@
 import argparse
 import asyncio
 import json
-from json.decoder import JSONDecodeError
 import os
 import signal
 import time
 from getpass import getpass
+from json.decoder import JSONDecodeError
 from typing import Dict, List, Optional, Union
 
 import schedule
 from pyppeteer import launch, launcher
 from pyppeteer.element_handle import ElementHandle
+from pyppeteer.network_manager import Request
 
 
 class epicgames_claimer:
@@ -26,6 +27,7 @@ class epicgames_claimer:
         self.chromium_path = chromium_path
         self._loop = asyncio.get_event_loop()
         self.browser_opened = False
+        self.page = None
         self.open_browser()
     
     @staticmethod
@@ -64,9 +66,9 @@ class epicgames_claimer:
                 if self.chromium_path == None and os.path.exists("chrome-win32"):
                     self.chromium_path = "chrome-win32/chrome.exe"
             browser_args = [
-                "--disable-infobars", 
-                "--blink-settings=imagesEnabled=false", 
-                "--no-first-run"                
+                "--disable-infobars",
+                "--blink-settings=imagesEnabled=false",
+                "--no-first-run"
             ]
             if not self.sandbox:
                 browser_args.append("--no-sandbox")
@@ -77,9 +79,18 @@ class epicgames_claimer:
             )
             self.page = (await self.browser.pages())[0]
             await self.page.setViewport({"width": 1000, "height": 600})
+            # Async callback functions aren't possible to use(Refer to https://github.com/pyppeteer/pyppeteer/issues/220).
+            # await self.page.setRequestInterception(True)
+            # self.page.on('request', self._intercept_request_async)
             if self.headless:
                 await self._headless_stealth_async()
             self.browser_opened = True
+
+    async def _intercept_request_async(self, request: Request) -> None:
+        if request.resourceType in ["image", "media", "font"]:
+            await request.abort()
+        else:
+            await request.continue_()
         
     async def _close_browser_async(self):
         if self.browser_opened:
@@ -290,17 +301,28 @@ class epicgames_claimer:
     async def _claim_async(self) -> List[str]:
         free_games = await self._get_free_game_infos_async()
         claimed_game_titles = []
+        alert_text_list = []
+        claim_failed = False
+        check_claim_result_failed = []
         for game in free_games:
             await self._navigate_async(game["purchase_url"], timeout=60000)
             await self._click_async("#purchase-app div.order-summary-container button.btn-primary:not([disabled])", timeout=60000)
             claim_result = await self._find_and_not_find_async("#purchase-app div.error-alert-container", "#purchase-app > div", timeout=120000)
             if claim_result == 0:
-                continue
+                alert_text = await self._get_text_async("#purchase-app div.error-alert-container")
+                if not "already own this item" in alert_text:
+                    claim_failed = True
+                    alert_text_list.append(alert_text)
             elif claim_result == 1:
                 claimed_game_titles.append(game["title"])
             elif claim_result == -1:
-                raise TimeoutError("Check claim result failed.")
-        return claimed_game_titles
+                check_claim_result_failed.append(game["title"])
+        if claim_failed:
+            raise PermissionError("From Epic Games: {}".format(str(alert_text_list).strip("[]").replace("'", "").replace(",", "")))
+        elif len(check_claim_result_failed) != 0:
+            raise TimeoutError("Check claim result failed: {}.".format(str(check_claim_result_failed).strip("[]").replace("'", "")))
+        else:
+            return claimed_game_titles
     
     async def _get_authentication_method_async(self) -> Optional[str]:
         page_content_json = await self._get_url_json_async("https://www.epicgames.com/account/v2/security/settings/ajaxGet")
@@ -502,7 +524,7 @@ class epicgames_claimer:
         return self._loop.run_until_complete(self._get_order_sync_token_async(namespace, offer_id))
     
     def get_purchase_url(self, namespace:str, offer_id: str):
-        purchase_url = "https://www.epicgames.com/store/purchase?namespace={}&offers={}".format(namespace, offer_id)
+        purchase_url = "https://www.epicgames.com/store/purchase?lang=en-US&namespace={}&offers={}".format(namespace, offer_id)
         return purchase_url
     
     async def _get_library_items_async(self):
@@ -557,7 +579,7 @@ class epicgames_claimer:
                     free_game_info["namespace"] = item["namespace"]
                     free_game_info["offer_id"] = item["id"]
                     free_game_info["url"] = "https://www.epicgames.com/store/p/" + free_game_info["url_slug"]
-                    free_game_info["purchase_url"] = "https://www.epicgames.com/store/purchase?namespace={}&offers={}".format(free_game_info["namespace"], free_game_info["offer_id"])
+                    free_game_info["purchase_url"] = "https://www.epicgames.com/store/purchase?lang=en-US&namespace={}&offers={}".format(free_game_info["namespace"], free_game_info["offer_id"])
                     free_game_infos.append(free_game_info)
         return free_game_infos
     
@@ -597,7 +619,7 @@ class epicgames_claimer:
                 if len(claimed_game_titles) > 0:
                     self.log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
                 else:
-                    self.log("All Current weekly free games are already in your library.")
+                    self.log("All available weekly free games are already in your library.")
                 break
             except Exception as e:
                 self.log("{}".format(e), level="warning")
@@ -627,7 +649,7 @@ class epicgames_claimer:
                 if len(claimed_game_titles) > 0:
                     self.log("{} has been claimed.".format(str(claimed_game_titles).strip("[]").replace("'", "")))
                 else:
-                    self.log("All Current weekly free games are already in your library.")
+                    self.log("All available weekly free games are already in your library.")
                 break
             except Exception as e:
                 self.log("{}".format(e), level="warning")
@@ -657,16 +679,21 @@ class epicgames_claimer:
         if "SIGHUP" in dir(signal):
             signal.signal(signal.SIGHUP, self._quit)
 
-
-def main() -> None:
+def get_args(include_auto_update: bool = False) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Claim weekly free games from Epic Games Store.")
     parser.add_argument("-n", "--no-headless", action="store_true", help="run the browser with GUI")
     parser.add_argument("-c", "--chromium-path", type=str, help="set path to browser executable")
-    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default: 09:00)")
+    parser.add_argument("-r", "--run-at", type=str, default="09:00", help="set daily check and claim time(HH:MM, default to 09:00)")
     parser.add_argument("-o", "--once", action="store_true", help="claim once then exit")
+    if include_auto_update:
+        parser.add_argument("-a", "--auto-update", action="store_true", help="enable auto update")
     parser.add_argument("-u", "--username", type=str, help="set username/email")
     parser.add_argument("-p", "--password", type=str, help="set password")
     args = parser.parse_args()
+    return args
+
+def main() -> None:
+    args = get_args()
     if args.username != None:
         if args.password == None:
             raise ValueError("Must input both username and password.")
@@ -675,11 +702,11 @@ def main() -> None:
     epicgames_claimer.log("Claimer is starting...")
     claimer = epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
     if args.once == True:
-        epicgames_claimer.log("Claimer has started.")
+        epicgames_claimer.log("Claimer started.")
         claimer.run_once(interactive, args.username, args.password)
-        epicgames_claimer.log("Claim has been completed.")
+        epicgames_claimer.log("Claim completed.")
     else:
-        epicgames_claimer.log("Claimer has started. Run at {} everyday.".format(args.run_at))
+        epicgames_claimer.log("Claimer started. Run at {} everyday.".format(args.run_at))
         claimer.run_once(interactive, args.username, args.password)
         claimer.scheduled_run(args.run_at, interactive, args.username, args.password)
 
