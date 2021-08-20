@@ -1,12 +1,11 @@
 import importlib
 import time
-from pyppeteer.errors import BrowserError
 
 import schedule
 import update_check
+from pyppeteer.errors import BrowserError
 
 import epicgames_claimer
-
 
 args = epicgames_claimer.get_args(include_auto_update=True)
 if args.username != None and args.password == None:
@@ -16,21 +15,26 @@ if args.username == None and args.password != None:
 interactive = True if args.username == None else False
 data_dir = "User_Data/Default" if interactive else None
 
+def is_up_to_date() -> bool:
+    up_to_date = update_check.isUpToDate("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/master/epicgames_claimer.py")
+    return up_to_date
+
 def update() -> None:
     try:
-        if update_check.checkForUpdates("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/master/epicgames_claimer.py"):
-            importlib.reload(epicgames_claimer)
-            epicgames_claimer.epicgames_claimer.log("\"epicgames_claimer.py\" has been updated.")
+        update_check.update("epicgames_claimer.py", "https://raw.githubusercontent.com/luminoleon/epicgames-claimer/master/epicgames_claimer.py")
+        importlib.reload(epicgames_claimer)
+        epicgames_claimer.epicgames_claimer.log("\"epicgames_claimer.py\" has been updated.")
     except Exception as e:
         epicgames_claimer.epicgames_claimer.log("Update \"epicgames_claimer.py\" failed. {}: {}".format(e.__class__.__name__, e), level="warning")
 
 def run(claimer: epicgames_claimer.epicgames_claimer) -> None:
-    if args.auto_update:
+    if args.auto_update and not is_up_to_date():
         claimer.close_browser()
         update()
         for i in range(3):
             try:
                 claimer = epicgames_claimer.epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
+                claimer.add_quit_signal()
                 break
             except BrowserError as e:
                 epicgames_claimer.epicgames_claimer.log(str(e).replace("\n", " "), "warning")
@@ -48,7 +52,7 @@ def scheduled_run(claimer: epicgames_claimer.epicgames_claimer, at: str):
 
 def main() -> None:
     epicgames_claimer.epicgames_claimer.log("Claimer is starting...")
-    if args.auto_update:
+    if args.auto_update and not is_up_to_date():
         update()
     claimer = epicgames_claimer.epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
     if args.once == True:
@@ -59,7 +63,6 @@ def main() -> None:
         epicgames_claimer.epicgames_claimer.log("Claimer started. Run at {} everyday.".format(args.run_at))
         claimer.run_once(interactive, args.username, args.password)
         scheduled_run(claimer, args.run_at)
-
 
 if __name__ == "__main__":
     main()
