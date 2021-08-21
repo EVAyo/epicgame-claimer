@@ -27,25 +27,23 @@ def update() -> None:
     except Exception as e:
         epicgames_claimer.epicgames_claimer.log("Update \"epicgames_claimer.py\" failed. {}: {}".format(e.__class__.__name__, e), level="warning")
 
-def run(claimer: epicgames_claimer.epicgames_claimer) -> None:
+def run() -> None:
     if args.auto_update and not is_up_to_date():
-        claimer.close_browser()
         update()
-        for i in range(3):
-            try:
-                claimer = epicgames_claimer.epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
-                claimer.add_quit_signal()
-                break
-            except BrowserError as e:
-                epicgames_claimer.epicgames_claimer.log(str(e).replace("\n", " "), "warning")
-                if i == 2:
-                    epicgames_claimer.epicgames_claimer.log("Failed to open the browser.", "error")
-                    return
-    claimer.run_once(interactive, args.username, args.password)
+    for i in range(3):
+        try:
+            claimer = epicgames_claimer.epicgames_claimer(data_dir, headless=not args.no_headless, chromium_path=args.chromium_path)
+            claimer.add_quit_signal()
+            claimer.run_once(interactive, args.username, args.password)
+            break
+        except BrowserError as e:
+            epicgames_claimer.epicgames_claimer.log(str(e).replace("\n", " "), "warning")
+            if i == 2:
+                epicgames_claimer.epicgames_claimer.log("Failed to open the browser.", "error")
+                return
 
-def scheduled_run(claimer: epicgames_claimer.epicgames_claimer, at: str):
-    claimer.add_quit_signal()
-    schedule.every().day.at(at).do(run, claimer)
+def scheduled_run(at: str):
+    schedule.every().minute.do(run)
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -62,7 +60,8 @@ def main() -> None:
     else:
         epicgames_claimer.epicgames_claimer.log("Claimer started. Run at {} everyday.".format(args.run_at))
         claimer.run_once(interactive, args.username, args.password)
-        scheduled_run(claimer, args.run_at)
+        claimer.add_quit_signal()
+        scheduled_run(args.run_at)
 
 if __name__ == "__main__":
     main()
