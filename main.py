@@ -43,7 +43,7 @@ def run() -> None:
                 return
 
 def scheduled_run(at: str):
-    schedule.every().minute.do(run)
+    schedule.every().day.at(at).do(run)
     while True:
         schedule.run_pending()
         time.sleep(1)
