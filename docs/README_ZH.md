@@ -14,6 +14,10 @@
 
 如果你觉得本项目对你有帮助，请star本项目。
 
+博客链接：<https://blogs.luminoleon.top/archives/40>
+
+蓝奏云： <https://luminoleon.lanzoui.com/b02iby4lg> 密码:15k1
+
 ## 开始
 
 ### Windows
