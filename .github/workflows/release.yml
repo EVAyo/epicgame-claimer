@@ -51,8 +51,12 @@ jobs:
         name: Install Python modules
         run: |
           pip install wheel 
-          pip install pyppeteer schedule pyinstaller
+          pip install pyppeteer pyinstaller
           pyppeteer-install
+      -
+        name: Disable Autocrlf
+        run: |
+          git config --global core.autocrlf false
       -
         name: Checkout
         uses: actions/checkout@v2
