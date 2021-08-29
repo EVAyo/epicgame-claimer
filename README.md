@@ -132,12 +132,39 @@ rm -I google-chrome-stable_current_x86_64.rpm
 
 </details>
 
-##### Use Chrome instead of default browser
+###### Use Chrome instead of default browser
 
 ``` bash
 python3 main.py --chromium-path /usr/bin/google-chrome
 ```
+##### Small memory or ARM
 
+<details>
+<summary>Debian（e.g. Ubuntu）</summary>
+
+``` bash
+
+apt install chromium-browser
+
+
+```
+</details>
+
+<details>
+<summary>CentOS</summary>
+
+``` bash
+sudo yum install -y epel-release
+sudo yum install -y chromium
+```
+
+</details>
+
+###### Using the new version of chromium
+
+``` bash
+python3 main.py --chromium-path chromium-browser
+```
 ## Known Issues
 
 Stopping the script midway in Windows may cause the browser process remain in the background. You should check task manager and kill the browser process manually.
