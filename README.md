@@ -108,7 +108,7 @@ Require Python >= 3.6.
 
 If the script runs incorrectly in Linux, you can try to use Chrome instead of default Chromium(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)). The following commands may fix some problems.
 
-##### Install Chrome
+##### Install Chrome(AMD64)
 
 <details>
 <summary>Debian (e.g. Ubuntu)</summary>
