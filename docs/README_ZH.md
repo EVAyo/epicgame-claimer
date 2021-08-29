@@ -112,7 +112,7 @@ docker run -it luminoleon/epicgames-claimer
 
 在Linux系统中，如果脚本不能正确运行，你可以尝试安装Chrome替代默认的Chromium（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。以下命令或许可以解决一些问题。
 
-##### 安装Chrome
+##### 安装Chrome(AMD64)
 
 <details>
 <summary>Debian（e.g. Ubuntu）</summary>
