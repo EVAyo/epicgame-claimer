@@ -8,6 +8,8 @@
 
 ###### Other language: [简体中文](docs/README_ZH.md)
 
+###### [Troubleshooting](docs/troubleshooting.md)
+
 > Claim [weekly free games](https://www.epicgames.com/store/free-games) from Epic Games Store.
 
 It's very simple and easy to use. In most cases, you don't need to input or modify any arguments, and it automatically synchronizes with the latest GitHub version.
@@ -104,67 +106,6 @@ Require Python >= 3.6.
 | `-u`, `--username`      | set username/email             | need to disable 2FA     |
 | `-p`, `--password`      | set password                   | need to disable 2FA     |
 
-#### Notice
-
-If the script runs incorrectly in Linux, you can try to use Chrome instead of default Chromium(Refer to [Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)). The following commands may fix some problems.
-
-##### Install Chrome(AMD64)
-
-<details>
-<summary>Debian (e.g. Ubuntu)</summary>
-
-``` bash
-curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo apt install -y ./google-chrome-stable_current_amd64.deb
-rm google-chrome-stable_current_amd64.deb
-```
-
-</details>
-
-<details>
-<summary>CentOS</summary>
-
-``` bash
-curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
-sudo yum install -y ./google-chrome-stable_current_x86_64.rpm
-rm -I google-chrome-stable_current_x86_64.rpm
-```
-
-</details>
-
-###### Use Chrome instead of default browser
-
-``` bash
-python3 main.py --chromium-path /usr/bin/google-chrome
-```
-##### Small memory or ARM
-
-<details>
-<summary>Debian（e.g. Ubuntu）</summary>
-
-``` bash
-
-apt install chromium-browser
-
-
-```
-</details>
-
-<details>
-<summary>CentOS</summary>
-
-``` bash
-sudo yum install -y epel-release
-sudo yum install -y chromium
-```
-
-</details>
-
-###### Using the new version of chromium
-
-``` bash
-python3 main.py --chromium-path chromium-browser
-```
 ## Known Issues
 
 Stopping the script midway in Windows may cause the browser process remain in the background. You should check task manager and kill the browser process manually.
