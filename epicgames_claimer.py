@@ -698,11 +698,15 @@ def get_args(include_auto_update: bool = False) -> argparse.Namespace:
     env_password = os.environ.get("PASSWORD")
     if env_run_at != None:
         args.run_at = env_run_at
-    if env_once != None:
-        args.once = env_once
+    if env_once == "true":
+        args.once = True
+    elif env_once == "false":
+        args.once = False
     if include_auto_update:
-        if env_auto_update != None:
-            args.auto_update = env_auto_update
+        if env_auto_update == "true":
+            args.auto_update = True
+        elif env_auto_update == "false":
+            args.auto_update = False
     if env_email != None:
         args.username = env_email
     if env_password != None:

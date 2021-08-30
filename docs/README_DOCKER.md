@@ -46,8 +46,8 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
 | -------- | --------------------------------- | ------------- | ----------- |
 | TZ       | the time zone of the container, [Available Time Zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)           | Asia/Shanghai |             |
 | RUN_AT      | set daily check and claim time | 09:00 | format to HH:MM     |
-| ONCE        | claim once then exit           |       |                     |
-| AUTO_UPDATE | enable auto update             |       |                     |
+| ONCE        | claim once then exit           | false | true/false          |
+| AUTO_UPDATE | enable auto update             | false | true/false          |
 | EMAIL       | set username/email             |       | need to disable 2FA |
 | PASSWORD    | set password                   |       | need to disable 2FA |
 
@@ -104,8 +104,8 @@ docker run -it luminoleon/epicgames-claimer
 | ----------- | -------------------- | ------ | -------------- |
 | TZ          | 容器的时区, [可用时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)         | Asia/Shanghai | |
 | RUN_AT      | 指定每日运行时间      | 09:00 | 格式：HH:MM      |
-| ONCE        | 运行一次领取过程后退出 |       |                 |
-| AUTO_UPDATE | 启用自动更新          |       |                 |
+| ONCE        | 运行一次领取过程后退出 | false | true/false      |
+| AUTO_UPDATE | 启用自动更新          | false | true/false      |
 | EMAIL       | 设置用户名/邮箱       |       | 需要关闭双重验证 |
 | PASSWORD    | 设置密码              |       | 需要关闭双重验证 |
 
