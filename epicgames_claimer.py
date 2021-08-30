@@ -634,7 +634,6 @@ class epicgames_claimer:
             try:
                 if await self._need_login_async():
                     await self._login_no_check_async(email, password, tfa_enabled=False, remember_me=False)
-                    self.log("Login successed.")
                 break
             except Exception as e:
                 self.log("{}".format(e), level="warning")
