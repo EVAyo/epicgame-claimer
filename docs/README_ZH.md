@@ -108,11 +108,13 @@ docker run -it luminoleon/epicgames-claimer
 | `-u`, `--username`      | 设置用户名/邮箱          | 需要关闭双重验证  |
 | `-p`, `--password`      | 设置密码                 | 需要关闭双重验证 |
 
+    
 #### 注意事项
+    
 
 在Linux系统中，如果脚本不能正确运行，你可以尝试安装Chrome替代默认的Chromium（参考[Chrome headless doesn't launch on UNIX](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix)）。以下命令或许可以解决一些问题。
 
-##### 安装Chrome
+##### 安装Chrome(AMD64)
 
 <details>
 <summary>Debian（e.g. Ubuntu）</summary>
@@ -136,12 +138,39 @@ rm -I google-chrome-stable_current_x86_64.rpm
 
 </details>
 
-##### 使用Chrome替代默认浏览器
+######使用Chrome替代默认浏览器
 
 ``` bash
 python3 main.py --chromium-path google-chrome
 ```
+##### 小内存想使用chromium及ARM用户
 
+<details>
+<summary>Debian（e.g. Ubuntu）</summary>
+
+``` bash
+
+apt install chromium-browser
+
+
+```
+</details>
+
+<details>
+<summary>CentOS</summary>
+
+``` bash
+sudo yum install -y epel-release
+sudo yum install -y chromium
+```
+
+</details>
+
+###### 使用新版chromium
+
+``` bash
+python3 main.py --chromium-path chromium-browser
+```
 ## 已知问题
 
 Windows系统中途结束脚本可能导致浏览器进程留在后台。请检查任务管理器并手动结束浏览器进程。
