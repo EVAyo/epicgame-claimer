@@ -42,11 +42,18 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
 
 #### Environment Variables
 
-| Variable | Description                    | Default       |
-| -------- | ------------------------------ | ------------- |
-| TZ       | the time zone of the container, [Available Time Zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)        | Asia/Shanghai |
+| Variable | Description                       | Default       | Note        |
+| -------- | --------------------------------- | ------------- | ----------- |
+| TZ       | the time zone of the container, [Available Time Zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)           | Asia/Shanghai |             |
+| RUN_AT      | set daily check and claim time | 09:00 | format to HH:MM     |
+| ONCE        | claim once then exit           |       |                     |
+| AUTO_UPDATE | enable auto update             |       |                     |
+| USERNAME    | set username/email             |       | need to disable 2FA |
+| PASSWORD    | set password                   |       | need to disable 2FA |
 
 #### Optional Arguments
+
+Notice: When the corresponding environment variable exists, the value of the argument is the value of the corresponding environment variable.
 
 Usage: `docker run luminoleon/epicgames-claimer [-h] [-r RUN_AT] [-o] [-a] [-u USERNAME] [-p PASSWORD]`
 
@@ -93,11 +100,18 @@ docker run -it luminoleon/epicgames-claimer
 
 #### 环境变量
 
-| Variable | Description                    | Default       |
-| -------- | ------------------------------ | ------------- |
-| TZ       | 容器的时区, [可用时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) | Asia/Shanghai |
+| 变量        | 说明                  | 默认   | 备注            |
+| ----------- | -------------------- | ------ | -------------- |
+| TZ          | 容器的时区, [可用时区列表](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List)         | Asia/Shanghai | |
+| RUN_AT      | 指定每日运行时间      | 09:00 | 格式：HH:MM      |
+| ONCE        | 运行一次领取过程后退出 |       |                 |
+| AUTO_UPDATE | 启用自动更新          |       |                 |
+| USERNAME    | 设置用户名/邮箱       |       | 需要关闭双重验证 |
+| PASSWORD    | 设置密码              |       | 需要关闭双重验证 |
 
 #### 可选参数
+
+注意：对应的环境变量存在时，参数的值为对应环境变量的值。
 
 使用方法: `docker run luminoleon/epicgames-claimer [-h] [-r RUN_AT] [-o] [-a] [-u USERNAME] [-p PASSWORD]`
 

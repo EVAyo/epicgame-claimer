@@ -8,10 +8,6 @@ from pyppeteer.errors import BrowserError
 import epicgames_claimer
 
 args = epicgames_claimer.get_args(include_auto_update=True)
-if args.username != None and args.password == None:
-    raise ValueError("Must input both username and password.")
-if args.username == None and args.password != None:
-    raise ValueError("Must input both username and password.")
 interactive = True if args.username == None else False
 data_dir = "User_Data/Default" if interactive else None
 
