@@ -111,7 +111,7 @@ docker run -it luminoleon/epicgames-claimer
 
 #### 可选参数
 
-注意：对应的环境变量存在时，参数的值为会被对应环境变量的值覆盖。
+注意：对应的环境变量存在时，参数的值会被对应环境变量的值覆盖。
 
 使用方法: `docker run luminoleon/epicgames-claimer [-h] [-r RUN_AT] [-o] [-a] [-u USERNAME] [-p PASSWORD]`
 
