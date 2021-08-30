@@ -53,7 +53,7 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
 
 #### Optional Arguments
 
-Notice: When the corresponding environment variable exists, the value of the argument is the value of the corresponding environment variable.
+Notice: When the corresponding environment variable exists, the value of the argument will be overwritten by the value of the corresponding environment variable.
 
 Usage: `docker run luminoleon/epicgames-claimer [-h] [-r RUN_AT] [-o] [-a] [-u USERNAME] [-p PASSWORD]`
 
@@ -111,7 +111,7 @@ docker run -it luminoleon/epicgames-claimer
 
 #### 可选参数
 
-注意：对应的环境变量存在时，参数的值为对应环境变量的值。
+注意：对应的环境变量存在时，参数的值为会被对应环境变量的值覆盖。
 
 使用方法: `docker run luminoleon/epicgames-claimer [-h] [-r RUN_AT] [-o] [-a] [-u USERNAME] [-p PASSWORD]`
 
