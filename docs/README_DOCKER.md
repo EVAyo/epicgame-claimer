@@ -39,7 +39,42 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
     ```bash
     docker run -d luminoleon/epicgames-claimer -u <YOUR EMAIL> -p <YOUR PASSWORD>
     ```
+    
+* Via docker-compose:
+    
+    create`docker-compose.yml`:
+    
+    ```yaml
+    version: '3'
 
+    services:
+
+      epic-a:
+          image: luminoleon/epicgames-claimer
+          container_name: epic-a
+          restart: unless-stopped
+          environment:
+            - TZ=Asia/Shanghai
+            - AUTO_UPDATE=true
+            - EMAIL=YOUR_EMAIL_HERE
+            - PASSWORD=YOUR_PASSWORD_HERE
+      epic-b:
+          image: luminoleon/epicgames-claimer
+          container_name: epic-b
+          restart: unless-stopped
+          environment:
+            - TZ=Asia/Shanghai
+            - AUTO_UPDATE=true
+            - EMAIL=YOUR_OTHER_EMAIL_HERE
+            - PASSWORD=YOUR_OTHER_PASSWORD_HERE
+    ```
+    
+    and run with:
+    
+    ```bash
+    docker-compose up -d
+    ```
+    
 #### Environment Variables
 
 | Variable | Description                       | Default       | Note        |
@@ -97,7 +132,40 @@ docker run -it luminoleon/epicgames-claimer
     ```bash
     docker run -d luminoleon/epicgames-claimer -u <你的邮箱> -p <你的密码>
     ```
+* 使用 docker-compose:
+    
+    首先创建`docker-compose.yml`文件，内容如下:
+    
+    ```yaml
+    version: '3'
 
+    services:
+
+      epic-a:
+          image: luminoleon/epicgames-claimer
+          container_name: epic-a
+          restart: unless-stopped
+          environment:
+            - TZ=Asia/Shanghai
+            - AUTO_UPDATE=true
+            - EMAIL=邮箱
+            - PASSWORD=密码
+      epic-b:
+          image: luminoleon/epicgames-claimer
+          container_name: epic-b
+          restart: unless-stopped
+          environment:
+            - TZ=Asia/Shanghai
+            - AUTO_UPDATE=true
+            - EMAIL=另一个邮箱
+            - PASSWORD=另一个密码
+    ```
+    
+    然后执行命令:
+    
+    ```bash
+    docker-compose up -d
+    ```
 #### 环境变量
 
 | 变量        | 说明                  | 默认   | 备注            |
