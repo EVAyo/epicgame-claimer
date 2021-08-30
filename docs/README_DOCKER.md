@@ -48,7 +48,7 @@ After successful login, you can press Ctrl + P + Q to switch to the background.
 | RUN_AT      | set daily check and claim time | 09:00 | format to HH:MM     |
 | ONCE        | claim once then exit           |       |                     |
 | AUTO_UPDATE | enable auto update             |       |                     |
-| USERNAME    | set username/email             |       | need to disable 2FA |
+| EMAIL       | set username/email             |       | need to disable 2FA |
 | PASSWORD    | set password                   |       | need to disable 2FA |
 
 #### Optional Arguments
@@ -106,7 +106,7 @@ docker run -it luminoleon/epicgames-claimer
 | RUN_AT      | 指定每日运行时间      | 09:00 | 格式：HH:MM      |
 | ONCE        | 运行一次领取过程后退出 |       |                 |
 | AUTO_UPDATE | 启用自动更新          |       |                 |
-| USERNAME    | 设置用户名/邮箱       |       | 需要关闭双重验证 |
+| EMAIL       | 设置用户名/邮箱       |       | 需要关闭双重验证 |
 | PASSWORD    | 设置密码              |       | 需要关闭双重验证 |
 
 #### 可选参数
